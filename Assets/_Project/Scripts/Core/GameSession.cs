@@ -67,12 +67,13 @@ namespace HikariForge.M313.Core
         public bool Subtitles = true;
         public float Speed = 1f;     // playtest time multiplier
         public bool PlaytestTools = true;
+        public bool Hints = true;    // first-week guidance
 
         public string Serialize() => MiniJson.Serialize(new Dictionary<string, object>
         {
             ["master"] = (double)Master, ["music"] = (double)Music, ["sfx"] = (double)Sfx,
             ["flash"] = ReducedFlashing, ["shake"] = ReducedShake, ["scare"] = ScareLevel, ["subs"] = Subtitles,
-            ["speed"] = (double)Speed, ["tools"] = PlaytestTools
+            ["speed"] = (double)Speed, ["tools"] = PlaytestTools, ["hints"] = Hints
         });
 
         public static GameSettings Parse(string json)
@@ -83,7 +84,7 @@ namespace HikariForge.M313.Core
                 var d = J.Obj(MiniJson.Parse(json));
                 s.Master = J.Float(d, "master", s.Master); s.Music = J.Float(d, "music", s.Music); s.Sfx = J.Float(d, "sfx", s.Sfx);
                 s.ReducedFlashing = J.Bool(d, "flash"); s.ReducedShake = J.Bool(d, "shake"); s.ScareLevel = J.Int(d, "scare", 2);
-                s.Subtitles = J.Bool(d, "subs", true); s.Speed = J.Float(d, "speed", 1f); s.PlaytestTools = J.Bool(d, "tools", true);
+                s.Subtitles = J.Bool(d, "subs", true); s.Speed = J.Float(d, "speed", 1f); s.PlaytestTools = J.Bool(d, "tools", true); s.Hints = J.Bool(d, "hints", true);
             }
             catch { }
             return s;
@@ -581,6 +582,53 @@ namespace HikariForge.M313.Core
         {
             if (Ctx != null && Ctx.ResetMotor()) Toast("Motor reset. The machine hums back to life.");
             else PanelMessage = "NO FAULT DETECTED";
+        }
+
+        // ------------------------------------------------------------ guidance
+
+        /// <summary>
+        /// A one-line contextual tip for new players (first cycle, nights 1-3). Null when nothing needs saying.
+        /// Tips explain controls and point at the right tool; they never reveal the answer to a customer.
+        /// </summary>
+        public string Hint
+        {
+            get
+            {
+                if (!Settings.Hints || State == null || Endless || State.Cycle > 1 || State.Night > 3) return null;
+                if (Screen == GameScreen.Prep)
+                {
+                    bool empty = State.Slots.Any(sl => sl.Code != "E1" && (sl.ProductId == null || sl.Count == 0));
+                    bool stock = State.Stockroom.Values.Any(v => v > 0);
+                    if (State.Night == 1 && empty && stock)
+                        return "Stock the machine: pick an empty slot, then a product, or press Auto-stock. Customers can only buy what is loaded.";
+                    if (State.Night == 2) return "Your wages are in. The Upgrades tab improves the machine, and the handbook has a new section.";
+                    if (State.Night == 3) return "Handbook pages can change during a shift. Only pages with the green District seal are official.";
+                    return State.Night == 1 ? "Ready? Press Start shift." : null;
+                }
+                if (Screen != GameScreen.Shift || Ctx == null || Overlay != GameOverlay.None) return null;
+                if (Ctx.KnockActive) return "Knocking from inside the machine. Handbook rule D1 is about this.";
+                var cur = Ctx.Current;
+                if (cur == null)
+                {
+                    if (Ctx.InMargin && Ctx.Clock < ContentDatabase.MarginTime + 40)
+                        return "It's 3:13. Different rules apply until sunrise: read Section B in the handbook (H).";
+                    if (State.Night == 1 && State.TotalServed >= 1 && !Ctx.InMargin)
+                        return "Quiet moment. Read the handbook (H), check the cameras (M), or restock between customers.";
+                    return null;
+                }
+                if (cur.Stage == EncounterStage.Talking) return State.Night == 1 ? "Click the text or press Space to continue." : null;
+                if (cur.Stage != EncounterStage.Awaiting || LinesPending) return null;
+                var product = Db.Product(cur.Def.Request);
+                if (State.Night == 1 && State.TotalServed == 0 && product != null)
+                    return $"Click the slot holding {product.Name} (or type its code on the keypad), then press DISPENSE.";
+                if (cur.Def.Request == "UNLISTED")
+                    return "They want something that isn't on the menu. The handbook says what to check first.";
+                if (cur.Def.Supernatural && State.Night == 1)
+                    return "Something is wrong here. Inspect the REFLECTION and check the cameras (M) before you decide.";
+                if (product != null && State.MachineCount(product.Id) == 0)
+                    return $"You have no {product.Name} loaded. Refuse, offer something else, or restock between customers.";
+                return null;
+            }
         }
 
         // ------------------------------------------------------------ pause

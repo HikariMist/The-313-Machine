@@ -330,6 +330,7 @@ namespace HikariForge.M313
             else if (_prepTab == "handbook") DrawHandbook(60, 240, 1800, 740);
             else DrawEvidence(60, 240, 1800, 740);
 
+            DrawHint(60, 940, 1400);
             Ui.Fill(60, 996, 1800, 1, Ui.Edge);
             if (Ui.Button("Main menu", 60, 1012, 200, 50, Ui.B.Ghost)) S.Screen = GameScreen.Title;
             if (Ui.Button("Start shift · 11:00 PM", 1520, 1008, 340, 58, Ui.B.Primary, true, 24)) S.StartShift();
@@ -487,7 +488,18 @@ namespace HikariForge.M313
             if (Ui.Button("Pause", bx, 8, 90, 40, Ui.B.Normal, true, 16)) S.TogglePause();
 
             DrawMachine(ctx, st, cur);
+            DrawHint(20, HudH + 14, SceneW - 40);
             DrawShiftOverlay();
+        }
+
+        private void DrawHint(float x, float y, float w)
+        {
+            string hint = S.Hint;
+            if (string.IsNullOrEmpty(hint)) return;
+            float h = Ui.TextHeight(hint, w - 60, Ui.F.Semi, 19) + 18;
+            Ui.Box(x, y, w, h, new Color(0.05f, 0.09f, 0.07f, 0.92f), Ui.Emerald);
+            Ui.Text("TIP", x + 12, y + 9, 40, 24, Ui.F.Label, 16, Ui.Emerald);
+            Ui.Text(hint, x + 52, y + 9, w - 64, h, Ui.F.Semi, 19);
         }
 
         private string Portrait(ActiveEncounter cur) =>
@@ -1134,6 +1146,7 @@ namespace HikariForge.M313
             st.ReducedFlashing = Toggle("Reduce flashing", st.ReducedFlashing);
             st.ReducedShake = Toggle("Reduce camera shake", st.ReducedShake);
             st.Subtitles = Toggle("Subtitles for phone calls and voices", st.Subtitles);
+            st.Hints = Toggle("Show tips for new night attendants", st.Hints);
             // Display (Unity-only settings, stored by Unity itself).
             Ui.Text("Display", x + 40, cy + 6, 380, 40, Ui.F.Body, 22);
             if (Ui.Button(Screen.fullScreen ? "Fullscreen" : "Windowed", x + 420, cy, 200, 42, Ui.B.Normal, true, 17))

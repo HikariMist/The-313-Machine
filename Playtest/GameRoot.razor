@@ -291,6 +291,7 @@ else
                     @Evidence()
                 }
             </div>
+            @if (S.Hint != null) { <div class="hint-bar"><b>TIP</b> @S.Hint</div> }
             <footer class="prep-foot">
                 <button class="btn ghost" @onclick="() => S.Screen = GameScreen.Title">Main menu</button>
                 <button class="btn primary big" @onclick="S.StartShift">Start shift · 11:00 PM</button>
@@ -370,6 +371,7 @@ else
                 </div>
             </header>
 
+            @if (S.Hint != null) { <div class="hint-bar"><b>TIP</b> @S.Hint</div> }
             <div class="stage">
                 <section class="scene">
                     <img class="bg" src="@($"art/bg/{ctx.NightDef.Weather}{(ctx.InMargin ? "_margin" : "")}.jpg")" alt="" onerror="this.style.display='none'" />
