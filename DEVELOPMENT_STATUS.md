@@ -18,5 +18,5 @@ _Last updated: session 1._
 | Installer | Script compiles; install/uninstall verified under Wine with a stand-in game |
 | Store kits, marketing, licenses | Written (`STEAM_RELEASE.md`, `ITCH_RELEASE.md`, `Docs/Marketing`, `LICENSES.md`) |
 
-| Night pacing | Adaptive clock: nights land at ~10–15 real minutes; verified with simulated fast/typical/slow players |
+| Night pacing | Adaptive clock: nights land at ~10 real minutes; verified with simulated fast/typical/slow players |
 | Title screen | Animated rain, splashes, mist and rare lightning (Unity) |

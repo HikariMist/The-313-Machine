@@ -673,17 +673,17 @@ namespace HikariForge.M313.Tests
         }
 
         [Test]
-        public void TypicalPlayerNightsTakeTenToFifteenMinutes()
+        public void TypicalPlayerNightsTakeAboutTenMinutes()
         {
             var m = PlayWeek(4f, 25f, 120f);
-            foreach (var x in m) Assert.That(x, Is.InRange(10f, 15f));
+            foreach (var x in m) Assert.That(x, Is.InRange(9f, 11f));
         }
 
         [Test]
         public void FastAndSlowPlayersStayCloseToTheTarget()
         {
-            foreach (var x in PlayWeek(2f, 8f, 45f)) Assert.That(x, Is.InRange(8.5f, 15f), "fast reader");
-            foreach (var x in PlayWeek(6f, 45f, 200f)) Assert.That(x, Is.InRange(10f, 19f), "slow, careful reader");
+            foreach (var x in PlayWeek(2f, 8f, 45f)) Assert.That(x, Is.InRange(8.5f, 11f), "fast reader");
+            foreach (var x in PlayWeek(6f, 45f, 200f)) Assert.That(x, Is.InRange(9f, 14f), "slow, careful reader");
         }
     }
 }

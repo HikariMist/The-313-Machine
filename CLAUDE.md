@@ -28,7 +28,7 @@ At session start read: DEVELOPMENT_STATUS.md, NEXT_STEPS.md, TASK_QUEUE.md, KNOW
 - Audio: `python3 Tools/AudioGen/audiogen.py Assets/_Project/Resources/Audio [music|sfx]` (music takes ~7 min).
 
 ## Rules
-- Nights must take 10–15 real minutes (adaptive clock in `ShiftContext.PacedIdleRate`; `NightLengthTests` guard it).
+- Nights must take about 10 real minutes (adaptive clock in `ShiftContext.PacedIdleRate`; `NightLengthTests` guard it).
 - 7 nights per week, 15 endings, Endless Mode unlocks only after all 15.
 - Studio art in `Art/Source` is approved by the owner and wins over generated art.
 - Do not recreate the Hikari Forge logos; intro uses `Resources/Branding/hf_emblem.png` / `hf_wordmark.png` when supplied.

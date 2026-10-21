@@ -14,5 +14,5 @@
 - Launcher update check needs a real HTTPS manifest URL in launcher.json; until then it opens the store page.
 - Distribution is launcher-only (installer or portable ZIP). `Playtest/` (browser build) is an internal testing tool
   and is not shipped to players.
-- Nights are paced to 10–15 real minutes (owner's request), so a first full week takes roughly 75–95 minutes plus
+- Nights are paced to about 10 real minutes (owner's request), so a first full week takes roughly 65–80 minutes plus
   replays for other endings.

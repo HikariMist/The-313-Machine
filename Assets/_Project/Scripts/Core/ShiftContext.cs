@@ -37,11 +37,11 @@ namespace HikariForge.M313.Core
     public sealed class ShiftContext
     {
         public const float IdleRate = 3.0f;        // reference rate; between customers the clock is paced adaptively
-        public const float MinIdleRate = 0.7f, MaxIdleRate = 4f;
-        /// <summary>Target real length of a night shift (seconds). Design goal: 10-15 minutes.</summary>
-        public static float TargetNightSeconds = 750f;
+        public const float MinIdleRate = 0.7f, MaxIdleRate = 6f;
+        /// <summary>Target real length of a night shift (seconds). Design goal: 10 minutes.</summary>
+        public static float TargetNightSeconds = 600f;
         /// <summary>Expected real time a player spends with one customer, used to plan the idle pace.</summary>
-        public const float ExpectedEncounterSeconds = 70f;
+        public const float ExpectedEncounterSeconds = 60f;
         public const float EncounterRate = 0.25f;  // game minutes per real second during a customer
         public const int SlowRestockMinutes = 12;
         public const int FastRestockMinutes = 2;
@@ -84,6 +84,7 @@ namespace HikariForge.M313.Core
         private EventDef _wrongTime;
         private bool _pendingFail;
         private bool _marginFired;
+        private readonly int _plannedEnd;
 
         public ShiftContext(GameState state, ContentDatabase db, int seed = 313)
             : this(state, db, db.Night(state.Night) ?? new NightDef { Night = state.Night, Title = "Night " + state.Night },
@@ -98,6 +99,9 @@ namespace HikariForge.M313.Core
             Director = new HorrorDirector(seed + state.Night * 97);
             _pendingEncounters = encounters.OrderBy(e => e.Time).ToList();
             _pendingEvents = NightDef.Events.OrderBy(e => e.Time).ToList();
+            // Nights that end in a finale (an ending) stop at the finale, not at 6:00 AM: pace to that instead.
+            var finale = _pendingEncounters.LastOrDefault(e => e.Outcomes.Values.Any(l => l.Any(o => o.Effects.Any(x => x.StartsWith("ending:")))));
+            _plannedEnd = finale != null ? Math.Min(ContentDatabase.ShiftEnd, finale.Time + 15) : ContentDatabase.ShiftEnd;
             // Every shift opens with the night's phone call from the District Office.
             if (NightDef.PhoneCall.Count > 0 && !_pendingEvents.Any(e => e.Type == "phone" && e.Time <= 1))
                 _pendingEvents.Insert(0, new EventDef { Time = 1, Type = "phone", Id = "call_open", Speaker = NightDef.PhoneSpeaker, Lines = NightDef.PhoneCall });
@@ -183,7 +187,7 @@ namespace HikariForge.M313.Core
         private float PacedIdleRate()
         {
             int pending = _pendingEncounters.Count;
-            float gameLeft = ContentDatabase.ShiftEnd - Clock - pending * ExpectedEncounterSeconds * EncounterRate;
+            float gameLeft = _plannedEnd - Clock - pending * ExpectedEncounterSeconds * EncounterRate;
             float realLeft = TargetNightSeconds - RealTime - pending * ExpectedEncounterSeconds;
             if (gameLeft <= 0) return MaxIdleRate;
             if (realLeft <= 20f) return MaxIdleRate;

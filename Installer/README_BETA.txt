@@ -15,7 +15,7 @@ CONTROLS
   E = evidence, Esc = pause / close panels.
 
 WHAT'S IN THE BETA
-  A full week: 7 nights of about 10-15 minutes each. 15 different endings;
+  A full week: 7 nights of about 10 minutes each. 15 different endings;
   finding all 15 unlocks Endless Mode. Upgrades have 3 levels.
   Progress saves automatically at the start and end of every night.
 

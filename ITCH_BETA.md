@@ -25,7 +25,7 @@ I (Claude) cannot log in to itch.io from here; steps 1–7 need your account.
 
 You work the night shift at a lonely roadside vending machine. At exactly 3:13 AM, customers arrive who shouldn't exist. Follow the handbook, check the cameras, watch every reflection, and decide who gets served.
 
-**This beta includes:** a full week of 7 night shifts (about 10–15 minutes each), 15 different endings, 3-level upgrades, and Endless Mode, unlocked once you find all 15 endings. Expect placeholder art for some characters and backgrounds.
+**This beta includes:** a full week of 7 night shifts (about 10 minutes each), 15 different endings, 3-level upgrades, and Endless Mode, unlocked once you find all 15 endings. Expect placeholder art for some characters and backgrounds.
 
 **Install:** run the Setup .exe, or unzip the portable ZIP and run `The313MachineLauncher.exe`, then press PLAY. If SmartScreen warns you, click *More info → Run anyway*.
 **Controls:** mouse · Space/Enter next line · H handbook · M cameras · E evidence · Esc pause.
