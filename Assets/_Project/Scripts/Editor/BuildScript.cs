@@ -13,6 +13,8 @@ namespace HikariForge.M313.EditorTools
     {
         public const string ScenePath = "Assets/_Project/Scenes/Main.unity";
         public const string Output = "Builds/Windows/The313Machine.exe";
+        /// <summary>Same 3:13 AM sign as the launcher and installer (Launcher/Assets/launcher.ico, 256 px frame).</summary>
+        public const string IconPath = "Assets/_Project/Branding/AppIcon.png";
 
         [MenuItem("Hikari Forge/Configure Project")]
         public static void Configure()
@@ -27,6 +29,9 @@ namespace HikariForge.M313.EditorTools
             PlayerSettings.runInBackground = false;
             PlayerSettings.visibleInBackground = true;
             PlayerSettings.resizableWindow = true;
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
+            if (icon != null) PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Unknown, new[] { icon }, IconKind.Application);
+            else Debug.LogWarning("[M313] App icon missing at " + IconPath + "; the exe will use Unity's default icon.");
             if (!File.Exists(ScenePath))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
