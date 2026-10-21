@@ -686,4 +686,90 @@ namespace HikariForge.M313.Tests
             foreach (var x in PlayWeek(6f, 45f, 200f)) Assert.That(x, Is.InRange(9f, 14f), "slow, careful reader");
         }
     }
+
+    public class OrderSizeTests
+    {
+        private static EncounterDef Customer(string id, string request = "COFFEE", bool supernatural = false) =>
+            new EncounterDef { Id = id, Request = request, Supernatural = supernatural };
+
+        [Test]
+        public void OrdersGrowAsTheNightsAndCyclesGoOn()
+        {
+            var ids = Enumerable.Range(0, 40).Select(i => "c" + i).ToList();
+            double Avg(int night, int cycle) => ids.Average(id => ShiftContext.OrderSize(Customer(id), night, cycle));
+            Assert.AreEqual(1.0, Avg(1, 1), "Night 1 customers buy one item");
+            var week = Enumerable.Range(1, 7).Select(n => Avg(n, 1)).ToList();
+            Assert.That(week, Is.Ordered.Ascending);
+            Assert.Greater(week[6], week[1] + 1.5, "late-week orders are clearly bigger");
+            Assert.Greater(Avg(1, 2), Avg(1, 1), "a new cycle starts with bigger orders");
+            Assert.Greater(Avg(7, 2), Avg(7, 1));
+            Assert.LessOrEqual(ids.Max(id => ShiftContext.OrderSize(Customer(id), 30, 9)), ShiftContext.MaxOrder);
+        }
+
+        [Test]
+        public void StoryVisitorsAlwaysWantOneItem()
+        {
+            Assert.AreEqual(1, ShiftContext.OrderSize(Customer("x", supernatural: true), 7, 3));
+            Assert.AreEqual(1, ShiftContext.OrderSize(Customer("x", "UNLISTED"), 7, 3));
+            Assert.AreEqual(1, ShiftContext.OrderSize(Customer("x", ""), 7, 3));
+            Assert.AreEqual(2, ShiftContext.OrderSize(new EncounterDef { Id = "x", Request = "COFFEE", Quantity = 2 }, 1, 1));
+        }
+
+        [Test]
+        public void MultiItemOrdersPayPerItemAndShowOnTheReceipt()
+        {
+            var db = TestContent.Db;
+            var bot = AutoPlayer.TruthSeeker();
+            var s = GameState.NewGame();
+            int items = 0, customers = 0;
+            for (int n = 1; n <= 5; n++)
+            {
+                var ctx = bot.PlayNight(s, db);
+                Assert.AreEqual(ShiftPhase.Ended, ctx.Phase, ctx.FailReason);
+                items += ctx.ItemsSold; customers += ctx.CustomersServed;
+                Campaign.CompleteNight(s, db, ctx);
+            }
+            var multi = s.Transactions.Where(t => t.Receipt.Contains(" X")).ToList();
+            Assert.IsNotEmpty(multi, "later nights should have multi-item receipts");
+            foreach (var t in multi)
+            {
+                int qty = int.Parse(System.Text.RegularExpressions.Regex.Match(t.Receipt, @" X(\d+)").Groups[1].Value);
+                Assert.Greater(qty, 1);
+                Assert.AreEqual(0, t.Amount % qty, t.Receipt);
+            }
+            Assert.Greater(items, customers);
+        }
+
+        [Test]
+        public void RuleTrapCustomersResolveOnTheFirstItem()
+        {
+            var bot = AutoPlayer.TruthSeeker();
+            bot.Policy["n6_motorist"] = new[] { "serve" };
+            var db = TestContent.Db;
+            var s = GameState.NewGame();
+            for (int n = 1; n < 6; n++) Campaign.CompleteNight(s, db, bot.PlayNight(s, db));
+            bot.PlayNight(s, db);
+            var d = s.Decisions.Last(x => x.Encounter == "n6_motorist");
+            Assert.AreEqual("serve:BATTERY", d.Action);
+            Assert.AreNotEqual("good", d.Result);
+            Assert.IsFalse(s.Transactions.Any(t => t.Customer == "Stranded Motorist" && t.Receipt.Contains(" X")));
+        }
+
+        [Test]
+        public void TypicalPlayerFillsMostOrders()
+        {
+            var db = TestContent.Db;
+            var bot = AutoPlayer.TruthSeeker();
+            bot.UpgradeStrategy = "spread";
+            var s = GameState.NewGame();
+            for (int n = 1; n <= 7; n++)
+            {
+                var ctx = bot.PlayNight(s, db);
+                Assert.AreEqual(ShiftPhase.Ended, ctx.Phase, ctx.FailReason);
+                TestContext.WriteLine($"Night {n}: customers {ctx.CustomersServed}, items {ctx.ItemsSold}, cut short {ctx.OrdersCutShort}, earned ${ctx.NightEarnings / 100}");
+                Assert.LessOrEqual(ctx.OrdersCutShort, 2, $"night {n}: stock should cover most orders");
+                if (n < 7) Campaign.CompleteNight(s, db, ctx);
+            }
+        }
+    }
 }

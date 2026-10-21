@@ -7,7 +7,7 @@ namespace HikariForge.M313.Core
         Arrive, Leave, Dispense, DispenseFailed, Receipt, Scare, Ambient, Hallucination, Music, Sfx,
         MachineMessage, Notice, Clue, ClueLost, HandbookChanged, Produced, Stat, Margin, Phone,
         KnockStart, KnockEnd, BlackoutStart, BlackoutEnd, WrongTimeStart, WrongTimeEnd, Jam, JamCleared,
-        Investigation, Sunrise, Failed, Ending, Consumed, Restocked, Reply
+        Investigation, Sunrise, Failed, Ending, Consumed, Restocked, Reply, OrderProgress
     }
 
     /// <summary>A presentation event emitted by the simulation for the Unity layer to render.</summary>

@@ -5,6 +5,7 @@
 - Three-level upgrades, rebalanced wages and prices, paced jumpscares.
 - Animated rain on the title screen, pause menu, in-game feedback screen.
 - First-week tips for Nights 1–3 (can be switched off in Settings).
+- Customers order more items as the week goes on (1 on Night 1, up to 4 by Night 7, more each cycle and Endless round); each item is paid as it drops, and rule traps still trigger on the first item.
 - Launch price set to $5.99.
 
 ## 0.9.0 — first playable (unreleased)

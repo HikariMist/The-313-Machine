@@ -463,7 +463,7 @@ else
                 <span class="name">@(line?.Speaker ?? cur.Def.Name)</span>
                 @if (!string.IsNullOrEmpty(cur.Def.RequestText) || !string.IsNullOrEmpty(cur.Def.Request))
                 {
-                    <span class="wants">Wants: @(cur.Def.RequestText ?? "")@(string.IsNullOrEmpty(cur.Def.RequestText) ? S.Db.Product(cur.Def.Request)?.Name : "")</span>
+                    <span class="wants">Wants: @S.WantsText</span>
                 }
                 @if (cur.Stage == EncounterStage.Awaiting && cur.Def.Patience < 5000)
                 {

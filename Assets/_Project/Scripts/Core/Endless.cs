@@ -67,7 +67,10 @@ namespace HikariForge.M313.Core
                 bool useTest = afterMargin || rng.NextDouble() < 0.12 * round;
                 var pool = useTest ? tests : ordinary;
                 var t = pool[rng.Next(pool.Count)];
-                picks.Add(Clone(t, $"{t.Id}_r{round}_{i}", time, Math.Max(25f, t.Patience - round * 3)));
+                var pick = Clone(t, $"{t.Id}_r{round}_{i}", time, Math.Max(25f, t.Patience - round * 3));
+                // Ordinary customers buy more each round: 2 items in round 1, up to the order cap.
+                if (ShiftContext.OrderSize(pick, 3, 1) > 1) pick.Quantity = Math.Min(ShiftContext.MaxOrder, 1 + (round + 1) / 2 + rng.Next(0, 2));
+                picks.Add(pick);
             }
             return new ShiftContext(s, db, night, picks, seed + round);
         }

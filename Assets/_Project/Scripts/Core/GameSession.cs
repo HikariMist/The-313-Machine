@@ -362,6 +362,9 @@ namespace HikariForge.M313.Core
                         DispenseAt = Now;
                         Sfx("dispense");
                         break;
+                    case PresEventType.OrderProgress:
+                        Flash(e.Value == 1 ? "1 MORE TO GO" : $"{e.Value} MORE TO GO");
+                        break;
                     case PresEventType.DispenseFailed:
                         Sfx("error_beep");
                         Flash(e.Id == "power" ? "NO POWER" : e.Id == "jam" ? "ERROR E-13 — MOTOR JAM" : "SLOT EMPTY");
@@ -621,6 +624,8 @@ namespace HikariForge.M313.Core
                 var product = Db.Product(cur.Def.Request);
                 if (State.Night == 1 && State.TotalServed == 0 && product != null)
                     return $"Click the slot holding {product.Name} (or type its code on the keypad), then press DISPENSE.";
+                if (cur.Wanted > 1 && cur.Given == 0 && State.Night <= 3)
+                    return $"Bigger orders now: dispense {cur.Wanted} of the same item, one at a time. Each one is paid as it drops.";
                 if (cur.Def.Request == "UNLISTED")
                     return "They want something that isn't on the menu. The handbook says what to check first.";
                 if (cur.Def.Supernatural && State.Night == 1)
@@ -628,6 +633,19 @@ namespace HikariForge.M313.Core
                 if (product != null && State.MachineCount(product.Id) == 0)
                     return $"You have no {product.Name} loaded. Refuse, offer something else, or restock between customers.";
                 return null;
+            }
+        }
+
+        /// <summary>"Wants:" label for the current customer, including order size and progress.</summary>
+        public string WantsText
+        {
+            get
+            {
+                var cur = Ctx?.Current;
+                if (cur == null) return null;
+                string wants = !string.IsNullOrEmpty(cur.Def.RequestText) ? cur.Def.RequestText : Db.Product(cur.Def.Request)?.Name;
+                if (string.IsNullOrEmpty(wants) || cur.Wanted <= 1) return wants;
+                return cur.Given > 0 ? $"{wants} x{cur.Wanted}  ({cur.Given}/{cur.Wanted} given)" : $"{wants} x{cur.Wanted}";
             }
         }
 

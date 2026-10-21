@@ -19,6 +19,10 @@ namespace HikariForge.M313.Core
         public string ActionKey;
         public string ServedProduct;
         public bool Acknowledged;   // player spoke to, served or refused this customer
+        public int Wanted = 1;      // items in this order
+        public int Given;           // items already dispensed toward the order
+        public int PaidSoFar;       // cents taken for those items
+        public int Remaining => Wanted - Given;
     }
 
     public sealed class InspectResult
@@ -64,6 +68,10 @@ namespace HikariForge.M313.Core
         public bool PanelOpen { get; private set; }
         public int NightEarnings { get; private set; }
         public int CustomersServed { get; private set; }
+        /// <summary>Items dispensed to customers tonight (a three-item order counts three).</summary>
+        public int ItemsSold { get; private set; }
+        /// <summary>Orders a customer left before receiving every item (refused, timed out or wrong item).</summary>
+        public int OrdersCutShort { get; private set; }
         public int CustomersRefused { get; private set; }
         public string FailReason { get; private set; }
         public List<string> FailLines { get; private set; } = new List<string>();
@@ -304,7 +312,7 @@ namespace HikariForge.M313.Core
 
         private void StartEncounter(EncounterDef def)
         {
-            Current = new ActiveEncounter { Def = def, PatienceLeft = def.Patience };
+            Current = new ActiveEncounter { Def = def, PatienceLeft = def.Patience, Wanted = OrderSize(def, State.Night, State.Cycle) };
             Phase = ShiftPhase.Encounter;
             EncountersSeen++;
             Effects.Apply(def.ArriveEffects, State, Db, this);
@@ -475,6 +483,21 @@ namespace HikariForge.M313.Core
             Emit(PresEventType.Dispense, product, slotCode);
             if (WrongTimeActive && _wrongTime != null) Effects.Apply(_wrongTime.OnServe, State, Db, this);
             Current.Acknowledged = true;
+            if (product == Current.Def.Request && Current.Remaining > 1 && IsPlainSale(PeekOutcome("serve:" + product)))
+            {
+                // Part of a larger order: take payment for this item and wait for the rest.
+                // Anything other than a plain good sale (a rule trap, a scare) resolves on the first item instead.
+                int unit = UnitPrice(Current.Def, product);
+                Current.Given++;
+                ItemsSold++;
+                Current.PaidSoFar += unit;
+                State.Money += unit;
+                State.TotalEarned += unit;
+                NightEarnings += unit;
+                Current.PatienceLeft = Math.Min(Current.Def.Patience, Current.PatienceLeft + 20f);
+                Emit(PresEventType.OrderProgress, product, null, Current.Remaining);
+                return ServeError.None;
+            }
             Resolve("serve:" + product, product);
             return ServeError.None;
         }
@@ -570,14 +593,20 @@ namespace HikariForge.M313.Core
             return null;
         }
 
+        private OutcomeDef PeekOutcome(string key)
+        {
+            var list = FindOutcomes(key);
+            return list?.FirstOrDefault(v => Conditions.Evaluate(v.Condition, State, Db, this)) ?? DefaultOutcome(key, Current.Def);
+        }
+
+        private static bool IsPlainSale(OutcomeDef o) =>
+            o.Result == "good" && o.Paid && string.IsNullOrEmpty(o.Scare) && string.IsNullOrEmpty(o.Receipt);
+
         private void Resolve(string key, string product)
         {
             var cur = Current;
             var def = cur.Def;
-            OutcomeDef outcome = null;
-            var list = FindOutcomes(key);
-            if (list != null) outcome = list.FirstOrDefault(v => Conditions.Evaluate(v.Condition, State, Db, this));
-            if (outcome == null) outcome = DefaultOutcome(key, def);
+            var outcome = PeekOutcome(key);
 
             // "retry" outcomes answer the player without ending the encounter (e.g. a wrong keypad code).
             if (outcome.Result == "retry")
@@ -591,6 +620,7 @@ namespace HikariForge.M313.Core
                 return;
             }
 
+            if (cur.Given > 0 && !(product == def.Request && cur.Remaining == 1)) OrdersCutShort++;
             cur.Outcome = outcome;
             cur.ActionKey = key;
             cur.ServedProduct = product;
@@ -601,22 +631,23 @@ namespace HikariForge.M313.Core
                 int amount = 0;
                 if (outcome.Paid)
                 {
-                    var p = Db.Product(product);
-                    amount = def.Pays > 0 ? def.Pays : (p?.Price ?? 0);
+                    amount = UnitPrice(def, product);
                     State.Money += amount;
                     State.TotalEarned += amount;
                     NightEarnings += amount;
                 }
                 CustomersServed++;
+                ItemsSold++;
                 State.TotalServed++;
+                int quantity = cur.Given + 1, total = amount + cur.PaidSoFar;
                 string receipt = !string.IsNullOrEmpty(outcome.Receipt)
                     ? outcome.Receipt
-                    : DefaultReceipt(product, amount);
+                    : DefaultReceipt(product, total, quantity);
                 State.Transactions.Add(new TransactionRecord
                 {
-                    Night = State.Night, Time = (int)Clock, Customer = def.Name, ProductId = product, Amount = amount, Receipt = receipt
+                    Night = State.Night, Time = (int)Clock, Customer = def.Name, ProductId = product, Amount = total, Receipt = receipt
                 });
-                Emit(PresEventType.Receipt, product, receipt, amount);
+                Emit(PresEventType.Receipt, product, receipt, total);
             }
             else if (key == "refuse" || key == "timeout")
             {
@@ -631,10 +662,31 @@ namespace HikariForge.M313.Core
             if (outcome.Result == "death") _pendingFail = true;
         }
 
-        private string DefaultReceipt(string product, int amount)
+        private int UnitPrice(EncounterDef def, string product) =>
+            def.Pays > 0 ? def.Pays : (Db.Product(product)?.Price ?? 0);
+
+        /// <summary>
+        /// Items an ordinary customer wants: 1 on Night 1, rising every two nights and with each cycle (max 5).
+        /// Supernatural visitors and unlisted or story requests always take a single item.
+        /// </summary>
+        public static int OrderSize(EncounterDef def, int night, int cycle)
+        {
+            if (def.Quantity > 0) return def.Quantity;
+            if (def.Supernatural || string.IsNullOrEmpty(def.Request) || def.Request == "UNLISTED" || def.Request == "TOKEN") return 1;
+            int max = Math.Min(MaxOrder, 1 + (Math.Max(1, night) - 1) / 2 + Math.Max(0, cycle - 1));
+            if (max <= 1) return 1;
+            // Stable per customer and night so a replayed night asks for the same amount.
+            uint h = 2166136261;
+            foreach (char c in def.Id + ":" + night + ":" + cycle) h = (h ^ c) * 16777619;
+            return h % 3 == 0 ? max - 1 : max;
+        }
+
+        public const int MaxOrder = 5;
+
+        private string DefaultReceipt(string product, int amount, int quantity = 1)
         {
             var p = Db.Product(product);
-            string name = p?.Name ?? product;
+            string name = (p?.Name ?? product) + (quantity > 1 ? " x" + quantity : "");
             string time = ContentDatabase.FormatTime(Clock);
             return $"MERIDIAN ROADSIDE SERVICES\nUNIT 313 — KESSLER FLATS\n{time}\n{name.ToUpperInvariant()}  ${amount / 100}.{amount % 100:00}\nTHANK YOU. COME AGAIN.";
         }

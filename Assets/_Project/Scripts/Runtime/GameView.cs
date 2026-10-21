@@ -595,7 +595,7 @@ namespace HikariForge.M313
             Ui.Box(x, y, w, h, new Color(0.03f, 0.035f, 0.05f, 0.92f), Ui.Edge);
             string name = line?.Speaker ?? cur.Def.Name;
             Ui.Text(name.ToUpperInvariant(), x + 20, y + 14, 600, 30, Ui.F.Label, 22, Ui.Sodium, TextAnchor.UpperLeft, false);
-            string wants = !string.IsNullOrEmpty(cur.Def.RequestText) ? cur.Def.RequestText : S.Db.Product(cur.Def.Request)?.Name;
+            string wants = S.WantsText;
             if (!string.IsNullOrEmpty(wants)) Ui.Text("Wants: " + wants, x + 420, y + 14, 600, 30, Ui.F.Lcd, 24, Ui.Emerald, TextAnchor.UpperLeft, false);
             if (cur.Stage == EncounterStage.Awaiting && cur.Def.Patience < 5000)
                 Ui.Meter(x + w - 260, y + 24, 230, 6, cur.PatienceLeft / cur.Def.Patience, Ui.Blood, Ui.Sodium);

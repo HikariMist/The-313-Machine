@@ -182,6 +182,7 @@ namespace HikariForge.M313.Core
                 var err = ctx.Serve(slot.Code);
                 if (err == ShiftContext.ServeError.Jammed) { ctx.OpenPanel(); ctx.ResetMotor(); ctx.ClosePanel(); return; }
                 if (err == ShiftContext.ServeError.NoPower) return; // wait for the lights
+                if (err == ShiftContext.ServeError.None && ctx.Current != null && ctx.Current.Stage != EncounterStage.Resolving) return; // more items in the order
                 q.Dequeue();
             }
         }

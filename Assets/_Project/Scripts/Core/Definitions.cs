@@ -134,6 +134,7 @@ namespace HikariForge.M313.Core
         public List<string> Lines = new List<string>();
         public string Request;    // product id, or "UNLISTED"
         public string RequestText;
+        public int Quantity;      // items per order; 0 = grows with night and cycle, 1 = always a single item
         public int Pays;
         public string PaymentDesc;
         public float Patience = 75f;
