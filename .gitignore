@@ -107,3 +107,20 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# --- Hikari Forge additions ---
+# Local tool outputs (cloud/CI compile checks, generated caches)
+/Tools/**/bin/
+/Tools/**/obj/
+/Launcher/**/bin/
+/Launcher/**/obj/
+/Installer/Output/
+/Release/
+# Secrets — never commit
+*.env
+steam_appid.txt
+**/steamcmd_credentials*
+**/config.vdf
+*.ulf
+*.pfx
+*.p12

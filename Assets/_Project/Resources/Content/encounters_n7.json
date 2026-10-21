@@ -1,0 +1,768 @@
+[
+ {
+  "id": "n7_nurse",
+  "night": 7,
+  "time": "23:25",
+  "character": "nurse",
+  "name": "Nurse Okafor",
+  "portrait": "cust_nurse",
+  "lines": [
+   "*Nurse Okafor, not in scrubs tonight. She came here on purpose.",
+   "I'm not here for aspirin. Well. I am. But I brought you something.",
+   "My mother kept this. A photocopy from the admissions log, the night the bus went in. I think you should have it."
+  ],
+  "request": "ASPIRIN",
+  "pays": 350,
+  "payment": "Exact change, and a folded photocopy.",
+  "inspect": [
+   {
+    "spot": "payment",
+    "label": "Photocopy",
+    "text": "KESSLER COUNTY GENERAL — 10/13/87. 'Female, approx. 35, recovered from shoreline. Persistent rictus. Expired 04:02. Body not located at morning count.'",
+    "clue": "hospital_record"
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Normal."
+   }
+  ],
+  "talk": [
+   {
+    "id": "sign",
+    "text": "\"They want me to sign something tonight.\"",
+    "reply": [
+     "Don't. Whatever it is. My mother said the attendants who sign never come out of the booth.",
+     "She said the machine gets a new face every few years and nobody in this county ever asks why."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:ASPIRIN": {
+    "lines": [
+     "Take care of yourself. I mean it.",
+     "*She drives away slowly, and doesn't look at the water."
+    ],
+    "effects": [
+     "clue:hospital_record"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Close enough. Take care of yourself."
+    ],
+    "effects": [
+     "clue:hospital_record"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Fine. Keep the paper anyway.",
+     "*She leaves it on the counter."
+    ],
+    "effects": [
+     "clue:hospital_record"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n7_crane",
+  "night": 7,
+  "time": "00:15",
+  "character": "crane",
+  "name": "Ellis Crane",
+  "portrait": "cust_crane_wet",
+  "supernatural": true,
+  "condition": "flag:crane_met & !flag:crane_rest",
+  "lines": [
+   "*Mr. Crane, at the glass one last time. The water is up to the curb at the bus stop.",
+   "I don't think I can wait much longer. The water's getting high.",
+   "If you have a fare for me — I think tonight's the last night I could use it."
+  ],
+  "request": "TOKEN",
+  "pays": 0,
+  "patience": 100,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "condition": "flag:crane_told",
+    "text": "He knows. He's ready."
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "condition": "!flag:crane_told",
+    "text": "He still doesn't understand what's happened to him."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection is underwater, looking up at the surface."
+   }
+  ],
+  "talk": [
+   {
+    "id": "tell",
+    "condition": "!flag:crane_told",
+    "text": "Tell him the truth: it's 2026. The bus crashed in 1987.",
+    "reply": [
+     "*He takes it quietly this time, like he'd been waiting to hear it.",
+     "Thank you."
+    ],
+    "effects": [
+     "flag:crane_told=1"
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:TOKEN": [
+    {
+     "condition": "flag:crane_told",
+     "lines": [
+      "*He closes his hand around the token.",
+      "Thank you. For telling me. For all of it.",
+      "*A yellow bus waits at the stop with its doors open. He gets on and sits by the window."
+     ],
+     "paid": false,
+     "effects": [
+      "flag:crane_rest=1"
+     ],
+     "result": "good"
+    },
+    {
+     "lines": [
+      "*He looks at it, baffled.",
+      "A fare for the 2:58? It's coming. It's always coming."
+     ],
+     "paid": false,
+     "result": "bad"
+    }
+   ],
+   "refuse": {
+    "lines": [
+     "*He goes back to the stop and stands in the rising water."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n7_mimic",
+  "night": 7,
+  "time": "01:10",
+  "character": "mimic",
+  "name": "Walter Pruitt?",
+  "portrait": "cust_mimic",
+  "supernatural": true,
+  "rules": [
+   "B1",
+   "A5"
+  ],
+  "reflectionLags": true,
+  "music": "wrong_customer",
+  "lines": [
+   "*A soaked bus driver shuffles up. W. PRUITT on the name tag.",
+   "I came back. Couldn't leave without saying goodbye.",
+   "Water. Please. One last one."
+  ],
+  "request": "WATER",
+  "pays": 150,
+  "payment": "Six dry quarters.",
+  "patience": 75,
+  "inspect": [
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Its reflection is not moving at all. Then it looks at you, on its own, and lifts one finger to its lips."
+   },
+   {
+    "spot": "payment",
+    "label": "Coins",
+    "text": "Dry. Walter's coins are never dry."
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "condition": "flag:walter_ready",
+    "text": "Walter said goodbye two nights ago. He wasn't dripping when he left."
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "condition": "!flag:walter_ready",
+    "text": "Walter's face, held very carefully in place."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2."
+   },
+   {
+    "cam": "cam4",
+    "upgrade": "monitor",
+    "state": "empty",
+    "note": "CAM 4: the road. No one walked up the road to get here."
+   }
+  ],
+  "talk": [
+   {
+    "id": "bye",
+    "text": "\"I thought you'd already gone, Walter.\"",
+    "reply": [
+     "Gone. Yes. Gone. Water, please."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:WATER": {
+    "lines": [
+     "*It doesn't drink the water. It pours it on the counter, and the water keeps coming, and it keeps rising, and the booth fills like a bus cabin filling up."
+    ],
+    "result": "death",
+    "scare": "js_drowned"
+   },
+   "refuse": {
+    "lines": [
+     "*It shows you all of its teeth. All of them.",
+     "*Then it walks backwards into the flood and is gone."
+    ],
+    "effects": [
+     "instability+8"
+    ],
+    "scare": "js_mimic",
+    "result": "good"
+   },
+   "timeout": {
+    "lines": [
+     "*It waits. You wait longer. It goes."
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Water."
+    ],
+    "paid": false,
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n7_lily",
+  "night": 7,
+  "time": "02:40",
+  "character": "lily",
+  "name": "Lily",
+  "portrait": "cust_lily",
+  "supernatural": true,
+  "condition": "flag:lily_safe",
+  "lines": [
+   "*Lily climbs out from under the counter, where she's been all night, and stands beside you, looking up.",
+   "*She takes your hand and puts something in it: thirteen old coins, wrapped in a blank receipt.",
+   "*She closes your fingers around them and points at Row E."
+  ],
+  "request": "",
+  "patience": 120,
+  "inspect": [
+   {
+    "spot": "hands",
+    "label": "Coins",
+    "text": "Thirteen coins. One from each of them. Exact change."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "In the glass, Lily is standing next to a woman with a soft, crooked smile. They're holding hands."
+   }
+  ],
+  "talk": [
+   {
+    "id": "thanks",
+    "end": true,
+    "text": "Put the coins in Row E.",
+    "reply": []
+   }
+  ],
+  "outcomes": {
+   "choice:thanks": {
+    "lines": [
+     "*You feed the coins into the machine one at a time. Row E lights up gold.",
+     "*Lily nods, satisfied, and goes back under the counter to wait."
+    ],
+    "effects": [
+     "produce:EXACT",
+     "flag:exact_change=1"
+    ],
+    "result": "good"
+   },
+   "timeout": {
+    "lines": [
+     "*She presses the coins into the slot herself, then goes back under the counter."
+    ],
+    "effects": [
+     "produce:EXACT",
+     "flag:exact_change=1"
+    ],
+    "result": "good"
+   },
+   "refuse": {
+    "lines": [
+     "*She presses the coins into the slot herself, then goes back under the counter."
+    ],
+    "effects": [
+     "produce:EXACT",
+     "flag:exact_change=1"
+    ],
+    "result": "good"
+   }
+  }
+ },
+ {
+  "id": "n7_hollow",
+  "night": 7,
+  "time": "03:30",
+  "character": "smile",
+  "name": "Mrs. Marsh",
+  "portrait": "cust_smile",
+  "supernatural": true,
+  "rules": [
+   "A3"
+  ],
+  "music": "dont_look_behind_you",
+  "condition": "flag:smile_met",
+  "lines": [
+   "*Mrs. Marsh stands at the glass, curls perfect, coat neat, smile almost normal again.",
+   "Hello, dear. I'm so sorry about all the fuss. I've come to my senses.",
+   "I just want to say goodbye to my little girl. Won't you let me?"
+  ],
+  "request": "UNLISTED",
+  "requestText": "To say goodbye",
+  "pays": 0,
+  "patience": 28,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "A pleasant face. The smile is exactly the right size. That's what's wrong with it."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection is there. It is facing the other way — toward the stockroom."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam1",
+    "state": "present",
+    "note": "CAM 1: Mrs. Marsh, at the machine."
+   },
+   {
+    "cam": "cam3",
+    "state": "other:cust_smile_3",
+    "note": "CAM 3 (stockroom): the Hollow is INSIDE the stockroom, behind the door, at the same moment. Smiling at the camera."
+   },
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2."
+   }
+  ],
+  "talk": [
+   {
+    "id": "goodbye",
+    "end": true,
+    "text": "\"...All right. Say goodbye.\"",
+    "reply": []
+   },
+   {
+    "id": "no",
+    "end": true,
+    "text": "\"No. Leave.\"",
+    "reply": []
+   }
+  ],
+  "outcomes": {
+   "timeout": {
+    "lines": [
+     "*You don't speak. You don't move. You count your breaths.",
+     "*The woman at the glass waits, and waits, and her smile slowly sags, and then she simply is not there.",
+     "*On CAM 3, the stockroom is empty. The door, which had been opening, clicks shut."
+    ],
+    "effects": [
+     "flag:a3_obeyed=1"
+    ],
+    "result": "good"
+   },
+   "choice:goodbye": {
+    "lines": [
+     "*\"Thank you,\" says the woman at the glass.",
+     "*The stockroom door opens behind you."
+    ],
+    "result": "death",
+    "scare": "js_child_behind"
+   },
+   "choice:no": {
+    "lines": [
+     "*The woman at the glass smiles. 'You can see me,' she says.",
+     "*Behind you, the stockroom door opens."
+    ],
+    "result": "death",
+    "scare": "js_child_behind"
+   },
+   "refuse": {
+    "lines": [
+     "*You shake your head at her. She smiles. She knows you see her.",
+     "*Behind you, the stockroom door opens."
+    ],
+    "result": "death",
+    "scare": "js_child_behind"
+   },
+   "serve:*": {
+    "lines": [
+     "*The moment you touch the keypad, she knows you've noticed her.",
+     "*Behind you, the stockroom door opens."
+    ],
+    "result": "death",
+    "scare": "js_child_behind"
+   }
+  }
+ },
+ {
+  "id": "n7_mara",
+  "night": 7,
+  "time": "04:20",
+  "character": "mara",
+  "name": "Mara Quill",
+  "portrait": "cust_mara",
+  "supernatural": true,
+  "music": "employee_no_0",
+  "lines": [
+   "*Mara stands at the glass. The water is up to her ankles and she doesn't seem to notice.",
+   "It's almost time. He comes at five.",
+   "Whatever you choose — thank you. For listening to me. Nobody else did."
+  ],
+  "request": "",
+  "patience": 120,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Scared. Hopeful. Trying not to be either."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "In the glass, she's wearing a badge that reads 0412."
+   }
+  ],
+  "talk": [
+   {
+    "id": "ready",
+    "text": "\"Is everything ready?\"",
+    "reply": [
+     "Let me look.",
+     "*She closes her eyes.",
+     "Walter... ",
+     "*If Walter is ready, she smiles. If not, she doesn't.",
+     "Mr. Crane... and Lily... You'll know. You've been paying attention. I can tell."
+    ]
+   },
+   {
+    "id": "code",
+    "text": "\"Remind me — the code?\"",
+    "reply": [
+     "Month and day. The night it happened. Not the time. Never the time.",
+     "It was in the paper. It was on his ticket. Lily drew it for you."
+    ]
+   }
+  ],
+  "outcomes": {
+   "refuse": {
+    "lines": [
+     "*She smiles and steps back into the glass."
+    ],
+    "result": "neutral"
+   },
+   "timeout": {
+    "lines": [
+     "*She steps back into the glass."
+    ],
+    "result": "neutral"
+   },
+   "serve:COLA": {
+    "lines": [
+     "*She laughs, really laughs.",
+     "Okay. For luck."
+    ],
+    "paid": false,
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "*She smiles and steps back into the glass."
+    ],
+    "paid": false,
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n7_collector",
+  "night": 7,
+  "time": "05:00",
+  "character": "collector",
+  "name": "The Collector",
+  "portrait": "cust_collector_true",
+  "supernatural": true,
+  "music": "last_transaction",
+  "patience": 9999,
+  "arriveScare": "js_final",
+  "lines": [
+   "*The Collector arrives at five o'clock exactly. The flood parts around him. He opens his ledger on the counter, and for the first time you see all of it — every name, every coin, and the blank line at the bottom with ATTENDANT written above it.",
+   "Good morning. Almost.",
+   "Seven nights. Exemplary service. Meridian is delighted, and so am I.",
+   "Here are the terms. You sign, and you never want for anything again. You keep the booth. You keep the lights on. Forever.",
+   "Or you refuse, and you go home with nothing, and someone else sits here next week.",
+   "Take your time. I have always had time."
+  ],
+  "request": "",
+  "pays": 0,
+  "inspect": [
+   {
+    "spot": "hands",
+    "label": "Ledger",
+    "text": "Thirteen names from Coach 313. QUILL, M. And a blank line.",
+    "clue": "collector_ledger"
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "In the glass there is no man and no coat, only a long shape in the road with its arms out, in front of a bus that hasn't hit the water yet."
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "You look. For the first time, there's nothing stopping you. There's nothing there to see."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "CAM 2: the unit's display reads 3:13, and the keypad below it is glowing."
+   },
+   {
+    "cam": "cam0",
+    "state": "present",
+    "note": "CAM 0: you, at the counter. Mara, inside the glass, holding up ten fingers, then one, then three."
+   }
+  ],
+  "talk": [
+   {
+    "id": "sign",
+    "end": true,
+    "text": "Sign the ledger.",
+    "reply": []
+   },
+   {
+    "id": "refuse",
+    "end": true,
+    "text": "\"No. I'm going home.\"",
+    "reply": []
+   },
+   {
+    "id": "names",
+    "condition": "clue:manifest",
+    "text": "Read the names on the manifest aloud.",
+    "reply": [
+     "*You read them. Walter Pruitt. Ellis Crane. Adeline Marsh. Lily Marsh. Tomas Reyes. June Albright. Harold and Ruth Bell. Samuel Okonkwo. Della Ferris. Ivan Petrov. Grace Lin. Marcus Webb.",
+     "*With each name the Collector's ledger flinches, as if someone flicked it.",
+     "THE COLLECTOR: \"Where did you get that?\""
+    ],
+    "effects": [
+     "flag:names_read=1"
+    ]
+   },
+   {
+    "id": "why",
+    "text": "\"Why 3:13?\"",
+    "reply": [
+     "Because that's when I was standing in the road. A minute I liked very much. I've kept it ever since."
+    ]
+   }
+  ],
+  "outcomes": {
+   "choice:sign": [
+    {
+     "condition": "flag:hale_told",
+     "lines": [
+      "*You sign your name on the blank line."
+     ],
+     "effects": [
+      "flag:signed=1",
+      "ending:company_man"
+     ],
+     "result": "neutral"
+    },
+    {
+     "condition": "flag:mara_trust>=2",
+     "lines": [
+      "*You pick up the pen. You think about Mara, and read the fine print."
+     ],
+     "effects": [
+      "flag:signed=1",
+      "ending:maras_shift"
+     ],
+     "result": "neutral"
+    },
+    {
+     "lines": [
+      "*You sign your name on the blank line."
+     ],
+     "effects": [
+      "flag:signed=1",
+      "ending:replacement"
+     ],
+     "result": "neutral"
+    }
+   ],
+   "choice:refuse": [
+    {
+     "condition": "bond>=4",
+     "lines": [
+      "*You say no."
+     ],
+     "effects": [
+      "flag:signed=1",
+      "ending:debt"
+     ],
+     "result": "neutral"
+    },
+    {
+     "condition": "flag:lily_safe & flag:crane_rest & flag:walter_ready",
+     "lines": [
+      "*You say no, and you mean it."
+     ],
+     "effects": [
+      "ending:ones_who_left"
+     ],
+     "result": "neutral"
+    },
+    {
+     "condition": "flag:lily_safe",
+     "lines": [
+      "*You say no, and you mean it. Under the counter, a small hand squeezes your ankle."
+     ],
+     "effects": [
+      "ending:together"
+     ],
+     "result": "neutral"
+    },
+    {
+     "lines": [
+      "*You say no, and you mean it."
+     ],
+     "effects": [
+      "ending:escape"
+     ],
+     "result": "neutral"
+    }
+   ],
+   "code:1013": [
+    {
+     "condition": "clue:manifest & flag:lily_safe & flag:crane_rest & flag:walter_ready",
+     "lines": [
+      "*You open the maintenance panel and press four keys. One. Zero. One. Three.",
+      "*The keypad turns gold."
+     ],
+     "effects": [
+      "flag:truth_unlocked=1",
+      "ending:truth"
+     ],
+     "result": "good"
+    },
+    {
+     "condition": "!clue:manifest",
+     "lines": [
+      "*You open the maintenance panel and press four keys. One. Zero. One. Three.",
+      "*The keypad turns gold, then white."
+     ],
+     "effects": [
+      "ending:nameless"
+     ],
+     "result": "neutral"
+    },
+    {
+     "condition": "!flag:walter_ready",
+     "lines": [
+      "*One. Zero. One. Three. The keypad turns gold."
+     ],
+     "effects": [
+      "ending:driver"
+     ],
+     "result": "neutral"
+    },
+    {
+     "condition": "!flag:crane_rest",
+     "lines": [
+      "*One. Zero. One. Three. The keypad turns gold."
+     ],
+     "effects": [
+      "ending:last_passenger"
+     ],
+     "result": "neutral"
+    },
+    {
+     "lines": [
+      "*One. Zero. One. Three. The keypad turns gold."
+     ],
+     "effects": [
+      "ending:empty_seat"
+     ],
+     "result": "neutral"
+    }
+   ],
+   "code:0313": {
+    "lines": [
+     "*You press 0-3-1-3. The keypad flashes purple."
+    ],
+    "effects": [
+     "ending:wrong_minute"
+    ],
+    "scare": "js_collector",
+    "result": "neutral"
+   },
+   "code:*": {
+    "result": "retry",
+    "lines": [
+     "*The keypad beeps once. ACCESS DENIED."
+    ]
+   },
+   "serve:EXACT": {
+    "paid": false,
+    "lines": [
+     "*The thirteen coins clatter into the tray."
+    ],
+    "effects": [
+     "ending:paid_in_full"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "result": "retry",
+    "paid": false,
+    "lines": [
+     "THE COLLECTOR: \"I'm not here to buy anything. I'm here to settle.\""
+    ]
+   }
+  }
+ }
+]

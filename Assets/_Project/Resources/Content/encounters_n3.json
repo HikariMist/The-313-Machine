@@ -1,0 +1,761 @@
+[
+ {
+  "id": "n3_del",
+  "night": 3,
+  "time": "23:15",
+  "character": "del",
+  "name": "Del Haskins",
+  "portrait": "cust_del",
+  "lines": [
+   "*Del shakes rain off his cap. He looks pale.",
+   "Hey, kid. Gimme one of those VOLT things. I need to stay sharp tonight.",
+   "Nearly hit somebody on the curve. Little girl. Yellow raincoat. Standing right in the road."
+  ],
+  "request": "ENERGY",
+  "pays": 300,
+  "payment": "Three bills, shaking slightly.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Gray around the mouth. His hands won't stop shaking."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Normal."
+   }
+  ],
+  "talk": [
+   {
+    "id": "girl",
+    "text": "Was she okay?",
+    "reply": [
+     "I got out to look. Nobody there. Just wet footprints going toward the water. Little ones.",
+     "Then something big stepped out of the trees behind them. Tall. Real tall. I got back in the truck."
+    ]
+   },
+   {
+    "id": "rest",
+    "text": "Maybe pull over and sleep for a while.",
+    "reply": [
+     "Can't. Got a load due in Holloway at six. I'll be fine. Always am."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:ENERGY": {
+    "lines": [
+     "Thanks, kid. Hey — if I don't come by tomorrow, don't worry about it, all right?",
+     "*He climbs back into his rig. His taillights disappear around the reservoir curve."
+    ],
+    "effects": [
+     "flag:del_n3=1"
+    ],
+    "result": "good"
+   },
+   "serve:COFFEE": {
+    "lines": [
+     "Coffee works. Thanks, kid.",
+     "*He climbs back into his rig. His taillights disappear around the reservoir curve."
+    ],
+    "effects": [
+     "flag:del_n3=1"
+    ],
+    "result": "good"
+   },
+   "refuse": {
+    "lines": [
+     "Fine. I'll manage.",
+     "*His taillights disappear around the reservoir curve."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n3_student",
+  "night": 3,
+  "time": "23:50",
+  "character": "student",
+  "name": "College Student",
+  "portrait": "cust_student",
+  "lines": [
+   "*The student from the first night. Same hoodie. Same 3% phone.",
+   "Hi — sorry — do you have anything with caffeine? I've got four more hours of driving.",
+   "...Wait. Have I been here before?"
+  ],
+  "request": "ENERGY",
+  "pays": 300,
+  "payment": "Exact change. Same coins as last time, you'd swear.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Exhausted. Confused. Real."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection is already there — it was standing at the machine before she arrived."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE 104  TEMP 36.5°C  RESIDUE: MODERATE (repeated exposure)"
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "present",
+    "note": "CAM 2 shows two of her: one at the machine, one standing a little behind, looking at the booth."
+   }
+  ],
+  "talk": [
+   {
+    "id": "before",
+    "text": "You were here three nights ago.",
+    "reply": [
+     "No — I left Holloway tonight. I've never... my GPS keeps routing me back here. Every time I take the curve, I end up at this stop.",
+     "That's not possible, right? Tell me that's not possible."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:ENERGY": {
+    "lines": [
+     "Thanks. Okay. I'm going to take the other road this time.",
+     "*She leaves. Her extra reflection doesn't. It stays at the glass until you look away."
+    ],
+    "scare": "reflection_linger",
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Thanks. I'm taking the other road this time."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Okay. Okay. I'll just... go."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n3_crane",
+  "night": 3,
+  "time": "00:30",
+  "character": "crane",
+  "name": "The Passenger",
+  "portrait": "cust_crane",
+  "supernatural": true,
+  "condition": "flag:crane_met",
+  "lines": [
+   "*Mr. Crane, dry again, glasses fogged.",
+   "Evening! Is the 2:58 running late?",
+   "I've lost my ticket, I think. Have you seen it? Brown stub, Meridian Coach Lines."
+  ],
+  "request": "COFFEE",
+  "pays": 250,
+  "payment": "1985 bills.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "condition": "flag:crane_told",
+    "text": "He looks at you like he's trying to remember something you told him. Something important."
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "condition": "!flag:crane_told",
+    "text": "The same polite, harried face. He doesn't remember you at all."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection is wet to the knees."
+   }
+  ],
+  "talk": [
+   {
+    "id": "ticket",
+    "condition": "clue:ticket_stub",
+    "text": "Describe his ticket: Coach 313, October 13th, 1987.",
+    "reply": [
+     "*He goes still.",
+     "October. Yes. That's right. How did you know that?",
+     "...You told me something, didn't you. Before. I can't hold onto it."
+    ],
+    "effects": [
+     "flag:crane_ticket=1"
+    ]
+   },
+   {
+    "id": "remind",
+    "condition": "flag:crane_told",
+    "text": "\"Mr. Crane. Remember what I told you.\"",
+    "reply": [
+     "*He closes his eyes.",
+     "Twenty-twenty-six. Yes. I remember now. It comes and goes."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:COFFEE": {
+    "lines": [
+     "Thank you. You're very kind. I feel like you're always very kind.",
+     "*He goes back to the stop."
+    ],
+    "result": "good"
+   },
+   "refuse": {
+    "lines": [
+     "Oh. All right."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n3_collector",
+  "night": 3,
+  "time": "01:20",
+  "character": "collector",
+  "name": "The Collector",
+  "portrait": "cust_collector",
+  "supernatural": true,
+  "rules": [
+   "C1",
+   "D2",
+   "A5"
+  ],
+  "music": "wrong_customer",
+  "lines": [
+   "*The Collector, ledger tucked under one arm.",
+   "Good evening again. You'll have noticed the handbook has been updated. Rules change. That's what makes them interesting.",
+   "I'd like to make you a better offer. Anything from Row E. Twenty-five dollars.",
+   "Or — if Row E is empty — just your receipt roll. The used one."
+  ],
+  "request": "UNLISTED",
+  "requestText": "Anything from Row E, or your used receipt roll",
+  "pays": 2500,
+  "payment": "Twenty-five dollars in bills with no faces on them.",
+  "patience": 80,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "There is a face under the hat. You are fairly sure of that. You can't say anything else about it."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection is writing in the ledger, even though he isn't."
+   },
+   {
+    "spot": "hands",
+    "label": "Ledger",
+    "text": "The ledger is open a crack. The newest line has your handwriting on it.",
+    "clue": "collector_ledger"
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "CAM 2: no one at the unit."
+   }
+  ],
+  "talk": [
+   {
+    "id": "rules",
+    "text": "\"Did you put that page in my handbook?\"",
+    "reply": [
+     "*He chuckles.",
+     "I don't work for Meridian. I'm their client. A client may make suggestions.",
+     "Whether you follow them is entirely your business."
+    ]
+   },
+   {
+    "id": "roll",
+    "end": true,
+    "text": "Give him the used receipt roll.",
+    "reply": []
+   }
+  ],
+  "outcomes": {
+   "serve:*": {
+    "lines": [
+     "That isn't what I asked for. But I'll remember the gesture."
+    ],
+    "paid": false,
+    "result": "neutral"
+   },
+   "choice:roll": {
+    "lines": [
+     "*You hand him the curl of used receipts. Every one of your transactions. Every customer's name.",
+     "He tucks it into his ledger like a pressed flower.",
+     "Very good. Very, very good."
+    ],
+    "effects": [
+     "bond+1",
+     "money+2500",
+     "flag:gave_receipts=1"
+    ],
+    "result": "bad"
+   },
+   "refuse": {
+    "lines": [
+     "You're consistent. I admire consistency. It makes people so easy to predict.",
+     "*He's gone."
+    ],
+    "effects": [
+     "flag:refused_collector+1"
+    ],
+    "result": "good"
+   },
+   "serve:UNLABELED": {
+    "lines": [
+     "*He accepts the warm can, turns it in his glove, and smiles beneath the brim.",
+     "Thank you. Our account grows."
+    ],
+    "effects": [
+     "bond+1",
+     "flag:sold_can=1"
+    ],
+    "result": "bad"
+   }
+  }
+ },
+ {
+  "id": "n3_lily",
+  "night": 3,
+  "time": "02:15",
+  "character": "lily",
+  "name": "The Silent Child",
+  "portrait": "cust_lily",
+  "supernatural": true,
+  "condition": "!flag:lily_taken",
+  "lines": [
+   "*The girl in the yellow raincoat, rain beading on her hood.",
+   "*She presses a new drawing to the glass, then taps the salt slot. She mimes pouring something in a line on the ground.",
+   "*She points toward the bus stop, where a woman's silhouette waits in the rain."
+  ],
+  "request": "SALT",
+  "pays": 0,
+  "payment": "She leaves the drawing on the tray.",
+  "patience": 90,
+  "inspect": [
+   {
+    "spot": "payment",
+    "label": "Drawing",
+    "text": "The machine, drawn row by row in crayon. Behind the glass, between the cans, a woman's face with a name tag that says 0.",
+    "clue": "drawing_inside"
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "She's trembling. She keeps glancing at the bus stop."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection matches her."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam1",
+    "state": "extra:cust_smile_2",
+    "note": "CAM 1: the Smiling Woman is standing at the bus stop, facing the machine. She is not moving."
+   }
+  ],
+  "talk": [
+   {
+    "id": "salt",
+    "text": "\"You want salt? What for?\"",
+    "reply": [
+     "*She points at the bus stop. She makes a face with a huge smile using her fingers. Then she draws a line in the air between herself and the stop."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:SALT": {
+    "lines": [
+     "*She takes the packet and pours a careful line of salt across the edge of the lot, between the machine and the bus stop.",
+     "*Out at the stop, the woman's silhouette takes one step forward. Then stops. Then steps back.",
+     "*The girl looks at you and, for the first time, almost smiles."
+    ],
+    "paid": false,
+    "effects": [
+     "flag:lily_trust+1",
+     "flag:salt_line=1",
+     "clue:drawing_inside"
+    ],
+    "result": "good"
+   },
+   "serve:GUM": {
+    "lines": [
+     "*She takes the gum but keeps pointing at the salt slot, urgently. Then she runs."
+    ],
+    "paid": false,
+    "effects": [
+     "clue:drawing_inside"
+    ],
+    "result": "neutral"
+   },
+   "serve:*": {
+    "lines": [
+     "*She shakes her head and points at the salt again. Then she runs."
+    ],
+    "paid": false,
+    "effects": [
+     "clue:drawing_inside"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*She leaves the drawing and runs into the rain."
+    ],
+    "effects": [
+     "clue:drawing_inside"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n3_mimic",
+  "night": 3,
+  "time": "03:30",
+  "character": "mimic",
+  "name": "The Drenched Man?",
+  "portrait": "cust_mimic",
+  "supernatural": true,
+  "rules": [
+   "B1",
+   "B2",
+   "A5"
+  ],
+  "music": "wrong_customer",
+  "reflectionLags": true,
+  "lines": [
+   "*The Drenched Man shuffles up to the machine, soaked, dripping.",
+   "...Water. Please.",
+   "It's so dry. Down there. So dry."
+  ],
+  "request": "WATER",
+  "pays": 150,
+  "payment": "Six quarters. They are dry.",
+  "patience": 80,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Gray skin, blue lips, clouded eyes. It is Walter's face. It is exactly Walter's face, as if copied from a photograph."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Its reflection doesn't move with it. When it sways, the reflection stays still — and then turns its head to look at you on its own."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "upgrade": "lighting",
+    "text": "Under the brighter tubes: the reflection is not wet at all. It is grinning."
+   },
+   {
+    "spot": "payment",
+    "label": "Coins",
+    "text": "The quarters are dry. Walter's were always wet."
+   },
+   {
+    "spot": "clothes",
+    "label": "Uniform",
+    "text": "MERIDIAN COACH LINES. The name tag says W. PRUITT, but the letters are backwards, like they were copied from a reflection."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE: NONE.  RESIDUE: ABNORMAL — MATCHES NO RECORDED PATTERN.  DISPOSITION: HUNGRY. HUNGRY. HUNGRY."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2."
+   },
+   {
+    "cam": "cam1",
+    "state": "present",
+    "note": "CAM 1: the figure at the machine. Far behind it, at the edge of the reservoir, another soaked man in a driver's uniform is standing still, watching."
+   },
+   {
+    "cam": "cam4",
+    "state": "extra:cust_walter",
+    "upgrade": "monitor",
+    "note": "CAM 4: Walter Pruitt is standing on the road shoulder, a long way from the machine, shaking his head."
+   }
+  ],
+  "talk": [
+   {
+    "id": "walter",
+    "text": "\"Walter?\"",
+    "reply": [
+     "Yes. Yes. Walter. Walter. That's me. Water, please."
+    ]
+   },
+   {
+    "id": "route",
+    "text": "\"What was your route?\"",
+    "reply": [
+     "...Route. Yes. The route. Water, please."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:WATER": {
+    "lines": [
+     "*It takes the bottle. It doesn't drink. It opens its mouth, and keeps opening it.",
+     "*The water in the bottle — in every bottle in the machine — begins to boil."
+    ],
+    "result": "death",
+    "scare": "js_drowned"
+   },
+   "serve:*": {
+    "lines": [
+     "*It drops the item without looking at it.",
+     "Water.",
+     "*It leaves, and its reflection leaves a few seconds later, walking backwards."
+    ],
+    "paid": false,
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*For a moment its face slides, like wet paper, and there's nothing underneath.",
+     "*Then it's Walter's face again, smiling far too wide, and it walks backwards into the dark."
+    ],
+    "effects": [
+     "flag:refused_mimic+1",
+     "instability+6"
+    ],
+    "scare": "face_glass",
+    "result": "good"
+   },
+   "timeout": {
+    "lines": [
+     "*It waits. Its reflection waits longer. Eventually both are gone."
+    ],
+    "effects": [
+     "flag:refused_mimic+1"
+    ],
+    "result": "good"
+   }
+  }
+ },
+ {
+  "id": "n3_walter",
+  "night": 3,
+  "time": "04:10",
+  "character": "walter",
+  "name": "The Drenched Man",
+  "portrait": "cust_walter",
+  "supernatural": true,
+  "rules": [
+   "B1",
+   "B2"
+  ],
+  "lines": [
+   "*Another soaked man shuffles up. Walter — the real one. His coins drip on the counter.",
+   "Did you give that thing water?",
+   "...Good. Good. Don't ever. It learns faces. It learned mine.",
+   "Water, please. If you'll still have me."
+  ],
+  "request": "WATER",
+  "pays": 150,
+  "payment": "Wet 1987 quarters.",
+  "patience": 90,
+  "inspect": [
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection drips in time with him. It moves exactly as he does."
+   },
+   {
+    "spot": "payment",
+    "label": "Coins",
+    "text": "Wet. Always wet."
+   },
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Sad, patient, unmistakably the same man as the first night."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2, like the first night. The puddle spreads the same way."
+   }
+  ],
+  "talk": [
+   {
+    "id": "machine",
+    "text": "\"What is this machine, Walter?\"",
+    "reply": [
+     "They pulled my bus out of the reservoir in '88. Meridian did. Didn't scrap it.",
+     "They built that machine out of it. That's why we come here, all of us. It's the last stop."
+    ],
+    "effects": [
+     "clue:walter_bus"
+    ]
+   },
+   {
+    "id": "swerve",
+    "text": "\"What happened that night?\"",
+    "reply": [
+     "Something was standing in the road. Tall. In a long coat. I swerved.",
+     "I keep thinking if I'd just hit him..."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:WATER": {
+    "lines": [
+     "*He drinks, slow this time.",
+     "Thank you. One more and I think I'll be ready. Ready to go.",
+     "*He walks back toward the water."
+    ],
+    "effects": [
+     "flag:walter_rest+1"
+    ],
+    "result": "good"
+   },
+   "refuse": {
+    "lines": [
+     "*He nods.",
+     "I understand. Hard to tell us apart now."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n3_smile",
+  "night": 3,
+  "time": "05:30",
+  "character": "smile",
+  "name": "The Smiling Woman",
+  "portrait": "cust_smile_2",
+  "supernatural": true,
+  "rules": [
+   "C3"
+  ],
+  "condition": "flag:smile_met",
+  "lines": [
+   "*Mrs. Marsh, at the edge of the light.",
+   "Hello, dear. You've seen her again, haven't you? She leaves salt everywhere. Such a messy child."
+  ],
+  "request": "GUM",
+  "pays": 100,
+  "payment": "A warm coin.",
+  "patience": 70,
+  "inspect": [
+   {
+    "spot": "face",
+    "condition": "flag:salt_line",
+    "label": "Face",
+    "text": "She stays well back, on the far side of the salt line. Her smile is very wide, and very still."
+   },
+   {
+    "spot": "face",
+    "condition": "!flag:salt_line",
+    "label": "Face",
+    "text": "She's close to the glass. Close enough that her breath should fog it. It doesn't."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection has its hands pressed to the glass from the inside."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2."
+   }
+  ],
+  "talk": [
+   {
+    "id": "tell",
+    "condition": "flag:lily_met",
+    "text": "\"She was here. She was scared of you.\"",
+    "reply": [
+     "Scared? Of her own mother?",
+     "*The smile doesn't move. Something behind it does.",
+     "Thank you, dear. That's very helpful."
+    ],
+    "effects": [
+     "flag:lily_exposed+1"
+    ]
+   },
+   {
+    "id": "deny",
+    "text": "\"I don't know where your daughter is.\"",
+    "reply": [
+     "You're a terrible liar. I like that in an attendant."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:GUM": {
+    "lines": [
+     "*She takes the gum without looking at it.",
+     "She'll come for it. They always come for the sweet things."
+    ],
+    "result": "neutral"
+   },
+   "serve:*": {
+    "lines": [
+     "*She lets it fall."
+    ],
+    "result": "neutral"
+   },
+   "refuse": [
+    {
+     "condition": "flag:salt_line",
+     "lines": [
+      "*She tries to step closer, and can't. The salt line glitters.",
+      "*Her smile stays. Her eyes don't."
+     ],
+     "scare": "face_glass",
+     "result": "good"
+    },
+    {
+     "lines": [
+      "*She slaps her palm against the glass. The whole machine rings like a bell.",
+      "Another time."
+     ],
+     "effects": [
+      "instability+8"
+     ],
+     "scare": "face_glass",
+     "result": "neutral"
+    }
+   ]
+  }
+ }
+]

@@ -1,0 +1,225 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using HikariForge.M313.Core;
+
+namespace HikariForge.M313.Tests
+{
+    /// <summary>Loads content JSON straight from disk; works under Unity Test Runner and dotnet test.</summary>
+    public static class TestContent
+    {
+        private static ContentDatabase _db;
+
+        public static string ProjectRoot()
+        {
+            foreach (var start in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+            {
+                var dir = new DirectoryInfo(start);
+                while (dir != null)
+                {
+                    if (Directory.Exists(Path.Combine(dir.FullName, "Assets", "_Project"))) return dir.FullName;
+                    dir = dir.Parent;
+                }
+            }
+            throw new DirectoryNotFoundException("Could not locate the Unity project root (Assets/_Project).");
+        }
+
+        public static string ContentDir => Path.Combine(ProjectRoot(), "Assets", "_Project", "Resources", "Content");
+
+        public static ContentDatabase Db => _db ?? (_db = ContentDatabase.Load(name =>
+        {
+            var path = Path.Combine(ContentDir, name + ".json");
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        }));
+    }
+
+    /// <summary>
+    /// A scripted player. Plays a whole night through the same API the Unity layer uses,
+    /// choosing actions from a policy keyed by encounter id.
+    /// Policy steps: "serve" (requested item), "serve:PRODUCT", "refuse", "wait", "choice:id", "talk:id", "code:1013".
+    /// </summary>
+    public sealed class BotPlayer
+    {
+        public readonly Dictionary<string, string[]> Policy = new Dictionary<string, string[]>();
+        public bool OpenPanelOnKnock;
+        public readonly HashSet<string> SkipHotspots = new HashSet<string>();
+        public readonly List<string> Log = new List<string>();
+
+        public static readonly string[] Staples =
+            { "WATER", "COFFEE", "GUM", "SALT", "COLA", "ASPIRIN", "MINTS", "BATTERY", "ENERGY", "CHOCO", "PEANUTS", "CHIPS", "NOODLES", "MATCHES" };
+
+        public void Prep(GameState s, ContentDatabase db)
+        {
+            foreach (var id in Staples)
+            {
+                var p = db.Product(id);
+                if (p == null || !p.Purchasable || p.UnlockNight > s.Night) continue;
+                int want = Math.Max(0, 4 - s.StockroomCount(id) - s.MachineCount(id));
+                if (want > 0) s.BuyStock(p, Math.Min(want, Math.Max(0, s.Money / Math.Max(1, p.Cost))));
+            }
+            // Make sure every staple has a slot: unload duplicates first.
+            foreach (var id in Staples)
+            {
+                if (s.MachineCount(id) > 0 || s.StockroomCount(id) == 0) continue;
+                var empty = s.Slots.FirstOrDefault(sl => sl.Code != "E1" && (sl.ProductId == null || sl.Count == 0));
+                if (empty != null) s.LoadSlot(empty.Code, id);
+            }
+            s.AutoStock(db);
+        }
+
+        public ShiftContext PlayNight(GameState s, ContentDatabase db, int maxTicks = 40000)
+        {
+            Prep(s, db);
+            return PlayShift(new ShiftContext(s, db), maxTicks);
+        }
+
+        public ShiftContext PlayShift(ShiftContext ctx, int maxTicks = 40000)
+        {
+            var s = ctx.State;
+            var steps = new Dictionary<string, Queue<string>>();
+            for (int i = 0; i < maxTicks && !ctx.IsOver; i++)
+            {
+                ctx.Tick(0.5f);
+                while (ctx.Events.Count > 0)
+                {
+                    var e = ctx.Events.Dequeue();
+                    if (e.Type == PresEventType.KnockStart && OpenPanelOnKnock) { ctx.OpenPanel(); ctx.ClosePanel(); }
+                }
+                switch (ctx.Phase)
+                {
+                    case ShiftPhase.Phone: ctx.AcknowledgePhone(); break;
+                    case ShiftPhase.Investigation:
+                        for (int pass = 0; pass < 2; pass++) // second pass: spots revealed by earlier finds
+                            foreach (var h in ctx.AvailableHotspots())
+                                if (!SkipHotspots.Contains(h.Id)) ctx.Search(h.Id);
+                        ctx.FinishInvestigation();
+                        break;
+                    case ShiftPhase.Encounter:
+                        var cur = ctx.Current;
+                        if (cur.Stage == EncounterStage.Talking) { ctx.BeginAwaiting(); break; }
+                        if (cur.Stage == EncounterStage.Resolving)
+                        {
+                            Log.Add($"N{s.Night} {cur.Def.Id} -> {cur.ActionKey} ({cur.Outcome.Result})");
+                            ctx.FinishEncounter();
+                            break;
+                        }
+                        if (!steps.TryGetValue(cur.Def.Id, out var q))
+                        {
+                            q = new Queue<string>(PolicyFor(cur.Def.Id));
+                            steps[cur.Def.Id] = q;
+                        }
+                        Act(ctx, q);
+                        break;
+                }
+            }
+            return ctx;
+        }
+
+        private string[] PolicyFor(string id)
+        {
+            if (Policy.TryGetValue(id, out var p)) return p;
+            // Endless Mode clones templates as "<template>_r<round>_<i>".
+            foreach (var kv in Policy) if (id.StartsWith(kv.Key + "_r")) return kv.Value;
+            return new[] { "serve" };
+        }
+
+        private void Act(ShiftContext ctx, Queue<string> q)
+        {
+            var def = ctx.Current.Def;
+            string step = q.Count > 0 ? q.Peek() : "wait";
+            if (step == "wait") return;
+            if (step.StartsWith("talk:"))
+            {
+                ctx.Talk(step.Substring(5));
+                q.Dequeue();
+                return;
+            }
+            if (step.StartsWith("choice:")) { q.Dequeue(); ctx.Talk(step.Substring(7)); return; }
+            if (step.StartsWith("code:")) { q.Dequeue(); ctx.OpenPanel(); ctx.EnterCode(step.Substring(5)); ctx.ClosePanel(); return; }
+            if (step == "refuse") { q.Dequeue(); ctx.Refuse(); return; }
+            if (step == "leave") { q.Dequeue(); ctx.LeaveBooth(); return; }
+            if (step == "serve" || step.StartsWith("serve:"))
+            {
+                string product = step == "serve" ? def.Request : step.Substring(6);
+                if (string.IsNullOrEmpty(product) || product == "UNLISTED" || ctx.State.MachineCount(product) == 0)
+                {
+                    q.Dequeue();
+                    ctx.Refuse();
+                    return;
+                }
+                var slot = ctx.State.SlotWith(product);
+                var err = ctx.Serve(slot.Code);
+                if (err == ShiftContext.ServeError.Jammed) { ctx.OpenPanel(); ctx.ResetMotor(); ctx.ClosePanel(); return; }
+                if (err == ShiftContext.ServeError.NoPower) return; // wait for the lights
+                q.Dequeue();
+            }
+        }
+
+        /// <summary>A careful player who follows Mara and the sealed rules.</summary>
+        public static BotPlayer TruthSeeker()
+        {
+            var b = new BotPlayer();
+            var p = b.Policy;
+            p["n2_collector"] = new[] { "refuse" };
+            p["n2_crane_return"] = new[] { "choice:tell_truth" };
+            p["n2_smile"] = new[] { "talk:deny", "serve" };
+            p["n3_crane"] = new[] { "talk:ticket", "serve" };
+            p["n3_collector"] = new[] { "refuse" };
+            p["n3_mimic"] = new[] { "refuse" };
+            p["n3_walter"] = new[] { "talk:machine", "serve" };
+            p["n3_smile"] = new[] { "talk:deny", "refuse" };
+            p["n4_collector"] = new[] { "choice:decline" };
+            p["n4_smile"] = new[] { "refuse" };
+            p["n4_double"] = new[] { "wait" };
+            p["n5_hale"] = new[] { "talk:lie", "serve" };
+            p["n5_collector"] = new[] { "refuse" };
+            p["n5_mimic"] = new[] { "refuse" };
+            p["n6_collector"] = new[] { "refuse" };
+            p["n6_lily"] = new[] { "choice:hide" };
+            p["n6_hollow"] = new[] { "refuse" };
+            p["n6_motorist"] = new[] { "refuse" };
+            p["n6_mara"] = new[] { "talk:how", "serve" };
+            p["n7_mimic"] = new[] { "refuse" };
+            p["n7_lily"] = new[] { "choice:thanks" };
+            p["n7_hollow"] = new[] { "wait" };
+            p["n7_mara"] = new[] { "refuse" };
+            p["n7_collector"] = new[] { "talk:names", "code:1013" };
+            return b;
+        }
+
+        /// <summary>A cautious player who survives but never pursues the truth.</summary>
+        public static BotPlayer Survivor()
+        {
+            var b = TruthSeeker();
+            b.Policy["n2_crane_return"] = new[] { "choice:lie" };
+            b.Policy["n6_lily"] = new[] { "choice:run" };
+            b.Policy["n7_collector"] = new[] { "choice:refuse" };
+            return b;
+        }
+
+        /// <summary>Endless Mode policy: follows every rule.</summary>
+        public static BotPlayer EndlessExpert()
+        {
+            var b = new BotPlayer();
+            b.Policy["e_mimic"] = new[] { "refuse" };
+            b.Policy["e_collector"] = new[] { "refuse" };
+            b.Policy["e_hollow"] = new[] { "refuse" };
+            b.Policy["e_twoplaces"] = new[] { "wait" };
+            b.Policy["e_double"] = new[] { "wait" };
+            b.Policy["e_motorist"] = new[] { "refuse" };
+            return b;
+        }
+
+        /// <summary>A player who takes every deal the Collector offers.</summary>
+        public static BotPlayer Dealmaker()
+        {
+            var b = Survivor();
+            b.Policy["n2_collector"] = new[] { "serve:UNLABELED" };
+            b.Policy["n4_collector"] = new[] { "choice:sell" };
+            b.Policy["n5_collector"] = new[] { "choice:sell_tapes" };
+            b.Policy["n7_collector"] = new[] { "choice:refuse" };
+            return b;
+        }
+    }
+}

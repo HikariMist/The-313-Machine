@@ -1,0 +1,676 @@
+[
+ {
+  "id": "n1_del",
+  "night": 1,
+  "time": "23:20",
+  "character": "del",
+  "name": "Del Haskins",
+  "portrait": "cust_del",
+  "lines": [
+   "*A big man in a flannel jacket climbs down from an idling rig and taps on the glass.",
+   "Evening! You're the new one. Name's Del. I been stopping here twenty years.",
+   "I'll take a hot coffee, if that thing's got any left."
+  ],
+  "request": "COFFEE",
+  "pays": 250,
+  "payment": "Two crumpled dollar bills and two quarters.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Tired eyes, kind wrinkles, a sunburn that stops at his collar. Very much alive."
+   },
+   {
+    "spot": "hands",
+    "label": "Hands",
+    "text": "Calloused. A wedding ring worn thin. He drums on the glass while he waits."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection in the glass is ordinary. It drums its fingers when he does."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE 88  TEMP 36.8°C  RESIDUE: NONE"
+   }
+  ],
+  "talk": [
+   {
+    "id": "twenty",
+    "text": "Twenty years? Anything weird ever happen here?",
+    "reply": [
+     "Weird? Ha. Every stop on Route 9's weird after midnight.",
+     "Folks see things by the reservoir. Bus stop over there hasn't had a bus since before you were born, and I still see people waiting at it."
+    ]
+   },
+   {
+    "id": "lastkid",
+    "text": "Did you know the last attendant?",
+    "reply": [
+     "Mara? Sure. Sweet girl. Always had a coffee ready for me before I asked.",
+     "Then one night I pull in and the booth's empty and the machine's still humming. Company said she transferred.",
+     " Transferred where, I said. They didn't say."
+    ],
+    "effects": [
+     "flag:heard_mara=1"
+    ]
+   },
+   {
+    "id": "met",
+    "condition": "cycle>=2",
+    "text": "\"Del... have we met before?\"",
+    "reply": [
+     "Funny. I was gonna ask you the same thing.",
+     "Feels like I've had this exact coffee before. Déjà vu. Happens a lot on this road."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:COFFEE": {
+    "lines": [
+     "*The can thunks into the tray. Del pops it and breathes in the steam.",
+     "That's the stuff. You're all right, kid. See you tomorrow."
+    ],
+    "effects": [
+     "flag:del_coffee=1"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Huh. Not what I asked for, but I'll take it. Long road."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Out of coffee? Ah, well. Tomorrow, then."
+    ],
+    "effects": [
+     "flag:del_refused=1"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n1_student",
+  "night": 1,
+  "time": "23:55",
+  "character": "student",
+  "name": "College Student",
+  "portrait": "cust_student",
+  "lines": [
+   "*A young woman in a university hoodie, keys in hand, phone at 3%.",
+   "Hi — sorry — do you have anything with caffeine? I've got four more hours of driving.",
+   "Energy drink, whatever's strongest."
+  ],
+  "request": "ENERGY",
+  "pays": 300,
+  "payment": "A card, then exact change when the card reader blinks ERROR.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Exhausted. Mascara smudged from rubbing her eyes. Nothing strange."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection matches her. Though — when she turns her head, it seems to turn a fraction late. Probably the old glass."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE 102  TEMP 36.6°C  RESIDUE: TRACE (environmental)"
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "present",
+    "note": "Her reflection on the unit camera keeps looking at you after she looks away."
+   }
+  ],
+  "talk": [
+   {
+    "id": "where",
+    "text": "Where are you headed?",
+    "reply": [
+     "Holloway. Mom's birthday. I'm going to be so late."
+    ]
+   },
+   {
+    "id": "careful",
+    "text": "Drive safe. Watch the reservoir curve.",
+    "reply": [
+     "Ha. Yeah. My GPS keeps saying 'make a U-turn' around here. Like, constantly."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:ENERGY": {
+    "lines": [
+     "Lifesaver. Seriously.",
+     "*She jogs back to her car. In the glass, her reflection is still standing at the machine. It stays there for a long moment. Then it walks away too."
+    ],
+    "effects": [
+     "clue:reflection_linger"
+    ],
+    "scare": "reflection_linger",
+    "result": "good"
+   },
+   "serve:COFFEE": {
+    "lines": [
+     "Oh, coffee's good too. Thank you!",
+     "*In the glass, her reflection doesn't leave with her. It watches you for a while before it fades."
+    ],
+    "effects": [
+     "clue:reflection_linger"
+    ],
+    "scare": "reflection_linger",
+    "result": "good"
+   },
+   "refuse": {
+    "lines": [
+     "...Okay. Wow. Okay.",
+     "*She leaves. Her reflection stays a few seconds longer than she does."
+    ],
+    "effects": [
+     "clue:reflection_linger"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n1_nurse",
+  "night": 1,
+  "time": "00:40",
+  "character": "nurse",
+  "name": "Nurse Okafor",
+  "portrait": "cust_nurse",
+  "lines": [
+   "*A woman in teal scrubs under a heavy coat. Her name badge says OKAFOR — KESSLER COUNTY GENERAL.",
+   "Evening. Something sweet, please. A chocolate bar. It's going to be a long one."
+  ],
+  "request": "CHOCO",
+  "pays": 150,
+  "payment": "Exact change from a coin purse.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Sharp, observant eyes. She's looking at the machine the way you'd look at a dog that once bit you."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Normal. She avoids looking at it."
+   },
+   {
+    "spot": "clothes",
+    "label": "Badge",
+    "text": "KESSLER COUNTY GENERAL — R. OKAFOR, RN — NIGHTS."
+   }
+  ],
+  "talk": [
+   {
+    "id": "busy",
+    "text": "Busy night at the hospital?",
+    "reply": [
+     "It's always busy around three. People come in after three that... aren't meant to.",
+     "Sorry. Hospital humor. Ignore me."
+    ]
+   },
+   {
+    "id": "stop",
+    "text": "Do you stop here often?",
+    "reply": [
+     "Only when I have to. My mother used to say don't buy anything from the Kessler machine after midnight.",
+     "She said it like it was a joke. It's ten past twelve. I'm making an exception."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:CHOCO": {
+    "lines": [
+     "Thank you. And — hey. Don't stare at the lot too long. It stares back here."
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Close enough. Thanks."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Fair enough. Probably for the best."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n1_hunter",
+  "night": 1,
+  "time": "01:30",
+  "character": "hunter",
+  "name": "Man in the Orange Vest",
+  "portrait": "cust_hunter",
+  "lines": [
+   "*A lean man in a blaze-orange vest, flashlight off, steps out of the trees.",
+   "Batteries. Double A. Mine died on the reservoir trail.",
+   "Don't like being out there without a light. Not tonight."
+  ],
+  "request": "BATTERY",
+  "pays": 400,
+  "payment": "Four singles, damp from the trail.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Weathered. He keeps glancing at the machine's glass — not at you. At the glass."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Normal."
+   },
+   {
+    "spot": "hands",
+    "label": "Hands",
+    "text": "He's holding the flashlight like a club."
+   }
+  ],
+  "talk": [
+   {
+    "id": "tonight",
+    "text": "Why not tonight?",
+    "reply": [
+     "You ever hear the knocking? Out by the water. Like somebody tapping on the inside of a window.",
+     "My granddad said it started the year they pulled the bus out. Said they should've left it down there."
+    ],
+    "effects": [
+     "flag:heard_knocking=1"
+    ]
+   },
+   {
+    "id": "bus",
+    "text": "What bus?",
+    "reply": [
+     "Coach 313. Went into the reservoir in '87. Thirteen people.",
+     "They never found all of 'em. Granddad said that's why they keep coming back to the stop."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:BATTERY": {
+    "lines": [
+     "*He thumbs the batteries in. The flashlight comes on, pointed at the machine. For a second you both see something behind the glass — then it's just cans.",
+     "...Right. Goodnight."
+    ],
+    "scare": "item_shift",
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "That's not batteries. Forget it. I'll walk in the dark."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Then I'll walk in the dark. Thanks for nothing."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n1_leash",
+  "night": 1,
+  "time": "02:20",
+  "character": "leash",
+  "name": "Girl with a Leash",
+  "portrait": "cust_leash",
+  "lines": [
+   "*A teenage girl in a puffer jacket holds a red leash. The leash ends in a collar. The collar is empty.",
+   "Hi! Can I get the peanuts? They're for Biscuit. He loves them.",
+   "Sit, Biscuit. Good boy."
+  ],
+  "request": "PEANUTS",
+  "pays": 125,
+  "payment": "Coins from a jar lid.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Cheerful, cold-flushed cheeks. She's looking down and to the left, smiling, at nothing."
+   },
+   {
+    "spot": "hands",
+    "label": "Leash",
+    "text": "The leash is taut. It pulls, gently, toward the grass. There is nothing at the end of it."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "In the reflection, there is a small scruffy dog at the end of the leash, wagging."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "SUBJECT: PULSE 76, ALIVE.  SECONDARY READING (LOW, ~0.3m): PULSE NONE. TEMP 4°C. RESIDUE: HIGH. DISPOSITION: FRIENDLY."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam1",
+    "state": "present",
+    "note": "On CAM 1 there is a small dog at the end of her leash."
+   },
+   {
+    "cam": "cam2",
+    "state": "present",
+    "note": "The dog is on this camera too, sniffing the base of the unit."
+   }
+  ],
+  "talk": [
+   {
+    "id": "dog",
+    "text": "Cute dog. What breed is he?",
+    "reply": [
+     "Mutt! Best kind. He got hit on Route 9 last spring but he's fine now. He comes back every night."
+    ]
+   },
+   {
+    "id": "late",
+    "text": "It's late to be out walking.",
+    "reply": [
+     "Biscuit doesn't like the daytime anymore. Neither do I, kind of."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:PEANUTS": {
+    "lines": [
+     "*She tears the bag and scatters a handful on the ground. The peanuts disappear one by one, with small crunching sounds.",
+     "Say thank you, Biscuit!",
+     "*Something unseen brushes against the machine. It is, unmistakably, a happy dog."
+    ],
+    "effects": [
+     "clue:leash_dog",
+     "flag:biscuit=1"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Oh. Biscuit can't have that. That's okay.",
+     "*The leash pulls her away into the dark, gently, like it knows the way."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Oh. Okay. Come on, Biscuit.",
+     "*The leash pulls her away into the dark, gently, like it knows the way."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n1_walter",
+  "night": 1,
+  "time": "03:25",
+  "character": "walter",
+  "name": "The Drenched Man",
+  "portrait": "cust_walter",
+  "supernatural": true,
+  "music": "wrong_customer",
+  "arriveEffects": [
+   "instability+4"
+  ],
+  "rules": [
+   "B1",
+   "B2",
+   "B3"
+  ],
+  "lines": [
+   "*The night is dry. The sky is clear. The man who shuffles up to the machine is soaked to the bone.",
+   "*Water runs from his sleeves and pools around his shoes. He smells like the reservoir.",
+   "...Water. Please.",
+   "It's so dry down there."
+  ],
+  "request": "WATER",
+  "pays": 150,
+  "payment": "Six quarters, dripping. Every one is dated 1987.",
+  "patience": 90,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Gray skin. Lips blue. His eyes are clouded like a fish on ice. He looks at you with enormous, patient sadness."
+   },
+   {
+    "spot": "clothes",
+    "label": "Uniform",
+    "text": "An old bus driver's uniform. The patch on his shoulder reads MERIDIAN COACH LINES. His name tag: W. PRUITT."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection drips in time with him. When he sways, it sways. It moves exactly as he does."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "upgrade": "lighting",
+    "text": "Under the brighter tubes: the reflection is soaked too, and its mouth moves along with his. Perfectly in sync."
+   },
+   {
+    "spot": "payment",
+    "label": "Coins",
+    "text": "1987 quarters. Wet. Cold. They smell of algae.",
+    "clue": "wet_quarter"
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE: NONE.  TEMP 9°C.  RESIDUE: VERY HIGH.  DISPOSITION: TIRED."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam1",
+    "state": "present",
+    "note": "CAM 1 shows him standing at the machine, dripping."
+   },
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "CAM 2 (unit camera) shows an empty spot in front of the glass, and a puddle that keeps spreading."
+   }
+  ],
+  "talk": [
+   {
+    "id": "who",
+    "text": "Are you... okay, sir?",
+    "reply": [
+     "Been better. Been a lot better.",
+     "I had a route. Nights. Kessler Flats to Holloway. I got everybody there on time for thirty years. Nearly."
+    ]
+   },
+   {
+    "id": "wet",
+    "text": "Why are you wet? It hasn't rained.",
+    "reply": [
+     "It's always raining where I am.",
+     "Water, please. Just a little."
+    ]
+   },
+   {
+    "id": "again",
+    "condition": "cycle>=2",
+    "text": "\"Walter. It's me again.\"",
+    "reply": [
+     "*He squints at you, water dripping from his brow.",
+     "...You. You were here before. Weren't you? Or will be. It's hard to keep track down there."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:WATER": {
+    "lines": [
+     "*He drinks the whole bottle in one long swallow. Water runs from the corners of his mouth and doesn't stop.",
+     "...Thank you. You're kinder than the last few.",
+     "*He walks into the dark toward the reservoir. His footprints stay wet on the concrete until sunrise."
+    ],
+    "effects": [
+     "flag:walter_rest+1",
+     "flag:walter_n1=1",
+     "clue:wet_quarter"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "*He looks at the item for a long time.",
+     "...That's not water, son.",
+     "*He leaves it on the ground and walks away. The puddle stays."
+    ],
+    "effects": [
+     "flag:walter_snubbed=1"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*He nods slowly, like he expected it.",
+     "I'll be back. I'm always back.",
+     "*He walks toward the reservoir. You hear a splash, much too far away."
+    ],
+    "effects": [
+     "flag:walter_snubbed=1"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n1_smile",
+  "night": 1,
+  "time": "04:30",
+  "character": "smile",
+  "name": "The Smiling Woman",
+  "portrait": "cust_smile",
+  "supernatural": true,
+  "rules": [
+   "C3"
+  ],
+  "lines": [
+   "*A woman in a neat 1980s coat, hair set in soft curls. She is smiling. She keeps smiling.",
+   "Hello, dear! Isn't it a lovely night?",
+   "Strawberry gum, please. It's my daughter's favorite. Have you seen her? Little thing. About so high. Yellow raincoat."
+  ],
+  "request": "GUM",
+  "pays": 100,
+  "payment": "A shiny 1987 dollar coin. It is warm.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Lovely, symmetrical, friendly. She has not blinked since she arrived."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection is smiling too. Its smile is wider than hers."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "upgrade": "lighting",
+    "text": "With better light: her reflection's teeth go back much further than teeth should."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE: NONE.  TEMP: 31°C (rising).  RESIDUE: ABNORMAL — PATTERN UNMATCHED.  DISPOSITION: HUNGRY."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2. But the gum slot, B4, is lit on camera as though someone is pressing it."
+   }
+  ],
+  "talk": [
+   {
+    "id": "no",
+    "text": "No, I haven't seen her.",
+    "reply": [
+     "Oh, that's all right. She'll turn up. She always comes to the machine eventually.",
+     "Children love machines."
+    ]
+   },
+   {
+    "id": "lookout",
+    "text": "I'll keep an eye out for her.",
+    "reply": [
+     "Would you? Oh, you're a dear. Tell me the moment you see her. The moment."
+    ],
+    "effects": [
+     "flag:promised_smile=1"
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:GUM": {
+    "lines": [
+     "*She takes the gum and holds it up to the light, still smiling.",
+     "Lovely. She'll come for this. They always come for the sweet things.",
+     "*She walks toward the bus stop and is simply not there anymore."
+    ],
+    "effects": [
+     "flag:smile_met=1"
+    ],
+    "result": "neutral"
+   },
+   "serve:*": {
+    "lines": [
+     "Oh, that's not right at all.",
+     "*Her smile doesn't change. She leaves."
+    ],
+    "effects": [
+     "flag:smile_met=1"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*For one second, her smile drops completely, and her face is not a face. Then it's back.",
+     "Of course. Another time."
+    ],
+    "effects": [
+     "flag:smile_met=1",
+     "instability+5"
+    ],
+    "scare": "shadow_pass",
+    "result": "neutral"
+   }
+  }
+ }
+]

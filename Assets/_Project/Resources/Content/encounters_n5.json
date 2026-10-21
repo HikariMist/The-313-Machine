@@ -1,0 +1,130 @@
+[
+  {"id":"n5_crane","night":5,"time":"23:40","character":"crane","name":"The Passenger","portrait":"cust_crane_wet","supernatural":true,"condition":"flag:crane_met",
+   "lines":["*Mr. Crane, soaked through now even before 3:13. He's holding his glasses in his hand.","Hello. I hope you don't mind me asking you something odd.","How long has it been? Since... since the bus?"],
+   "request":"COFFEE","pays":250,"payment":"1985 bills, sodden.","patience":90,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Without his glasses his eyes are clear. He's been crying."},
+     {"spot":"reflection","label":"Reflection","text":"His reflection is sitting at the bottom of the reservoir, very calm, waiting."}
+   ],
+   "talk":[
+     {"id":"truth","condition":"!flag:crane_told","text":"Tell him: nearly forty years. It's 2026.","reply":["*He puts his glasses back on, carefully.","Thirty-nine years. My daughter's older than I am now.","...Thank you. Nobody ever tells me."],"effects":["flag:crane_told=1"]},
+     {"id":"again","condition":"flag:crane_told","text":"\"Thirty-nine years, Mr. Crane.\"","reply":["Yes. You told me. I'm starting to keep hold of it.","I'd like to go home now. I just don't have the fare anymore. I gave my token to the driver, and the driver's... still down there."],"effects":["flag:crane_wants_token=1"]}
+   ],
+   "outcomes":{
+     "serve:COFFEE":{"lines":["*He holds the can without opening it.","They always give me coffee. Thank you anyway. Truly."],"result":"good"},
+     "refuse":{"lines":["*He nods and goes back to the stop."],"result":"neutral"}
+   }},
+
+  {"id":"n5_hale","night":5,"time":"00:30","character":"hale","name":"Mr. Hale","portrait":"cust_hale","rules":["E2"],"music":"something_approaches",
+   "lines":["*A man in a gray Meridian windbreaker gets out of a company sedan. You know the voice before he speaks. Mr. Hale.","So. You're real. Good. Mints, please. Long drive.","Did you clear out the stockroom? Find anything of hers? Tapes? Notes? I'll take them off your hands. Company property."],
+   "request":"MINTS","pays":100,"payment":"A Meridian corporate card.",
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Ordinary. Mid-fifties. He has the healthiest complexion you have ever seen on a living man, like he's never been sick a day."},
+     {"spot":"reflection","label":"Reflection","text":"Normal. Alive. He's the most alive-looking person you've seen all week."},
+     {"spot":"hands","label":"Hands","text":"His wedding ring has the Meridian logo on it."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"PULSE 64  TEMP 36.9°C  RESIDUE: NONE.  NOTE: SUBJECT EXHIBITS ANOMALOUS GOOD FORTUNE."}
+   ],
+   "cameras":[{"cam":"cam2","state":"present","note":"CAM 2: Hale, at the glass. The only customer tonight who appears on the unit camera."}],
+   "talk":[
+     {"id":"hand_over","end":true,"text":"Hand over what you found in the stockroom.","reply":[]},
+     {"id":"lie","text":"\"Just old uniforms. I threw them out.\"","reply":["*He studies you.","Good. Good. She was a good worker, Quill. Got too curious near the end.","Curiosity's bad for retention."]},
+     {"id":"mara","text":"\"Where is Mara Quill?\"","reply":["Transferred. Internally.","*He taps the glass of the machine, twice, almost fondly."]}
+   ],
+   "outcomes":{
+     "choice:hand_over":{"lines":["*You hand him her file and the tape. He tucks them under his arm without looking.","Good. You're going places. Seven nights and you'll never have to worry about anything again."],"effects":["unclue:mara_tape1","unclue:mara_file","flag:hale_told=1","bond+1","money+2000"],"result":"bad"},
+     "serve:MINTS":{"lines":["*He unwraps a mint with a crinkle.","See you on the seventh, attendant."],"result":"neutral"},
+     "serve:*":{"lines":["Close enough. See you on the seventh."],"result":"neutral"},
+     "refuse":{"lines":["*He smiles, very slightly.","Spirit. That's good. They need spirit in there."],"result":"neutral"}
+   }},
+
+  {"id":"n5_collector","night":5,"time":"01:20","character":"collector","name":"The Collector","portrait":"cust_collector","supernatural":true,"music":"wrong_customer",
+   "lines":["*The Collector, standing politely in the fog.","You found her things. I can always tell.","Those tapes were never meant for you. Give them to me, and I'll pay sixty dollars. More than a week's wages."],
+   "request":"UNLISTED","requestText":"Mara's tapes","pays":0,"patience":80,
+   "inspect":[
+     {"spot":"reflection","label":"Reflection","text":"In the glass, Mara is standing behind him, shaking her head."},
+     {"spot":"hands","label":"Ledger","text":"The ledger is open to a page headed QUILL, M. Most of the coins drawn beside it have been crossed out. Not all."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"CAM 2: the glass is fogged from the inside. Someone has written NO in it."}],
+   "talk":[
+     {"id":"sell_tapes","end":true,"condition":"clue:mara_tape1","text":"Sell him the tape. (+$60)","reply":[]},
+     {"id":"why","text":"\"Why do you want them?\"","reply":["Because she said things on them she shouldn't have known.","Clause thirteen, for example. Nobody reads clause thirteen."]}
+   ],
+   "outcomes":{
+     "choice:sell_tapes":{"lines":["*The tape is gone from your hand. You can't remember what was on it.","Wise. Very wise."],"effects":["unclue:mara_tape1","money+6000","bond+1","flag:sold_tapes=1"],"result":"bad"},
+     "refuse":{"lines":["You're becoming difficult. I do like difficult. It lasts longer.","*He's gone."],"effects":["flag:refused_collector+1"],"result":"good"},
+     "serve:*":{"lines":["No."],"paid":false,"result":"neutral"}
+   }},
+
+  {"id":"n5_lily","night":5,"time":"02:10","character":"lily","name":"Lily","portrait":"cust_lily","supernatural":true,"condition":"!flag:lily_taken",
+   "lines":["*Lily, hood down. Her hair is soaking wet.","*She presses a drawing to the glass: the reservoir, thirteen stick figures holding hands, and two numbers carefully written above them.","*She taps the gum slot, then puts her hand flat against the glass and waits for you to do the same."],
+   "request":"GUM","pays":0,"payment":"The drawing.","patience":90,
+   "inspect":[
+     {"spot":"payment","label":"Drawing","text":"Thirteen figures holding hands at the water. One small figure in yellow. Above them, in a child's careful hand: 10 13.","clue":"drawing_reservoir"},
+     {"spot":"reflection","label":"Reflection","text":"Her reflection has its hand on the glass, waiting for yours."}
+   ],
+   "talk":[
+     {"id":"hand","text":"Put your hand against the glass over hers.","reply":["*The glass is cold, then warm. For a second you see a bus full of people, singing, on a bright afternoon.","*She smiles at you. A real, small, crooked smile — like her mother's in the photograph."],"effects":["flag:lily_trust+1","instability-10"]}
+   ],
+   "outcomes":{
+     "serve:GUM":{"lines":["*She takes the gum and runs, leaving the drawing behind."],"paid":false,"effects":["flag:lily_trust+1","clue:drawing_reservoir"],"result":"good"},
+     "serve:*":{"lines":["*She takes it politely and leaves the drawing."],"paid":false,"effects":["clue:drawing_reservoir"],"result":"neutral"},
+     "refuse":{"lines":["*She leaves the drawing and goes."],"effects":["clue:drawing_reservoir"],"result":"neutral"}
+   }},
+
+  {"id":"n5_mara","night":5,"time":"03:40","character":"mara","name":"The Former Employee","portrait":"cust_mara","supernatural":true,"music":"employee_no_0",
+   "lines":["*A young woman in a faded Meridian uniform stands at the glass. Her hair is wet. Her badge says No. 0.","*Her reflection is not a woman. Her reflection is the machine.","Hi. Sorry. I know this is weird.","Could you get me a cola? It's the last thing I had before... before I started working here full-time."],
+   "request":"COLA","pays":0,"payment":"She has nothing to pay with. She looks embarrassed about it.","patience":100,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Tired, young, stubborn. She looks like someone who stayed up too late doing the right thing."},
+     {"spot":"clothes","label":"Badge","text":"MERIDIAN ROADSIDE — M. QUILL — No. 0. The 0 is scratched in by hand over 0412."},
+     {"spot":"reflection","label":"Reflection","text":"Where her reflection should be, the glass shows the inside of the machine: coils, cans, and a woman curled up behind them."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"PULSE: FAINT. RESIDUE: MAXIMUM. NOTE: SUBJECT IS INTEGRATED WITH UNIT 313."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"CAM 2: the machine's display reads M.Q. instead of the time."},{"cam":"cam0","state":"present","note":"CAM 0: you at the counter. Through the glass, from this angle, there's a face among the cans."}],
+   "talk":[
+     {"id":"what","text":"\"What is this machine?\"","reply":["It's a till. A cash register for the dead.","The passengers come back every night at 3:13, and Meridian sells them things, and every sale takes a little of what's left of them. The Collector keeps the change. Meridian gets its luck."]},
+     {"id":"you","text":"\"What happened to you?\"","reply":["I bonded with the unit. That's what Hale calls it.","Every deal you take with the Collector ties you tighter. Open the panel when it knocks, sell him what the machine makes, sign his paper... Eventually you're not running the machine. You are the machine."]},
+     {"id":"help","text":"\"How do I stop it?\"","reply":["I don't know all of it yet. I'm close.","Read my notes. Find the manifest. And keep the girl away from that thing that's wearing her mother."]}
+   ],
+   "outcomes":{
+     "serve:COLA":{"lines":["*She holds the can against her cheek and closes her eyes.","Oh, that's cold. I forgot what cold was.","Thank you. I'll be listening. I'm always listening.","*She sets her badge on the counter and walks into the glass."],"paid":false,"effects":["flag:mara_trust+1","clue:mara_badge"],"result":"good"},
+     "serve:*":{"lines":["*She smiles anyway.","That works. Thank you.","*She walks into the glass."],"paid":false,"effects":["clue:mara_badge"],"result":"neutral"},
+     "refuse":{"lines":["I get it. I wouldn't trust me either.","*She walks into the glass."],"result":"neutral"}
+   }},
+
+  {"id":"n5_mimic","night":5,"time":"04:30","character":"mimic","name":"The Former Employee?","portrait":"cust_mara_mimic","supernatural":true,"rules":["E2","B1"],"reflectionLags":true,"music":"wrong_customer",
+   "lines":["*Mara again. Or — someone with her face. She's smiling more than Mara smiles.","Hey! It's me again. Listen — I figured it out. I need the maintenance key. Just slide it under the glass.","Quick, before he comes back. Please."],
+   "request":"UNLISTED","requestText":"The maintenance key","patience":70,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Mara's face. But Mara looked tired. This one looks hungry."},
+     {"spot":"reflection","label":"Reflection","text":"Its reflection lags behind it, then hurries to catch up, like it's being dragged."},
+     {"spot":"clothes","label":"Badge","text":"The badge says No. 0 — and the zero is perfectly printed. Mara's was scratched in by hand."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"PULSE: NONE. RESIDUE: MATCHES NO RECORDED PATTERN."}
+   ],
+   "cameras":[{"cam":"cam0","state":"present","note":"CAM 0: Mara's face is among the cans inside the machine, mouthing NO."}],
+   "talk":[
+     {"id":"give_key","end":true,"text":"Slide her the maintenance key.","reply":[]},
+     {"id":"cola","text":"\"Did you like the cola?\"","reply":["The... yes. The cola. Lovely. The key, please."]}
+   ],
+   "outcomes":{
+     "choice:give_key":{"lines":["*It snatches the key. Mara's face peels back from the middle like a wet label."],"result":"death","scare":"js_mimic"},
+     "refuse":{"lines":["*Its smile stays on after the rest of its face stops pretending.","*Then it's gone, and the glass is fogged from the inside with a single word: THANKS."],"effects":["instability+8","flag:refused_mimic+1"],"scare":"js_mimic","result":"good"},
+     "timeout":{"lines":["*It waits, smiling. Eventually it simply isn't there."],"effects":["flag:refused_mimic+1"],"result":"good"},
+     "serve:*":{"lines":["*It doesn't take it.","The key."],"paid":false,"result":"neutral"}
+   }},
+
+  {"id":"n5_walter","night":5,"time":"05:10","character":"walter","name":"Walter Pruitt","portrait":"cust_walter","supernatural":true,"condition":"flag:walter_rest>=1","rules":["B1"],
+   "lines":["*Walter, dripping, cap in his hands.","I think I'd like to go now. Really go.","One more bottle of water and I'll be ready. And — here. I've been holding onto this for somebody. You'll know who."],
+   "request":"WATER","pays":150,"payment":"Wet quarters, and a brass bus token.","patience":100,
+   "inspect":[
+     {"spot":"reflection","label":"Reflection","text":"His reflection moves with him exactly. It's smiling."},
+     {"spot":"payment","label":"Token","text":"A brass token: MERIDIAN COACH LINES — 313. GOOD FOR ONE FARE."}
+   ],
+   "talk":[
+     {"id":"who","text":"\"Who's the token for?\"","reply":["Fella in the brown suit. Crane. He gave it to me when he got on. Never got where he paid to go.","Give it back to him when he knows where he's headed."]}
+   ],
+   "outcomes":{
+     "serve:WATER":{"lines":["*He drinks it slowly. When he's done, he's not dripping anymore.","Thank you, attendant. You did right by me.","*He sets the token on the counter. It slides into Row E on its own.","*He walks toward the reservoir, and this time you don't hear a splash."],"effects":["flag:walter_rest+1","flag:walter_ready=1","produce:TOKEN"],"result":"good"},
+     "refuse":{"lines":["*He nods.","Tomorrow, maybe.","*He leaves the token anyway. It slides into Row E on its own."],"effects":["produce:TOKEN"],"result":"neutral"}
+   }}
+]

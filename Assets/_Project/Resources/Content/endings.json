@@ -1,0 +1,288 @@
+[
+ {
+  "id": "truth",
+  "title": "THE TRUTH",
+  "achievement": "Clause Thirteen",
+  "achievementDesc": "Break the contract and send Coach 313 home.",
+  "condition": "false",
+  "priority": 30,
+  "music": "sunrise",
+  "image": "end_truth",
+  "lines": [
+   "*You enter the date. One. Zero. One. Three.",
+   "*Every light in Unit 313 comes on at once — not the cold fluorescent white, but a warm, impossible gold.",
+   "*The Collector's ledger opens by itself. You read the names out loud, all thirteen, the way Mara asked. Walter Pruitt. Ellis Crane. Adeline Marsh. Lily Marsh...",
+   "*With every name, a line in the ledger burns away.",
+   "THE COLLECTOR: \"That was not in the contract.\"",
+   "MARA: \"It was. Clause thirteen. You just never thought anyone would read it.\"",
+   "*He is gone the way a shadow goes when you turn on a light: not leaving, just no longer having been there.",
+   "*Out on the lot, a bus pulls up. Coach 313, clean and dry and yellow. Walter is at the wheel. He tips his cap to you.",
+   "*Mr. Crane boards first, ticket in hand. A woman with a soft, crooked smile lifts a little girl in a yellow raincoat up the steps. Lily waves at you through the window.",
+   "*Mara steps out of the glass — just Mara, in a faded uniform, badge number 0412. She looks at you for a long time.",
+   "MARA: \"Thank you for reading the rules. And for knowing which ones to break.\"",
+   "*She gets on the bus. It drives toward the reservoir, and the water is not there. There is only road, and the road goes on.",
+   "*At 6:00 AM, Unit 313 goes dark for the first time since 1988. It never turns on again.",
+   "*Meridian Roadside Services files for bankruptcy that spring. You keep one thing: a wet quarter, dated 1987. It is finally dry."
+  ]
+ },
+ {
+  "id": "escape",
+  "title": "THE ESCAPE",
+  "achievement": "Clocked Out",
+  "achievementDesc": "Refuse the Collector and walk away alone.",
+  "condition": "true",
+  "priority": 1,
+  "music": "sunrise",
+  "image": "end_escape",
+  "lines": [
+   "THE COLLECTOR: \"No?\" *He closes the ledger with a soft clap.* \"Then you're no use to me. How refreshing.\"",
+   "*He is gone. The lot is empty. For the first time in seven nights, nothing is waiting at the edge of the light.",
+   "*At 6:00 AM you take off the Meridian badge, set it on the counter, and walk to your car. Nothing stops you.",
+   "*In the rear-view mirror, Unit 313 glows behind you. A small yellow shape stands beside it. Then the road bends, and it is gone.",
+   "*You never go back to Kessler Flats. You avoid Route 9. You stop drinking bottled water.",
+   "*But some nights, at 3:13 AM exactly, you wake up and taste the reservoir. And you wonder who is working the booth.",
+   "*You survived. That was all the job ever asked of you. It was never all it could have been."
+  ]
+ },
+ {
+  "id": "replacement",
+  "title": "THE REPLACEMENT",
+  "achievement": "Employee No. 0",
+  "achievementDesc": "Sign the ledger and become the machine.",
+  "condition": "false",
+  "priority": 0,
+  "music": "machine_remembers",
+  "image": "end_replacement",
+  "lines": [
+   "*The ink is still wet when the glass of the machine begins to soften.",
+   "THE COLLECTOR: \"Every arrangement needs someone to keep it running. You were so good at it.\"",
+   "*It doesn't hurt. That is the worst part. It feels like sitting down after a very long shift.",
+   "*From inside, the lot looks smaller. The rows of cans are warm against your back. Your reflection in the glass is wearing a badge, and the number on it is 0.",
+   "*Somewhere beside you, Mara's voice, very tired: \"I'm sorry. I tried.\" Then she is quiet, and you understand that she is free, and that you are not.",
+   "*The next night a new attendant arrives. They are nervous. They read the handbook.",
+   "*At 3:13 AM, you try to warn them. All that comes out is a receipt.",
+   "*THANK YOU FOR YOUR SERVICE, NO. 0."
+  ]
+ },
+ {
+  "id": "debt",
+  "title": "THE DEBT",
+  "achievement": "Paid in Installments",
+  "achievementDesc": "Refuse the Collector after taking too many of his deals.",
+  "condition": "false",
+  "priority": 0,
+  "music": "machine_remembers",
+  "image": "end_debt",
+  "lines": [
+   "*You say no.",
+   "*Your hand signs anyway. You watch it do it. It has been his for a while now — since the first can, the first open panel, the first deal.",
+   "THE COLLECTOR: \"You already said yes. Many times. I wrote each one down.\"",
+   "*Every coin you took from him is in the coin box now, and so are you.",
+   "*From inside the glass, the lot looks small. Mara is gone; you can feel the empty place where she used to be.",
+   "*The next attendant arrives on a Tuesday. You print them a receipt that says RUN. It comes out reading THANK YOU FOR YOUR SERVICE."
+  ]
+ },
+ {
+  "id": "empty_seat",
+  "title": "THE EMPTY SEAT",
+  "achievement": "One Seat Short",
+  "achievementDesc": "Break the contract without keeping Lily safe.",
+  "condition": "false",
+  "priority": 0,
+  "music": "sunrise",
+  "image": "end_empty_seat",
+  "lines": [
+   "*You enter the date. One. Zero. One. Three. The lights burn gold, and the ledger opens itself.",
+   "*Name by name, the lines burn away. The Collector is gone like a shadow under a lamp.",
+   "*Coach 313 pulls up, clean and dry. Walter tips his cap. Mr. Crane boards with his ticket. Mara steps out of the glass and climbs on.",
+   "*A woman with a soft, crooked smile is the last to board. She stops on the top step and looks back across the lot, searching.",
+   "*There is a small seat by the window with no one in it.",
+   "*The bus waits as long as it can. Then the doors close, and it goes.",
+   "*Unit 313 goes dark. You stay until noon, watching the treeline for a yellow raincoat. You never see one."
+  ]
+ },
+ {
+  "id": "last_passenger",
+  "title": "THE LAST PASSENGER",
+  "achievement": "Waiting for the 2:58",
+  "achievementDesc": "Break the contract while Mr. Crane still doesn't know where he's going.",
+  "condition": "false",
+  "priority": 0,
+  "music": "sunrise",
+  "image": "end_last_passenger",
+  "lines": [
+   "*The keypad turns gold. The ledger burns. The Collector is gone.",
+   "*Coach 313 arrives. Everyone boards — everyone but a man in a brown suit standing at the stop, checking his watch.",
+   "MR. CRANE: \"Is this the 2:58? No... no, I'm waiting for the 2:58.\"",
+   "*He never knew what year it was. Nobody told him in time. The bus leaves without him.",
+   "*The machine is dark now. There's no 3:13 anymore, no minute to come back through. He just stands there.",
+   "*You bring him a coffee every morning for the rest of the summer. He thanks you every time, like it's the first time.",
+   "*In September, he's gone. The bus stop sign is gone too. You hope, very hard, that a bus finally came."
+  ]
+ },
+ {
+  "id": "driver",
+  "title": "THE DRIVER",
+  "achievement": "Behind the Wheel",
+  "achievementDesc": "Break the contract before Walter was ready to go.",
+  "condition": "false",
+  "priority": 0,
+  "music": "end_of_shift",
+  "image": "end_driver",
+  "lines": [
+   "*The keypad turns gold. The ledger burns. The Collector is gone.",
+   "*Coach 313 pulls up to the stop. The doors open. The passengers climb aboard, one by one.",
+   "*The driver's seat is empty. Walter never finished his water. He's still down there, waiting to be ready.",
+   "*Mara looks at you. Lily looks at you. Everyone looks at you.",
+   "*You were the one who kept the booth. You can keep a route too.",
+   "*You sit down behind the wheel. It's cold, and wet, and fits you exactly. The road goes toward the reservoir and the water parts.",
+   "*Somewhere a long way from Kessler Flats, the bus finally reaches the end of the line. You don't come back. You don't need to."
+  ]
+ },
+ {
+  "id": "nameless",
+  "title": "THE NAMELESS",
+  "achievement": "No Names, No Faces",
+  "achievementDesc": "Enter the date without the passenger manifest.",
+  "condition": "false",
+  "priority": 0,
+  "music": "sunrise",
+  "image": "end_nameless",
+  "lines": [
+   "*You enter the date. The lights go gold — then white — then out.",
+   "*The ledger tears itself apart. Pages blow across the lot like leaves, and on every page the names are blank.",
+   "*Without their names, the passengers don't know who they are. Thirteen shapes walk out of the reservoir and stand on the lot, looking at their hands.",
+   "*They don't get on any bus. There is no bus. They just wander, out along Route 9, into the morning.",
+   "*The contract is broken. The Collector is gone. So is everyone, in a way.",
+   "*For years afterward, drivers on Route 9 report people walking the shoulder at dawn, asking anyone who stops if they know their name."
+  ]
+ },
+ {
+  "id": "wrong_minute",
+  "title": "THE WRONG MINUTE",
+  "achievement": "Trust the Seal",
+  "achievementDesc": "Enter the forged override code.",
+  "condition": "false",
+  "priority": 0,
+  "music": "no_more_change",
+  "image": "end_wrong_minute",
+  "lines": [
+   "*You press 0-3-1-3. The keypad flashes purple.",
+   "THE COLLECTOR: \"Thank you. I did so hope you'd try the time.\"",
+   "*The clock on the machine stops at 3:13. So does the clock on the wall. So does your watch. So does your heart, almost.",
+   "*The minute closes around the booth like water closing over a bus.",
+   "*It is 3:13 AM. It is always 3:13 AM. Customers come, and come, and come, and none of them ever leave, and neither do you.",
+   "*Somewhere outside the minute, it is morning. You will never see it."
+  ]
+ },
+ {
+  "id": "paid_in_full",
+  "title": "PAID IN FULL",
+  "achievement": "Exact Change",
+  "achievementDesc": "Pay the Collector with exact change.",
+  "condition": "false",
+  "priority": 0,
+  "music": "sunrise",
+  "image": "end_paid_in_full",
+  "lines": [
+   "*You push the thirteen coins across the counter. The Collector looks down at them for a very long time.",
+   "THE COLLECTOR: \"Exact change.\" *He sounds, for the first time, uncertain.* \"One from each of them. They paid your fare.\"",
+   "*He closes the ledger. Your line is gone. So is Mara's.",
+   "THE COLLECTOR: \"The account is settled. The arrangement continues. Someone else will sit here next week.\"",
+   "*Mara steps out of the glass beside you, blinking in the light, badge number 0412. You walk to your car together. Neither of you looks back.",
+   "*Behind you, Unit 313 hums on. The passengers are still there, still coming back at 3:13. You bought two people out. Not thirteen.",
+   "*It's something. Some nights it even feels like enough."
+  ]
+ },
+ {
+  "id": "maras_shift",
+  "title": "MARA'S SHIFT",
+  "achievement": "Taking Over",
+  "achievementDesc": "Sign the ledger to free Mara.",
+  "condition": "false",
+  "priority": 0,
+  "music": "machine_remembers",
+  "image": "end_maras_shift",
+  "lines": [
+   "*You sign. But you write a condition under your name, the way Mara taught you to read the fine print: In exchange for the release of M. Quill.",
+   "THE COLLECTOR: \"...Sentimental. Accepted.\"",
+   "*The glass softens. As you sink into it, someone climbs out the other way — Mara, solid and dry, gasping like a swimmer breaking the surface.",
+   "MARA: \"No — no, you weren't supposed to —\"",
+   "*\"Go home,\" you tell her, and your voice comes out as the hum of a compressor.",
+   "*She stays until sunrise, her hand flat on the glass over yours. Then she leaves.",
+   "*Every night after, at 3:13, someone leaves a cold cola on the counter. You can't drink it. You appreciate it anyway."
+  ]
+ },
+ {
+  "id": "company_man",
+  "title": "COMPANY MAN",
+  "achievement": "District Supervisor",
+  "achievementDesc": "Hand Mara's evidence to Hale, then sign.",
+  "condition": "false",
+  "priority": 0,
+  "music": "machine_remembers",
+  "image": "end_company_man",
+  "lines": [
+   "*You sign. The Collector smiles under his hat — you can't see it, but you hear it.",
+   "THE COLLECTOR: \"Mr. Hale has been asking for a successor. You've already shown you can be trusted with sensitive materials.\"",
+   "*The machine does not take you. The company does.",
+   "*Six months later, you have a gray Meridian windbreaker, a corporate card, a ring with a logo on it, and the healthiest complexion anyone has ever seen.",
+   "*You call the new attendant at 313 on their first night. 'Evening,' you say. 'Job's easy. Read the handbook before three.'",
+   "*You never get sick. You never have a bad day. And you never, ever drive past the reservoir."
+  ]
+ },
+ {
+  "id": "together",
+  "title": "TOGETHER",
+  "achievement": "Yellow Raincoat",
+  "achievementDesc": "Refuse the Collector with Lily safe beside you.",
+  "condition": "false",
+  "priority": 0,
+  "music": "sunrise",
+  "image": "end_together",
+  "lines": [
+   "THE COLLECTOR: \"No? How tedious.\" *He closes the ledger.* \"Keep the booth, then. I'll find another.\"",
+   "*He's gone. At 6:00 AM you take off the badge and walk to your car.",
+   "*When you open the door, a small girl in a yellow raincoat climbs into the back seat and buckles herself in. She looks at you like it's obvious.",
+   "*The contract isn't broken. The others are still out there. But the Hollow can't follow her past the county line, and you drive for a very long time.",
+   "*She never speaks. She never grows. She leaves strawberry gum wrappers everywhere.",
+   "*Some nights she stands at your window at 3:13 and looks back toward Kessler Flats. Then she climbs into bed, and you leave the light on."
+  ]
+ },
+ {
+  "id": "ones_who_left",
+  "title": "THE ONES WHO LEFT",
+  "achievement": "Their Own Way Home",
+  "achievementDesc": "Help Walter, Mr. Crane and Lily, then refuse the Collector.",
+  "condition": "false",
+  "priority": 0,
+  "music": "sunrise",
+  "image": "end_ones_who_left",
+  "lines": [
+   "THE COLLECTOR: \"No?\" *He closes the ledger.* \"Then I'll keep what I have. Most of it.\"",
+   "*But some of it is already gone. Walter is ready. Mr. Crane knows the year. Lily is safe.",
+   "*At sunrise, a yellow bus pulls up to the stop on its own. Walter is driving. Mr. Crane holds the door for a little girl and a woman with a crooked smile.",
+   "*The rest of the passengers aren't on it. They can't be, not while the contract holds. Mara watches from the glass and waves.",
+   "*You leave Kessler Flats with your last paycheck and a wet quarter in your pocket.",
+   "*It isn't the whole truth. But four people got home who wouldn't have, and you were the reason."
+  ]
+ },
+ {
+  "id": "off_the_clock",
+  "title": "OFF THE CLOCK",
+  "achievement": "Rule A2",
+  "achievementDesc": "Leave the attendant booth during a shift.",
+  "condition": "false",
+  "priority": 0,
+  "music": "no_more_change",
+  "image": "end_off_the_clock",
+  "lines": [
+   "*You open the booth door and step out onto the lot.",
+   "*The air is wet. The concrete is wet. The edge of the light is much closer than it looked from inside.",
+   "*Thirteen people are standing at the edge of it. They've been waiting for someone to come out.",
+   "*They're very gentle about it. They take your hands. They walk you toward the water, and they tell you their names, one by one, so you won't be lonely.",
+   "*In the morning, Meridian sends a new attendant. The handbook is on the counter, open to Section A.",
+   "*A2. Do not leave the attendant booth between 11:00 PM and 6:00 AM for any reason."
+  ]
+ }
+]

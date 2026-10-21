@@ -1,0 +1,516 @@
+[
+ {
+  "night": 1,
+  "title": "The First Shift",
+  "subtitle": "Kessler Flats Rest Stop, Route 9",
+  "weather": "clear",
+  "music": "graveyard_shift",
+  "marginMusic": "something_approaches",
+  "tier": 1,
+  "wage": 1500,
+  "briefing": "Stock the unit. Read the handbook. Serve the customers. Survive until 6:00 AM.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Evening. This is Hale, District Office. You're the new attendant at 313.",
+   "Job's easy. Customers come up, you punch in the code, the unit dispenses, you take the money. Quiet road. Mostly truckers.",
+   "Read the handbook before three. Section B matters after three-thirteen. Don't ask me why, it's policy.",
+   "And don't leave the booth. Whatever you hear. Good luck."
+  ],
+  "events": [
+   {
+    "time": "23:02",
+    "type": "machine",
+    "id": "n1_cycle",
+    "condition": "cycle>=2",
+    "lines": [
+     "YOU CAME BACK."
+    ]
+   },
+   {
+    "time": "23:03",
+    "type": "notice",
+    "id": "n1_cycle_note",
+    "condition": "seen:replacement",
+    "lines": [
+     "For a second your reflection in the glass is wearing a badge that says No. 0. Then it's just you."
+    ]
+   },
+   {
+    "time": "03:13",
+    "type": "machine",
+    "id": "n1_margin",
+    "lines": [
+     "3:13"
+    ]
+   },
+   {
+    "time": "04:10",
+    "type": "scare",
+    "id": "distant_figure"
+   },
+   {
+    "time": "05:41",
+    "type": "machine",
+    "id": "n1_welcome",
+    "lines": [
+     "THANK YOU FOR YOUR SERVICE, NO. 0"
+    ],
+    "effects": [
+     "produce:UNLABELED",
+     "clue:welcome_receipt",
+     "receipt:MERIDIAN ROADSIDE SERVICES — UNIT 313\nTHANK YOU FOR YOUR SERVICE, NO. 0\nWELCOME BACK.",
+     "sfx:dispense_thunk"
+    ]
+   }
+  ],
+  "endCard": "The sun comes up over the reservoir. In the hidden row behind the glass, a can with no label is waiting for you."
+ },
+ {
+  "night": 2,
+  "title": "Unusual Customers",
+  "subtitle": "Fog over Route 9",
+  "weather": "fog",
+  "music": "something_outside",
+  "marginMusic": "wrong_customer",
+  "tier": 1,
+  "wage": 1600,
+  "briefing": "New handbook section: C — Unlisted Requests & Passengers.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Hale again. Heard you had a wet one last night. Don't worry about him. Regular.",
+   "There's a new section in your book. Section C. Some customers ask for things we don't stock. Check the unit camera before you say anything to them.",
+   "And if a man asks you about a bus — there's no bus. Give him coffee. Don't get into dates with him.",
+   "Oh — and if anything comes out of the machine on its own, leave it be. That's unit property."
+  ],
+  "events": [
+   {
+    "time": "01:50",
+    "type": "scare",
+    "id": "figure_window"
+   },
+   {
+    "time": "05:30",
+    "type": "phone",
+    "id": "n2_mara_call",
+    "speaker": "Unknown Caller",
+    "lines": [
+     "[Static. Rain on a line, though it isn't raining.]",
+     "...is this thing... can you hear me? Don't sell him anything. Not the can. Not anything it makes.",
+     "He'll be polite. He's always polite.",
+     "[The line goes dead. The display on the machine flickers green for a second.]"
+    ]
+   }
+  ],
+  "endCard": "In the fog, a bus stop sign you never noticed leans at the edge of the lot. ROUTE 9 — NIGHT SERVICE DISCONTINUED."
+ },
+ {
+  "night": 3,
+  "title": "The Rules Are Changing",
+  "subtitle": "Rain",
+  "weather": "rain",
+  "music": "read_the_rules",
+  "marginMusic": "dont_look_behind_you",
+  "tier": 2,
+  "wage": 1700,
+  "briefing": "New handbook section: D — Maintenance. Pages may update during the shift. Check every seal.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Hale. You're doing fine. Better than fine. The unit likes you. That's what the numbers say.",
+   "Section D is in your book now. If you hear knocking, it's the compressor. Keep the panel shut anyway.",
+   "Pages get updated through the night sometimes. If it's got the District seal, it's real. That's the only rule about rules."
+  ],
+  "events": [
+   {
+    "time": "23:40",
+    "type": "effects",
+    "id": "n3_can_note",
+    "condition": "!flag:sold_can",
+    "effects": [
+     "clue:mara_note1",
+     "sfx:can_pop",
+     "note:In Row E, the unlabeled can's lid pops on its own. A folded note slides out onto the tray."
+    ]
+   },
+   {
+    "time": "01:00",
+    "type": "page",
+    "id": "revB1",
+    "effects": [
+     "page:revB1",
+     "sfx:paper_rustle",
+     "note:The handbook rustles. A page that wasn't there before has been tucked into Section B."
+    ]
+   },
+   {
+    "time": "02:40",
+    "type": "scare",
+    "id": "light_flicker"
+   },
+   {
+    "time": "04:50",
+    "type": "knock",
+    "id": "n3_knock",
+    "duration": 16,
+    "onOpen": [
+     "bond+2",
+     "instability+25",
+     "flag:marked=1",
+     "scare:hands_glass"
+    ],
+    "openResult": "bad",
+    "openLines": [
+     "*Something inside takes your hand. It is cold and soft and very strong.",
+     "*When it lets go, the number 0 is pressed into your palm like a coin."
+    ]
+   },
+   {
+    "time": "05:45",
+    "type": "machine",
+    "id": "n3_msg",
+    "lines": [
+     "CHECK THE SEAL"
+    ]
+   }
+  ],
+  "endCard": "The rain stops at 6:00 AM exactly, as if someone turned it off."
+ },
+ {
+  "night": 4,
+  "title": "Something Is Watching",
+  "subtitle": "Storm",
+  "weather": "storm",
+  "music": "false_reflection",
+  "marginMusic": "dont_look_behind_you",
+  "tier": 2,
+  "wage": 1800,
+  "briefing": "New handbook section: E — Visitors. Storm warning on Route 9: power interruptions likely.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Hale. Bad storm coming in. If the power goes, stay put. The unit will come back.",
+   "Police might come by asking about a trucker. Haskins. You don't know anything. You sell snacks.",
+   "We've added Section E. Read it. And — we've installed a little extra monitoring. For your safety."
+  ],
+  "events": [
+   {
+    "time": "00:45",
+    "type": "notice",
+    "id": "cam0",
+    "lines": [
+     "A new feed blinks onto the security monitor: CAM 0 — OBSERVATION / DISTRICT."
+    ],
+    "effects": [
+     "clue:cam0_feed",
+     "flag:cam0=1",
+     "sfx:static_burst"
+    ]
+   },
+   {
+    "time": "01:40",
+    "type": "jam",
+    "id": "n4_jam"
+   },
+   {
+    "time": "03:20",
+    "type": "blackout",
+    "id": "n4_blackout",
+    "duration": 22
+   },
+   {
+    "time": "05:45",
+    "type": "effects",
+    "id": "n4_lily_check",
+    "condition": "flag:lily_exposed>=2",
+    "effects": [
+     "flag:lily_taken=1",
+     "note:Out by the bus stop, a small yellow raincoat lies in a puddle. Nobody is wearing it."
+    ]
+   }
+  ],
+  "endCard": "When the storm clears, CAM 0 is still on. It is still pointed at your back."
+ },
+ {
+  "night": 5,
+  "title": "The Missing Employee",
+  "subtitle": "Dense fog. Power unstable.",
+  "weather": "fog",
+  "music": "employee_no_0",
+  "marginMusic": "wrong_customer",
+  "tier": 3,
+  "wage": 2000,
+  "briefing": "District request: clear out the previous attendant's belongings from the stockroom before the shift.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Hale. Before you open up tonight I need you to clear out the stockroom. The last attendant left some things.",
+   "Box it up. Don't read it. Personal effects.",
+   "I'll be by later to collect."
+  ],
+  "investigationIntro": "The stockroom smells like damp cardboard and old coins. Mara Quill's things are still here. Search everything you can before the first customer arrives. You need at least her file and one of her tapes before you go back to the counter.",
+  "events": [
+   {
+    "time": "23:05",
+    "type": "investigate",
+    "id": "n5_stockroom"
+   },
+   {
+    "time": "03:13",
+    "type": "scare",
+    "id": "js_mara",
+    "effects": [
+     "machine:IT'S ME. DON'T OPEN THE PANEL. NOT YET."
+    ]
+   },
+   {
+    "time": "05:35",
+    "type": "knock",
+    "id": "n5_knock",
+    "duration": 14,
+    "onOpen": [
+     "bond+2",
+     "instability+30",
+     "scare:js_mara"
+    ],
+    "openResult": "bad",
+    "openLines": [
+     "*Mara's voice, inside the machine, very close: 'I said not yet.'",
+     "*The glass fogs with a handprint from the inside."
+    ]
+   }
+  ],
+  "investigation": [
+   {
+    "id": "file",
+    "label": "Filing cabinet",
+    "x": 0.06,
+    "y": 0.3,
+    "w": 0.14,
+    "h": 0.4,
+    "required": true,
+    "clue": "mara_file",
+    "text": "A personnel folder with Mara's name. Her badge number has been scratched out and replaced with a zero."
+   },
+   {
+    "id": "recorder",
+    "label": "Cassette recorder",
+    "x": 0.4,
+    "y": 0.55,
+    "w": 0.1,
+    "h": 0.1,
+    "required": true,
+    "clue": "mara_tape1",
+    "text": "An old cassette recorder with a tape still in it. You press play."
+   },
+   {
+    "id": "binder",
+    "label": "Maintenance binder",
+    "x": 0.24,
+    "y": 0.5,
+    "w": 0.12,
+    "h": 0.12,
+    "clue": "maintenance_log",
+    "text": "A grease-stained binder: Unit 313 maintenance reports going back to 1988."
+   },
+   {
+    "id": "notes",
+    "label": "Torn notebook",
+    "x": 0.55,
+    "y": 0.62,
+    "w": 0.1,
+    "h": 0.08,
+    "clue": "shift_notes",
+    "text": "Pages torn from a notebook and hidden under a box of napkins. Mara's handwriting, getting less steady near the end."
+   },
+   {
+    "id": "clipping",
+    "label": "Corkboard",
+    "x": 0.7,
+    "y": 0.18,
+    "w": 0.16,
+    "h": 0.22,
+    "clue": "clipping",
+    "text": "Pinned under a schedule, a yellowed newspaper clipping."
+   },
+   {
+    "id": "locker",
+    "label": "Locker 0",
+    "x": 0.88,
+    "y": 0.25,
+    "w": 0.1,
+    "h": 0.5,
+    "condition": "clue:locker_key",
+    "clue": "manifest",
+    "text": "The little brass key fits. Inside the locker: Mara's spare uniform, a flashlight, and a folded passenger manifest."
+   },
+   {
+    "id": "panel",
+    "label": "Loose panel under the shelf",
+    "x": 0.36,
+    "y": 0.8,
+    "w": 0.18,
+    "h": 0.1,
+    "condition": "clue:shift_notes",
+    "clue": "manifest",
+    "text": "Behind the loose panel, exactly where her notes said: a folded passenger manifest in a plastic sleeve."
+   },
+   {
+    "id": "mirror",
+    "label": "Mirror",
+    "x": 0.62,
+    "y": 0.28,
+    "w": 0.06,
+    "h": 0.14,
+    "effects": [
+     "instability+6",
+     "scare:reflection_linger"
+    ],
+    "text": "A small mirror screwed to the wall. For a moment there is someone standing behind you in it, wearing your uniform. Then there isn't."
+   }
+  ],
+  "endCard": "Hale never comes to collect the box. By morning, someone has written NOT YET in the condensation on the inside of the glass."
+ },
+ {
+  "night": 6,
+  "title": "The Truth About 3:13",
+  "subtitle": "The sky is the wrong color",
+  "weather": "margin",
+  "music": "machine_remembers",
+  "marginMusic": "no_more_change",
+  "tier": 3,
+  "wage": 2200,
+  "briefing": "New handbook section: F — Final Procedures.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Hale. Tomorrow's your seventh shift. That's a milestone. Corporate would like to offer you a permanent position.",
+   "There'll be some paperwork. A representative will come by tomorrow night to go over the terms.",
+   "Section F is in your book. Read it carefully. Especially F2."
+  ],
+  "events": [
+   {
+    "time": "23:20",
+    "type": "phone",
+    "id": "n6_machine_speaks",
+    "speaker": "Unit 313",
+    "lines": [
+     "[The display goes green. Text scrolls, one letter at a time.]",
+     "HELLO. IT'S MARA. I'M IN HERE. I'M PART OF IT NOW.",
+     "3:13 IS WHEN IT STOPPED. HE STOOD IN THE ROAD. THE BUS WENT IN. HE KEEPS THAT MINUTE OPEN.",
+     "[The text turns purple.]",
+     "DISREGARD PREVIOUS MESSAGE. UNIT FUNCTIONING NORMALLY. THANK YOU FOR YOUR SERVICE."
+    ]
+   },
+   {
+    "time": "00:10",
+    "type": "effects",
+    "id": "n6_tape",
+    "effects": [
+     "produce:CASSETTE",
+     "clue:mara_tape2",
+     "sfx:dispense_thunk",
+     "note:Something drops into Row E: an unmarked cassette. When you hold it, you can hear her voice, faintly, without playing it."
+    ]
+   },
+   {
+    "time": "01:40",
+    "type": "page",
+    "id": "revF3",
+    "effects": [
+     "page:revF3",
+     "sfx:paper_rustle",
+     "note:Another page has appeared in Section F."
+    ]
+   },
+   {
+    "time": "02:30",
+    "type": "scare",
+    "id": "js_crowd"
+   },
+   {
+    "time": "04:00",
+    "type": "wrongtime",
+    "id": "n6_wrongtime",
+    "duration": 28,
+    "onServe": [
+     "bond+1",
+     "instability+15",
+     "scare:reality_warp"
+    ]
+   },
+   {
+    "time": "05:45",
+    "type": "phone",
+    "id": "n6_hale_end",
+    "speaker": "Mr. Hale — District Office",
+    "lines": [
+     "Hale. Last night tomorrow. Get some sleep.",
+     "Whatever she's told you — she was a good worker. She signed. You'll sign too. Everybody does."
+    ]
+   }
+  ],
+  "endCard": "At sunrise the sky goes back to the right color. The display keeps flickering between 6:00 and 3:13 for an hour after."
+ },
+ {
+  "night": 7,
+  "title": "The Final Shift",
+  "subtitle": "The Last Stop",
+  "weather": "flood",
+  "music": "three_thirteen",
+  "marginMusic": "no_more_change",
+  "tier": 4,
+  "wage": 2500,
+  "briefing": "Section G added. A representative will arrive to settle your account.",
+  "phoneSpeaker": "Mr. Hale — District Office",
+  "phone": [
+   "Hale. Big night. I won't be calling again.",
+   "The representative will come at five. Be courteous. Accept the terms.",
+   "And — for what it's worth — the reservoir's high tonight. If the water reaches the lot, don't step in it."
+  ],
+  "events": [
+   {
+    "time": "02:00",
+    "type": "blackout",
+    "id": "n7_blackout",
+    "duration": 18
+   },
+   {
+    "time": "02:02",
+    "type": "knock",
+    "id": "n7_knock",
+    "duration": 16,
+    "onOpen": [
+     "bond+2",
+     "instability+30",
+     "scare:hands_glass"
+    ],
+    "openResult": "bad",
+    "openLines": [
+     "*In the dark, something inside the unit grabs your wrist and pulls, gently, as if to show you where you'll sit."
+    ]
+   },
+   {
+    "time": "03:13",
+    "type": "scare",
+    "id": "margin_surge"
+   },
+   {
+    "time": "04:00",
+    "type": "wrongtime",
+    "id": "n7_wrongtime",
+    "duration": 20,
+    "onServe": [
+     "bond+1",
+     "instability+15",
+     "scare:reality_warp"
+    ]
+   },
+   {
+    "time": "04:45",
+    "type": "machine",
+    "id": "n7_cycle",
+    "condition": "cycle>=2",
+    "lines": [
+     "NOT LIKE LAST TIME. PLEASE."
+    ]
+   }
+  ],
+  "endCard": ""
+ }
+]

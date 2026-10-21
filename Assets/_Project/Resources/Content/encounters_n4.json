@@ -1,0 +1,140 @@
+[
+  {"id":"n4_officer","night":4,"time":"23:20","character":"officer","name":"Officer Brandt","portrait":"cust_officer",
+   "lines":["*A highway patrol officer, rain streaming off her hat brim.","Evening. Coffee, please. And — I've got a question, if you've got a minute.","Trucker named Del Haskins. Regular out here. You seen him last night?"],
+   "request":"COFFEE","pays":250,"payment":"A department-issue card.",
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Kind, tired, careful. She's been crying, or it's the rain."},
+     {"spot":"reflection","label":"Reflection","text":"Normal."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"PULSE 84  TEMP 36.7°C  RESIDUE: NONE"}
+   ],
+   "talk":[
+     {"id":"yes","text":"\"He came by around eleven. He said he nearly hit a little girl on the curve.\"","reply":["*She writes it down. Her pen stops halfway.","His rig went through the rail on the reservoir curve last night. Same spot as that old bus.","We haven't found him."],"effects":["flag:told_officer=1"]},
+     {"id":"no","text":"\"I sell snacks. I don't know anything.\"","reply":["Right. Company line. I've heard it from every attendant at this booth.","The last one said it too. Then she stopped answering her phone."]}
+   ],
+   "outcomes":{
+     "serve:COFFEE":{"lines":["Thanks. If you see anything — anything — call it in. Don't go out there yourself.","*She stands by her cruiser for a long time, looking at the water."],"result":"good"},
+     "serve:*":{"lines":["...Thanks. Stay inside tonight."],"result":"neutral"},
+     "refuse":{"lines":["Okay. Stay inside tonight."],"result":"neutral"}
+   }},
+
+  {"id":"n4_nurse","night":4,"time":"00:05","character":"nurse","name":"Nurse Okafor","portrait":"cust_nurse",
+   "lines":["*Nurse Okafor again, coat soaked.","Aspirin. Please. I've had a headache since I drove past the reservoir.","...You're still here. Good for you. Most of them quit by the third night."],
+   "request":"ASPIRIN","pays":350,"payment":"Exact change.",
+   "inspect":[
+     {"spot":"face","label":"Face","text":"A migraine squint. She won't look at the glass at all."},
+     {"spot":"reflection","label":"Reflection","text":"Normal."}
+   ],
+   "talk":[
+     {"id":"smile","text":"\"Have you ever seen a woman who won't stop smiling?\"","reply":["*She goes very still.","My mother was on shift the night the bus went in. They brought a woman in off the shoreline. Smiling. Wouldn't stop. Couldn't.","She died at 4:02. Next morning, the body was gone. Mom never talked about it again."],"effects":["flag:heard_hospital=1"]},
+     {"id":"quit","text":"\"Why do they quit?\"","reply":["Because the job's not selling snacks. You know that by now."]}
+   ],
+   "outcomes":{
+     "serve:ASPIRIN":{"lines":["Thanks. Take some yourself. You look worse than me."],"result":"good"},
+     "serve:*":{"lines":["Not what I asked for, but thanks."],"result":"neutral"},
+     "refuse":{"lines":["Fine. I'll suffer."],"result":"neutral"}
+   }},
+
+  {"id":"n4_collector","night":4,"time":"01:10","character":"collector","name":"The Collector","portrait":"cust_collector","supernatural":true,"music":"wrong_customer",
+   "lines":["*The Collector. His ledger is fatter than last time.","Good evening. I'll be direct tonight. I'd like to buy a memory from you. Any memory. You pick.","Forty dollars. You won't miss it. Most people don't know what they've lost."],
+   "request":"UNLISTED","requestText":"One of your memories","pays":0,"patience":80,
+   "inspect":[
+     {"spot":"reflection","label":"Reflection","text":"In the glass, the ledger is open, and the newest page has a drawing taped into it. A child's drawing."},
+     {"spot":"hands","label":"Ledger","text":"A strip of yellow raincoat fabric is being used as a bookmark."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"Not on CAM 2. The fog on the glass spells something, briefly: NO."}],
+   "talk":[
+     {"id":"sell","end":true,"text":"Sell him a memory. (+$40)","reply":[]},
+     {"id":"decline","end":true,"text":"\"No deal.\"","reply":[]},
+     {"id":"what","text":"\"What do you do with them?\"","reply":["I keep them. Everything I buy, I keep.","That's the nature of collecting."]}
+   ],
+   "outcomes":{
+     "choice:sell":[
+       {"condition":"clue:drawing_bus","lines":["*He reaches across the counter — through the glass — and touches your forehead, lightly.","*Something is gone. You remember a child's drawing. You can't remember what was on it.","Thank you. A pleasure, as always."],"effects":["money+4000","bond+1","flag:sold_memory=1","unclue:drawing_bus"],"result":"bad"},
+       {"lines":["*He touches your forehead. Something small and warm is gone — you can't remember what.","Thank you."],"effects":["money+4000","bond+1","flag:sold_memory=1"],"result":"bad"}
+     ],
+     "choice:decline":{"lines":["Of course. Of course. Every 'no' is still a transaction, you know.","*He makes a note in the ledger."],"effects":["flag:refused_collector+1"],"result":"good"},
+     "refuse":{"lines":["Of course."],"effects":["flag:refused_collector+1"],"result":"good"},
+     "serve:*":{"lines":["Very kind. But I don't eat."],"paid":false,"result":"neutral"}
+   }},
+
+  {"id":"n4_lily","night":4,"time":"02:00","character":"lily","name":"The Silent Child","portrait":"cust_lily","supernatural":true,"condition":"!flag:lily_taken",
+   "lines":["*The girl in the yellow raincoat runs up to the glass, out of breath.","*She presses a photograph to the window. A woman with a soft, crooked smile, holding a little girl in a yellow raincoat.","*She points at the woman in the photo. Then at herself. Then she points at the bus stop and shakes her head, hard.","*She slides something small and brass under the glass. Then she taps the gum slot."],
+   "request":"GUM","pays":0,"payment":"She has given you a photograph and a key.","patience":90,
+   "inspect":[
+     {"spot":"payment","label":"Photograph","text":"'Addie & Lily, Sept. 1987.' The woman's smile is crooked and small. It is nothing like Mrs. Marsh's.","clue":"photo_adeline"},
+     {"spot":"hands","label":"Key","text":"A small brass key. STOCKROOM LOCKER 0.","clue":"locker_key"},
+     {"spot":"reflection","label":"Reflection","text":"Her reflection matches her. It is crying."}
+   ],
+   "cameras":[{"cam":"cam1","state":"present","note":"CAM 1: behind her, the bus stop is empty. For once."}],
+   "talk":[
+     {"id":"name","text":"\"Is your name Lily?\"","reply":["*She nods, slowly. She points at the photo — at the woman — and mouths a word. Mama.","*Then she points at the bus stop again, and shows you her teeth in an awful stretched grin. Not Mama."],"effects":["flag:knows_lily=1"]}
+   ],
+   "outcomes":{
+     "serve:GUM":{"lines":["*She takes the gum and holds it tight. She leaves the photo on the tray.","*Before she runs, she taps the glass twice and points at the stockroom door."],"paid":false,"effects":["flag:lily_trust+1","clue:photo_adeline","clue:locker_key"],"result":"good"},
+     "serve:*":{"lines":["*She takes it, leaves the photo, and points at the stockroom door before she runs."],"paid":false,"effects":["clue:photo_adeline","clue:locker_key"],"result":"neutral"},
+     "refuse":{"lines":["*She leaves the photo and the key anyway, and runs."],"effects":["clue:photo_adeline","clue:locker_key"],"result":"neutral"}
+   }},
+
+  {"id":"n4_del","night":4,"time":"03:45","character":"del","name":"Del Haskins?","portrait":"cust_del_dead","supernatural":true,"rules":["E1","B3"],"music":"wrong_customer","noReflection":true,
+   "arriveScare":"stinger_soft",
+   "lines":["*Del walks up out of the storm. His flannel is black with oil and reservoir water. One side of his face is wrong.","*He has no reflection.","Hey, kid.","Coffee. If that thing's got any left.","Road was full of people tonight. Standing in the rain. Hard to steer around 'em all."],
+   "request":"COFFEE","pays":250,"payment":"Two wet bills and two quarters.","patience":90,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"His eyes are still kind. The rest is hard to look at."},
+     {"spot":"reflection","label":"Reflection","text":"The glass shows the rain and the lot. It does not show Del."},
+     {"spot":"hands","label":"Hands","text":"He's drumming his fingers on the glass, the way he always does. It makes no sound."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"PULSE: NONE.  TEMP 11°C.  RESIDUE: HIGH.  DISPOSITION: CONFUSED. FRIENDLY."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"Not on CAM 2."},{"cam":"cam4","state":"other:cust_del_dead","upgrade":"monitor","note":"CAM 4: the reservoir guard rail is broken. Headlights glow under the water."}],
+   "talk":[
+     {"id":"del","text":"\"Del... do you know what happened to you?\"","reply":["Happened? I'm fine. Always am.","...Am I?"]},
+     {"id":"come","text":"\"Do you want to come in out of the rain?\"","reply":["Nah. Rules, right? Mara told me once. Never ask to come in.","Good kid, Mara."]}
+   ],
+   "outcomes":{
+     "serve:COFFEE":{"lines":["*He wraps his hands around the can. Steam rises, and for a second his face is just Del's face again.","That's the stuff. You're all right, kid.","*He walks back toward the water. He doesn't look scared anymore."],"effects":["flag:del_rest=1"],"result":"good"},
+     "serve:*":{"lines":["Huh. Not what I asked for, but I'll take it. Long road.","*He walks back toward the water."],"result":"neutral"},
+     "refuse":{"lines":["*He nods slowly, confused, and walks back into the rain."],"effects":["instability+4"],"result":"neutral"}
+   }},
+
+  {"id":"n4_smile","night":4,"time":"04:30","character":"smile","name":"The Smiling Woman","portrait":"cust_smile_3","supernatural":true,"rules":["E1","E2","C3"],"music":"something_approaches","noReflection":true,
+   "condition":"flag:smile_met",
+   "lines":["*Mrs. Marsh presses up against the glass. Her smile goes from ear to ear now, and a little past them.","Let me in, dear. It's so cold out here.","The girl is in there with you, isn't she? I can hear her. Let me in and I'll take her home.","Just open the door. Or give me the little key. That's all."],
+   "request":"UNLISTED","requestText":"To be let inside / the maintenance key","patience":70,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Her mouth is too wide for her skull. Her eyes are a photograph of eyes."},
+     {"spot":"reflection","label":"Reflection","text":"She has no reflection. The glass shows only the rain."},
+     {"spot":"hands","label":"Hands","text":"Her fingers have too many joints. They're testing the edge of the glass for a seam."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"WARNING. WARNING. DO NOT OPEN. DO NOT OPEN. DO NOT OPEN."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"Not on CAM 2."},{"cam":"cam0","state":"present","note":"CAM 0 (booth, from behind): you, at the counter. And a small yellow shape crouched under the counter beside your feet."}],
+   "talk":[
+     {"id":"let_in","end":true,"text":"Open the booth door.","reply":[]},
+     {"id":"give_key","end":true,"text":"Slide her the maintenance key.","reply":[]},
+     {"id":"who","text":"\"You're not her mother.\"","condition":"clue:photo_adeline","reply":["*The smile stays exactly where it is. Everything else about her face falls a little.","I'm wearing her. Isn't that close enough?"]}
+   ],
+   "outcomes":{
+     "choice:let_in":{"lines":["*You unlatch the door. The cold comes in first. Then the smile."],"result":"death","scare":"js_smile"},
+     "choice:give_key":{"lines":["*The key is gone from your hand before it reaches the slot.","*The maintenance panel opens from the inside."],"result":"death","scare":"js_smile"},
+     "refuse":{"lines":["*She screams without opening her mouth any further. The glass bows inward.","*Then she's gone, and the rain sounds very loud."],"effects":["instability+10"],"scare":"js_hollow","result":"good"},
+     "timeout":{"lines":["*She stays pressed to the glass for a long, long time. When the tubes flicker, she's gone."],"effects":["instability+6"],"result":"good"},
+     "serve:*":{"lines":["*She doesn't look at it.","Let. Me. In."],"paid":false,"effects":["instability+8"],"scare":"face_glass","result":"bad"}
+   }},
+
+  {"id":"n4_double","night":4,"time":"05:20","character":"double","name":"The Attendant","portrait":"cust_double","supernatural":true,
+   "lines":["*Someone in a Meridian uniform walks up to the machine. They're wearing a name badge. It's yours.","*They don't say anything. They stand exactly the way you stand when you're tired.","*You can't quite see their face. You keep trying."],
+   "request":"","patience":45,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"It's not that the face is hidden. It's that every time you look, it's still being made."},
+     {"spot":"clothes","label":"Badge","text":"Your name. Your badge number. Except the number keeps changing, counting down. It's at 3 now."},
+     {"spot":"reflection","label":"Reflection","text":"In the glass, the figure is standing inside the machine, behind the cans. Facing out."}
+   ],
+   "cameras":[{"cam":"cam2","state":"present","note":"CAM 2 shows the figure clearly. It's the only one besides you who ever shows up on CAM 2 after 3:13."},{"cam":"cam0","state":"present","note":"CAM 0: the booth from behind. You. And no one else."}],
+   "talk":[
+     {"id":"who","text":"\"Who are you?\"","reply":["*It opens its mouth. A receipt prints from the machine.","*THANK YOU FOR YOUR SERVICE."]}
+   ],
+   "outcomes":{
+     "refuse":{"lines":["*It nods, exactly the way you nod, and walks into the storm."],"result":"neutral"},
+     "timeout":{"lines":["*After a while it turns and walks into the storm. Its footprints are your size."],"result":"neutral"},
+     "serve:*":{"lines":["*It takes the item and puts it in its pocket, the way you would. It walks away."],"paid":false,"effects":["bond+1"],"result":"bad"}
+   }}
+]

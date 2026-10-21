@@ -1,0 +1,8 @@
+[
+  {"id":"storage","name":"Expanded Storage","price":4000,"unlockNight":1,"desc":"Deeper spiral coils. Every slot holds 8 units instead of 4.","effect":"Slot capacity 4 → 8"},
+  {"id":"restock","name":"Faster Restocking","price":3000,"unlockNight":1,"desc":"A rear-loading hatch. Restock while a customer waits, and it costs 2 minutes instead of 12.","effect":"Restock during customers; 2 min instead of 12"},
+  {"id":"lighting","name":"Improved Machine Lighting","price":3500,"unlockNight":1,"desc":"Brighter, warmer tubes behind the glass. Reflections are clearer and the dark feels further away.","effect":"Extra reflection details; instability gain −30%"},
+  {"id":"monitor","name":"Enhanced Security Monitor","price":5000,"unlockNight":2,"desc":"Adds CAM 4 (Route 9 shoulder) and a sharper night-vision mode that annotates movement.","effect":"Unlocks CAM 4 and extra camera observations"},
+  {"id":"idtool","name":"Customer Identification Tool","price":6000,"unlockNight":3,"desc":"A handheld scanner Meridian 'does not officially supply'. Reads pulse, temperature and something labeled RESIDUE.","effect":"Adds the SCAN inspection to every customer"},
+  {"id":"power","name":"Emergency Power Backup","price":4500,"unlockNight":3,"desc":"A battery bank under the counter. When the lot goes dark, the machine and monitor stay on.","effect":"Blackouts are shorter and the machine keeps working"}
+]

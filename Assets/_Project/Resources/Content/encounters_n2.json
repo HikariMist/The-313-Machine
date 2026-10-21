@@ -1,0 +1,669 @@
+[
+ {
+  "id": "n2_del",
+  "night": 2,
+  "time": "23:15",
+  "character": "del",
+  "name": "Del Haskins",
+  "portrait": "cust_del",
+  "lines": [
+   "*Del's rig pulls in, headlights cutting through the fog.",
+   "There they are! Survived your first night. Most don't make it to the second, y'know. Quit, I mean. Ha.",
+   "Coffee, if you would."
+  ],
+  "request": "COFFEE",
+  "pays": 250,
+  "payment": "Exact change, already counted out.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Same old Del. A little more tired. He keeps rubbing his eyes."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Normal."
+   }
+  ],
+  "talk": [
+   {
+    "id": "fog",
+    "text": "Rough drive in this fog?",
+    "reply": [
+     "Worst on the reservoir curve. I swear I saw a little kid in a yellow raincoat on the shoulder back there.",
+     "Stopped and looked. Nobody. Gave me the creeps."
+    ]
+   },
+   {
+    "id": "remember",
+    "condition": "flag:del_coffee",
+    "text": "Same as last night?",
+    "reply": [
+     "You remembered! See, this is why I like you. Mara used to do that."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:COFFEE": [
+    {
+     "condition": "flag:del_coffee",
+     "lines": [
+      "Two nights running. You're a pro. Here — for luck.",
+      "*He slides a battered keychain across the counter: a little plastic bus with 313 on the side.",
+      "Found it in the parking lot years back. Never felt right keeping it."
+     ],
+     "effects": [
+      "flag:del_coffee+1",
+      "money+100"
+     ],
+     "result": "good"
+    },
+    {
+     "lines": [
+      "That's the stuff. See you tomorrow, kid."
+     ],
+     "effects": [
+      "flag:del_coffee=1"
+     ],
+     "result": "good"
+    }
+   ],
+   "refuse": {
+    "lines": [
+     "Ah, come on. Fine. Tomorrow."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n2_crane",
+  "night": 2,
+  "time": "23:50",
+  "character": "crane",
+  "name": "The Passenger",
+  "portrait": "cust_crane",
+  "supernatural": true,
+  "rules": [
+   "C2"
+  ],
+  "lines": [
+   "*A man in a brown 1980s suit and a fogged pair of glasses steps up, briefcase in hand. His cuffs are damp.",
+   "Evening. Is the 2:58 running late, do you know? I've been waiting at that stop for... well. A while.",
+   "Coffee, please. Black. It's going to be a long trip to Holloway."
+  ],
+  "request": "COFFEE",
+  "pays": 250,
+  "payment": "Two dollar bills and two quarters. The bills are 1985 series.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Polite, harried, mid-forties. His glasses are fogged on the inside, and they never clear."
+   },
+   {
+    "spot": "clothes",
+    "label": "Ticket",
+    "text": "A ticket sticks out of his breast pocket.\nMERIDIAN COACH LINES — COACH 313 — 10/13/87 — DEP 2:58 AM.",
+    "clue": "ticket_stub"
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection is there. Its suit is darker — soaked through."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE: NONE.  TEMP 10°C.  RESIDUE: HIGH.  DISPOSITION: WAITING."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2."
+   },
+   {
+    "cam": "cam1",
+    "state": "present",
+    "note": "On CAM 1, the bus stop sign behind him reads 2:58 in faint white numbers."
+   }
+  ],
+  "talk": [
+   {
+    "id": "bus",
+    "text": "There's no bus that stops here anymore.",
+    "reply": [
+     "Ha! That's what they said last time, too. There's always a bus.",
+     "Ellis Crane. Mutual Hearth Insurance. I've got a meeting in Holloway at nine."
+    ]
+   },
+   {
+    "id": "name",
+    "text": "What's your name?",
+    "reply": [
+     "Crane. Ellis Crane. Pleasure.",
+     "You know, you look a little like my daughter. She'd be — oh, she'd be about your age by now. Isn't that a funny thing to say?"
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:COFFEE": {
+    "lines": [
+     "Ah. Wonderful. Thank you.",
+     "*He takes it back to the bus stop and stands under the sign, sipping, watching the road for headlights."
+    ],
+    "effects": [
+     "flag:crane_met=1"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Oh — that's not coffee. Never mind, never mind. I'll manage."
+    ],
+    "effects": [
+     "flag:crane_met=1"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "No coffee? That's all right. I'll wait. I'm very good at waiting."
+    ],
+    "effects": [
+     "flag:crane_met=1"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n2_jogger",
+  "night": 2,
+  "time": "00:35",
+  "character": "jogger",
+  "name": "Night Runner",
+  "portrait": "cust_jogger",
+  "lines": [
+   "*A woman in a reflective running vest jogs in place at the machine, breath steaming.",
+   "Water. Please. Fog's so thick I nearly ran into the lake."
+  ],
+  "request": "WATER",
+  "pays": 150,
+  "payment": "A card that taps. The reader beeps green.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Flushed, breathing hard, very alive."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection jogs in place with her, step for step."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE 148  TEMP 37.4°C  RESIDUE: NONE"
+   }
+  ],
+  "talk": [
+   {
+    "id": "stop",
+    "text": "Anyone else out there tonight?",
+    "reply": [
+     "Some guy in a suit at the bus stop. Briefcase and everything. In this fog? Weird.",
+     "Also, there's a puddle by the trail that doesn't reflect anything. I'm not running past it again."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:WATER": {
+    "lines": [
+     "Bless you. Okay. Two more miles. Don't let anybody tell you running at midnight is crazy."
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "Uh. I said water. That's fine, I'll find a fountain."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Seriously? Okay. Bye."
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n2_collector",
+  "night": 2,
+  "time": "01:20",
+  "character": "collector",
+  "name": "The Collector",
+  "portrait": "cust_collector",
+  "supernatural": true,
+  "rules": [
+   "C1",
+   "D2"
+  ],
+  "music": "wrong_customer",
+  "lines": [
+   "*He is very tall. His coat is pinstriped, his gloves are gray, and you never quite see his face under the brim of his hat. He carries a ledger.",
+   "Good evening. You must be the new attendant. How very nice.",
+   "I'm not here for anything on your menu. I'd like whatever the machine made on its own last night. The can without a label.",
+   "I'll pay well. Twenty dollars."
+  ],
+  "request": "UNLISTED",
+  "requestText": "The unlabeled can (Row E)",
+  "pays": 2000,
+  "payment": "A crisp twenty-dollar bill. The serial number is all zeros.",
+  "patience": 80,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "You look for his face. Your eyes keep sliding to the ledger instead, as if they've been told not to."
+   },
+   {
+    "spot": "hands",
+    "label": "Ledger",
+    "text": "A thick black ledger, columns of names in fine handwriting. He closes it before you can read any."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "In the glass, there is a tall shape. It is not wearing a coat. It is not wearing anything you have a word for."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "ERROR. ERROR. SUBJECT OUTSIDE CALIBRATION RANGE."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam1",
+    "state": "present",
+    "note": "CAM 1 shows him, very tall, very still."
+   },
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "CAM 2: no one at the unit. The glass is fogging, as if someone is breathing on it."
+   }
+  ],
+  "talk": [
+   {
+    "id": "who",
+    "text": "Who are you?",
+    "reply": [
+     "A client of your employer. A very old one. They'll tell you I'm a valued partner.",
+     "I collect things. Change, mostly."
+    ]
+   },
+   {
+    "id": "why",
+    "text": "Why do you want the can?",
+    "reply": [
+     "Because the machine made it, and what the machine makes is mine by contract. Clause four.",
+     "But I like to pay. It keeps things friendly."
+    ]
+   },
+   {
+    "id": "remember",
+    "condition": "cycle>=2",
+    "text": "\"I remember you.\"",
+    "reply": [
+     "And I remember you. You're one of my best customers.",
+     "Round and round we go. The minute never closes. Not really."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:UNLABELED": {
+    "lines": [
+     "*He takes the warm can in his gray glove and it goes quiet, the way a room goes quiet when someone stops crying.",
+     "Thank you. You and I are going to get along.",
+     "*He writes something in the ledger. You hear your own name in the scratching of the pen."
+    ],
+    "effects": [
+     "flag:sold_can=1",
+     "bond+1"
+    ],
+    "result": "bad"
+   },
+   "serve:*": {
+    "lines": [
+     "That's not what I asked for. But how sweet of you.",
+     "*He leaves the item on the counter untouched. It has gone cold, though it came out warm."
+    ],
+    "paid": false,
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "Polite. I appreciate polite.",
+     "*He tips his hat. He is gone before you see him walk away."
+    ],
+    "effects": [
+     "flag:refused_collector+1"
+    ],
+    "result": "good"
+   }
+  }
+ },
+ {
+  "id": "n2_lily",
+  "night": 2,
+  "time": "02:10",
+  "character": "lily",
+  "name": "The Silent Child",
+  "portrait": "cust_lily",
+  "supernatural": true,
+  "rules": [
+   "B3"
+  ],
+  "lines": [
+   "*A small girl in a yellow raincoat stands on tiptoe at the glass. She doesn't say anything.",
+   "*She presses a toy against the window: a little yellow bus. Then she taps the gum slot, B4, three times.",
+   "*She waits, looking up at you."
+  ],
+  "request": "GUM",
+  "pays": 0,
+  "payment": "She has no money. She places a crayon drawing face-down on the tray instead.",
+  "patience": 90,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Pale, freckled, about seven. Her hair is wet at the ends. She looks scared — but not of you."
+   },
+   {
+    "spot": "clothes",
+    "label": "Raincoat",
+    "text": "Her raincoat is dry. Her shoes are soaked, and there is weed tangled in the laces."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection matches her. It holds up the toy bus too."
+   },
+   {
+    "spot": "payment",
+    "label": "Drawing",
+    "text": "A crayon drawing: a yellow bus upside down in blue water. On the shore, a woman with a mouth that goes all the way across her face.",
+    "clue": "drawing_bus"
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE: NONE.  TEMP 8°C.  RESIDUE: HIGH.  DISPOSITION: FRIGHTENED."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2. On CAM 1 she keeps looking over her shoulder at the bus stop."
+   }
+  ],
+  "talk": [
+   {
+    "id": "hi",
+    "text": "Hi there. Are you lost?",
+    "reply": [
+     "*She shakes her head. She points to the bus stop. Then to the reservoir. Then to the machine."
+    ]
+   },
+   {
+    "id": "mom",
+    "text": "Where's your mom?",
+    "reply": [
+     "*She goes very still. She points at the drawing, at the woman with the huge mouth, and shakes her head hard. No. No."
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:GUM": {
+    "lines": [
+     "*She unwraps the gum with careful fingers and chews, eyes closed, like it's the best thing in the world.",
+     "*She leaves the drawing on the tray and runs off toward the trees."
+    ],
+    "paid": false,
+    "effects": [
+     "flag:lily_trust+1",
+     "clue:drawing_bus",
+     "flag:lily_met=1"
+    ],
+    "result": "good"
+   },
+   "serve:*": {
+    "lines": [
+     "*She looks at it, puzzled, then takes it anyway and holds it to her chest. She leaves the drawing."
+    ],
+    "paid": false,
+    "effects": [
+     "clue:drawing_bus",
+     "flag:lily_met=1"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*She nods like she understands, leaves the drawing on the tray, and walks away into the fog without looking back."
+    ],
+    "effects": [
+     "clue:drawing_bus",
+     "flag:lily_met=1"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n2_crane_return",
+  "night": 2,
+  "time": "03:40",
+  "character": "crane",
+  "name": "The Passenger",
+  "portrait": "cust_crane_wet",
+  "supernatural": true,
+  "rules": [
+   "C2"
+  ],
+  "music": "wrong_customer",
+  "condition": "flag:crane_met",
+  "lines": [
+   "*Mr. Crane comes back to the machine. He is soaking wet now, head to toe. Water drips from his briefcase.",
+   "I'm sorry — this is going to sound strange.",
+   "The bus came. I got on. And then there was water everywhere, and then I was standing at the stop again.",
+   "Why do I keep getting off here? What... what's the date today?"
+  ],
+  "request": "",
+  "patience": 90,
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Terrified, trying very hard to be reasonable about it."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "His reflection is underwater. Bubbles rise from its mouth when he talks."
+   }
+  ],
+  "talk": [
+   {
+    "id": "tell_truth",
+    "end": true,
+    "text": "Tell him the truth: it's 2026. The bus crashed in 1987.",
+    "reply": []
+   },
+   {
+    "id": "lie",
+    "end": true,
+    "text": "\"The next bus will be along soon.\"",
+    "reply": []
+   }
+  ],
+  "outcomes": {
+   "choice:tell_truth": {
+    "lines": [
+     "*He stares at you. For a long time he doesn't say anything.",
+     "...Twenty-twenty-six.",
+     "I think I knew. I think I've known for a very long time.",
+     "Thank you. Nobody's ever told me. Every time, they just give me coffee.",
+     "*He walks back to the bus stop and sits on the curb. He doesn't watch the road anymore."
+    ],
+    "effects": [
+     "flag:crane_told=1"
+    ],
+    "result": "good"
+   },
+   "choice:lie": {
+    "lines": [
+     "*He breathes out, relieved.",
+     "Of course. Of course. Silly of me.",
+     "*He goes back to the stop and watches the road, and does not see the water rising around his shoes."
+    ],
+    "effects": [
+     "flag:crane_waiting=1"
+    ],
+    "result": "neutral"
+   },
+   "serve:COFFEE": {
+    "lines": [
+     "*He takes the coffee and doesn't drink it.",
+     "Coffee. Yes. That's what they always give me.",
+     "*He goes back to the stop."
+    ],
+    "effects": [
+     "flag:crane_waiting=1"
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*He waits for an answer that doesn't come, then walks back to the stop."
+    ],
+    "effects": [
+     "flag:crane_waiting=1"
+    ],
+    "result": "neutral"
+   }
+  }
+ },
+ {
+  "id": "n2_smile",
+  "night": 2,
+  "time": "04:20",
+  "character": "smile",
+  "name": "The Smiling Woman",
+  "portrait": "cust_smile_2",
+  "supernatural": true,
+  "rules": [
+   "C3"
+  ],
+  "condition": "flag:smile_met",
+  "lines": [
+   "*Mrs. Marsh is back. Her curls are perfect. Her smile has gotten wider since last night. Not by much.",
+   "Hello again, dear! Have you seen my daughter tonight?",
+   "Yellow raincoat. Loves strawberry gum. She came by, didn't she? I can smell it."
+  ],
+  "request": "GUM",
+  "pays": 100,
+  "payment": "Another warm 1987 dollar coin.",
+  "inspect": [
+   {
+    "spot": "face",
+    "label": "Face",
+    "text": "Her smile shows more teeth than last night. Her eyes do not join in."
+   },
+   {
+    "spot": "reflection",
+    "label": "Reflection",
+    "text": "Her reflection is not smiling. It is standing behind the machine, looking for something."
+   },
+   {
+    "spot": "scan",
+    "label": "SCAN",
+    "upgrade": "idtool",
+    "text": "PULSE: NONE.  RESIDUE: ABNORMAL.  NOTE: SUBJECT PRESENT AT TWO LOCATIONS."
+   }
+  ],
+  "cameras": [
+   {
+    "cam": "cam2",
+    "state": "absent",
+    "note": "Not on CAM 2."
+   },
+   {
+    "cam": "cam3",
+    "state": "other:cust_smile_2",
+    "note": "CAM 3 (stockroom): a woman in a 1980s coat is standing among the boxes with her back to the camera."
+   }
+  ],
+  "talk": [
+   {
+    "id": "tell_saw",
+    "condition": "flag:lily_met",
+    "text": "\"She was here earlier. She went toward the trees.\"",
+    "reply": [
+     "*The smile widens by a fraction of an inch.",
+     "Thank you. Thank you so much. I'll find her now."
+    ],
+    "effects": [
+     "flag:lily_exposed+1",
+     "flag:told_smile=1"
+    ]
+   },
+   {
+    "id": "deny",
+    "text": "\"I haven't seen anyone like that.\"",
+    "reply": [
+     "Hm. You'd tell me. Wouldn't you, dear?"
+    ]
+   }
+  ],
+  "outcomes": {
+   "serve:GUM": {
+    "lines": [
+     "Lovely. She'll come for this.",
+     "*She walks off toward the trees, humming a lullaby in the wrong key."
+    ],
+    "result": "neutral"
+   },
+   "serve:*": {
+    "lines": [
+     "No, no. Never mind.",
+     "*She leaves, humming."
+    ],
+    "result": "neutral"
+   },
+   "refuse": {
+    "lines": [
+     "*Her smile stays exactly the same. Her voice doesn't.",
+     "Another time."
+    ],
+    "effects": [
+     "instability+4"
+    ],
+    "scare": "shadow_pass",
+    "result": "neutral"
+   }
+  }
+ }
+]

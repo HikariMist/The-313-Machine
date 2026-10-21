@@ -1,0 +1,20 @@
+[
+  {"id":"del","name":"Del Haskins","portrait":"cust_del","motif":"motif_del","bio":"A long-haul trucker who has stopped at Kessler Flats for twenty years. Talks too much. Means well."},
+  {"id":"student","name":"Priya","portrait":"cust_student","motif":"motif_normal","bio":"A college student driving home for the weekend. Her reflection has other plans."},
+  {"id":"nurse","name":"Nurse Okafor","portrait":"cust_nurse","motif":"motif_normal","bio":"A night-shift nurse at Kessler County General. She has seen the things that come in after 3 AM."},
+  {"id":"hunter","name":"Man in the Orange Vest","portrait":"cust_hunter","motif":"motif_normal","bio":"A local who walks the road at night. He has heard the knocking too."},
+  {"id":"leash","name":"Girl with a Leash","portrait":"cust_leash","motif":"motif_leash","bio":"She walks her dog every night. The dog only shows up on camera."},
+  {"id":"walter","name":"The Drenched Man","portrait":"cust_walter","motif":"motif_walter","bio":"Walter Pruitt drove the 2:58 AM Coach 313 from Kessler Flats. He is always soaked and always thirsty."},
+  {"id":"smile","name":"The Smiling Woman","portrait":"cust_smile","motif":"motif_smile","bio":"She introduces herself as Mrs. Marsh. She is looking for her daughter. Her smile grows every time you see her."},
+  {"id":"crane","name":"The Passenger","portrait":"cust_crane","motif":"motif_crane","bio":"Ellis Crane, an insurance salesman with a ticket for a bus that never comes."},
+  {"id":"collector","name":"The Collector","portrait":"cust_collector","motif":"motif_collector","bio":"A tall man in a pinstriped coat who keeps a ledger. Polite. Patient. Interested in what the machine makes."},
+  {"id":"lily","name":"The Silent Child","portrait":"cust_lily","motif":"motif_lily","bio":"A small girl in a yellow raincoat who never speaks. She talks by pressing things against the glass."},
+  {"id":"mara","name":"The Former Employee","portrait":"cust_mara","motif":"motif_mara","bio":"Mara Quill worked this booth before you. Her badge number was 0412. Now it reads No. 0."},
+  {"id":"officer","name":"Officer Brandt","portrait":"cust_officer","motif":"motif_normal","bio":"Kessler County highway patrol. Tired, kind, and looking for a missing trucker."},
+  {"id":"hale","name":"Mr. Hale","portrait":"cust_hale","motif":"motif_hale","bio":"Your supervisor at the Meridian District Office. You have only ever heard his voice — until tonight."},
+  {"id":"mimic","name":"Something Wearing a Face","portrait":"cust_mimic","motif":"motif_mimic","bio":"It learns faces from the people who come back. It is very good at it. It is not good at reflections."},
+  {"id":"double","name":"The Attendant","portrait":"cust_double","motif":"motif_double","bio":"It wears a Meridian uniform. It wears your posture. You never quite see its face."},
+  {"id":"motorist","name":"Stranded Motorist","portrait":"cust_motorist","motif":"motif_normal","bio":"A man whose car broke down on Route 9 at exactly the wrong time."},
+  {"id":"jogger","name":"Night Runner","portrait":"cust_jogger","motif":"motif_normal","bio":"Runs Route 9 at midnight because it's the only time it's quiet."},
+  {"id":"thirteen","name":"The Thirteen","portrait":"cust_thirteen","motif":"motif_crowd","bio":"Thirteen people from Coach 313, standing at the edge of the lot in the rain."}
+]

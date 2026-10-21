@@ -1,0 +1,124 @@
+[
+  {"id":"n6_crane","night":6,"time":"23:45","character":"crane","name":"Ellis Crane","portrait":"cust_crane_wet","supernatural":true,"condition":"flag:crane_met",
+   "lines":["*Mr. Crane, waiting at the glass, briefcase at his feet.","Good evening. I've been thinking about what you told me.","If I had a fare, I think I could go. Really go. Not to Holloway. Wherever it is the bus was always meant to take us."],
+   "request":"TOKEN","pays":0,"payment":"He has nothing left to pay with.","patience":100,
+   "inspect":[
+     {"spot":"face","label":"Face","condition":"flag:crane_told","text":"Calm. Ready. He knows exactly what year it is."},
+     {"spot":"face","label":"Face","condition":"!flag:crane_told","text":"Confused, hopeful, frightened. He still doesn't know what year it is."},
+     {"spot":"reflection","label":"Reflection","text":"His reflection is standing in the aisle of a bus, holding the overhead rail."}
+   ],
+   "talk":[
+     {"id":"tell","condition":"!flag:crane_told","text":"Tell him the truth: it's 2026. The bus crashed in 1987.","reply":["*He sits down on the curb, slowly.","Thirty-nine years.","...All right. All right. I think I'm ready to know that."],"effects":["flag:crane_told=1"]},
+     {"id":"token","condition":"stock:TOKEN","text":"\"There's a token in the machine for you.\"","reply":["My token. The one I gave Walter.","Would you? Please?"]}
+   ],
+   "outcomes":{
+     "serve:TOKEN":[
+       {"condition":"flag:crane_told","lines":["*He takes the brass token and closes his hand around it. Water runs out between his fingers and then stops.","Thank you. Truly. For telling me.","*Out on the road, headlights. A yellow bus, clean and dry, pulls up to the stop and opens its doors. Nobody is driving it yet.","*Mr. Crane climbs on and takes a seat by the window. He waves. The bus does not leave. It is waiting for the others."],"paid":false,"effects":["flag:crane_rest=1"],"result":"good"},
+       {"lines":["*He turns the token over and over.","Fare for what? The 2:58 is coming. It's always coming.","*He goes back to the stop, token in hand, to wait for a bus that will never stop for him."],"paid":false,"effects":["flag:crane_token_wasted=1"],"result":"bad"}
+     ],
+     "serve:COFFEE":{"lines":["*He smiles sadly.","Coffee. Of course."],"result":"neutral"},
+     "refuse":{"lines":["*He nods and goes back to the stop."],"result":"neutral"}
+   }},
+
+  {"id":"n6_collector","night":6,"time":"01:00","character":"collector","name":"The Collector","portrait":"cust_collector","supernatural":true,"music":"wrong_customer",
+   "lines":["*The Collector doesn't bother with pleasantries tonight.","Let me be frank, since she's been telling you things.","The company gets fortune. I get the change. The machine gets an attendant. It's a very old arrangement, and everyone benefits.","Sign the ledger tonight — one night early — and I'll let the little girl go. My word on it. Oh — and I'll take that cassette off your hands while I'm here."],
+   "request":"UNLISTED","requestText":"Your signature / the cassette in Row E","patience":90,
+   "inspect":[
+     {"spot":"hands","label":"Ledger","text":"The ledger is open to a blank line. Above it: QUILL, M. — SETTLED. Below it: a space for your name."},
+     {"spot":"reflection","label":"Reflection","text":"In the glass, he has his fingers crossed behind his back."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"Not on CAM 2."}],
+   "talk":[
+     {"id":"sign","end":true,"text":"Sign the ledger now.","reply":[]},
+     {"id":"word","text":"\"What's your word worth?\"","reply":["Exactly what I paid for it."]}
+   ],
+   "outcomes":{
+     "choice:sign":{"lines":["*You sign. The ink is warm. Your hand is cold for the rest of the night.","Wonderful. See you tomorrow, partner.","*Out on the lot, you hear a little girl crying. It doesn't stop for a long time."],"effects":["bond+2","flag:signed=1"],"result":"bad"},
+     "serve:CASSETTE":{"lines":["*He takes the tape. The voice you could almost hear on it goes silent.","Thank you. She talks too much."],"paid":false,"effects":["bond+1","unclue:mara_tape2","flag:sold_cassette=1"],"result":"bad"},
+     "serve:*":{"lines":["No, no."],"paid":false,"result":"neutral"},
+     "refuse":{"lines":["*For the first time, his voice drops the politeness.","Tomorrow, then.","*He's gone. The temperature in the booth drops ten degrees."],"effects":["flag:refused_collector+1","instability+6"],"scare":"js_collector","result":"good"}
+   }},
+
+  {"id":"n6_lily","night":6,"time":"02:00","character":"lily","name":"Lily","portrait":"cust_lily","supernatural":true,"condition":"!flag:lily_taken",
+   "lines":["*Lily runs to the glass, hood flying back. She's terrified.","*For the first time, she speaks. One word, barely a whisper.","\"...Mama?\"","*She points out at the lot. On the monitor, CAM 1 shows the Smiling Woman walking toward the machine, fast."],
+   "request":"","patience":45,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"She's shaking. She's looking at the gap under the booth door."},
+     {"spot":"reflection","label":"Reflection","text":"Her reflection is already crouched under your counter, hiding."}
+   ],
+   "cameras":[{"cam":"cam1","state":"extra:cust_smile_3","note":"CAM 1: the Smiling Woman, halfway across the lot, coming fast."}],
+   "talk":[
+     {"id":"hide","end":true,"condition":"flag:lily_exposed<2","text":"Pull her into the booth and hide her under the counter.","reply":[]},
+     {"id":"run","end":true,"text":"\"Run! Into the trees!\"","reply":[]}
+   ],
+   "outcomes":{
+     "choice:hide":{"lines":["*She isn't someone. She's no one. The rule about letting people in doesn't seem to notice her. She slips under the counter like a shadow and goes perfectly still.","*She holds your ankle with one cold little hand."],"effects":["flag:lily_safe=1","flag:lily_trust+1"],"result":"good"},
+     "choice:run":{"lines":["*She runs. You watch her yellow coat disappear into the trees.","*A moment later, the Smiling Woman passes the machine without looking at you, walking the same way."],"effects":["flag:lily_exposed+1"],"result":"bad"},
+     "timeout":{"lines":["*She can't wait any longer. She runs for the trees."],"effects":["flag:lily_exposed+1"],"result":"bad"},
+     "refuse":{"lines":["*She looks at you like she always knew you'd say no, and runs."],"effects":["flag:lily_exposed+1"],"result":"bad"}
+   }},
+
+  {"id":"n6_hollow","night":6,"time":"03:30","character":"smile","name":"The Hollow","portrait":"cust_smile_3","supernatural":true,"rules":["E1","E2","C3"],"music":"no_more_change","noReflection":true,"condition":"flag:smile_met",
+   "arriveScare":"js_hollow",
+   "lines":["*She is not pretending to be Mrs. Marsh anymore. The coat hangs off something long and thin. The smile is all that's left of the face.","WHERE IS SHE.","I can SMELL her. Strawberries and salt.","TELL ME WHERE SHE IS."],
+   "request":"UNLISTED","requestText":"The child","patience":60,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"You make yourself look. The smile is a seam. Something behind it is trying to get out."},
+     {"spot":"reflection","label":"Reflection","text":"It has no reflection. In the glass, the lot is empty except for a woman with a soft, crooked smile, standing far away, crying."}
+   ],
+   "cameras":[{"cam":"cam2","state":"absent","note":"Not on CAM 2."},{"cam":"cam0","condition":"flag:lily_safe","state":"present","note":"CAM 0: under the counter, a small yellow shape, perfectly still."}],
+   "talk":[
+     {"id":"point","end":true,"condition":"flag:lily_safe","text":"Point under the counter.","reply":[]},
+     {"id":"let_in","end":true,"text":"Open the booth door.","reply":[]},
+     {"id":"adeline","condition":"clue:photo_adeline","text":"\"Your name was Adeline. You had a crooked smile.\"","reply":["*The seam of the smile tears a little wider. For a second, behind it, there's a different face — tired, frightened, crying.","*Then the smile closes over it again."],"effects":["flag:called_adeline=1"]}
+   ],
+   "outcomes":{
+     "choice:point":{"lines":["*You point. You don't know why. The small hand on your ankle lets go.","*The booth door is still locked. It doesn't matter. Lily is gone, and so is the Hollow, and the salt line out on the lot is scattered as if something stepped right through it."],"effects":["flag:lily_taken=1","flag:lily_safe=0"],"scare":"js_hollow","result":"bad"},
+     "choice:let_in":{"lines":["*You open the door."],"result":"death","scare":"js_hollow"},
+     "refuse":{"lines":["*It screams. Every bottle in the machine cracks. The lights die and come back.","*When they come back, it's gone."],"effects":["instability+12"],"scare":"js_hollow","result":"good"},
+     "timeout":{"lines":["*It presses against the glass until the glass groans. Then, all at once, it's gone."],"effects":["instability+10"],"result":"good"},
+     "serve:*":{"lines":["*It doesn't even look."],"paid":false,"effects":["instability+6"],"result":"neutral"}
+   }},
+
+  {"id":"n6_motorist","night":6,"time":"04:05","character":"motorist","name":"Stranded Motorist","portrait":"cust_motorist","rules":["F1"],
+   "lines":["*A man in a windbreaker jogs up, breathless, phone flashlight on.","Oh thank God, someone's here. My car died on the curve — everything just cut out.","Can I get a water and some batteries? Please, I've got a flashlight in the trunk."],
+   "request":"BATTERY","pays":550,"payment":"Cash, crumpled, held out fast.","patience":75,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Genuinely frightened. Genuinely alive. He keeps looking at the machine's display."},
+     {"spot":"reflection","label":"Reflection","text":"Normal."},
+     {"spot":"scan","label":"SCAN","upgrade":"idtool","text":"PULSE 120  TEMP 36.6°C  RESIDUE: NONE (YET)"}
+   ],
+   "cameras":[{"cam":"cam2","state":"present","note":"CAM 2: the man, at the glass. The unit's display, in the corner of the shot, reads 3:13."}],
+   "talk":[
+     {"id":"time","text":"\"What time does the machine say to you?\"","reply":["Three-thirteen. My phone says four. Is your clock broken?"]}
+   ],
+   "outcomes":{
+     "serve:*":[
+       {"condition":"wrongtime","lines":["*The coil turns. What falls into the tray is a soaked brown bus ticket, dated 10/13/87.","*The man picks it up. When he looks back at you, his face is wet, and his eyes are clouded, and he says, very calmly: 'Is the 2:58 running late?'","*Then he's himself again, screaming, and running back to his car."],"effects":["flag:motorist_cursed=1"],"result":"bad"},
+       {"lines":["Thank you, thank you.","*He runs back toward the road."],"result":"good"}
+     ],
+     "refuse":[
+       {"condition":"wrongtime","lines":["*You point at the display. 3:13. He stares at it, then at you.","...Right. Okay. I'll — I'll wait for a tow in my car with the doors locked.","*Ten minutes later, his headlights come back on by themselves."],"effects":["flag:motorist_saved=1"],"result":"good"},
+       {"lines":["Seriously? Fine. FINE."],"result":"neutral"}
+     ]
+   }},
+
+  {"id":"n6_mara","night":6,"time":"05:00","character":"mara","name":"Mara Quill","portrait":"cust_mara","supernatural":true,"music":"employee_no_0",
+   "lines":["*Mara, outside the glass again. She looks thinner, like she's being used up.","I don't have long. He's pulling harder every night.","Listen. I finally read clause thirteen. The whole arrangement can be broken."],
+   "request":"COLA","pays":0,"payment":"Nothing.","patience":120,
+   "inspect":[
+     {"spot":"face","label":"Face","text":"Determined. Her outline flickers like a bad fluorescent tube."},
+     {"spot":"reflection","label":"Reflection","text":"Inside the machine, the woman behind the cans has her eyes open now."}
+   ],
+   "talk":[
+     {"id":"how","text":"\"How do we break it?\"","reply":["Three things. The date — month and day — on the maintenance keypad, while the Collector is standing right in front of you. Not the time. He'll try to make you use the time.","Every name — the manifest. You read them to him.","And nobody left behind. Walter ready to go. Mr. Crane knowing where he's headed. And Lily safe from that thing."],"effects":["clue:truth_rules"]},
+     {"id":"manifest","condition":"!clue:manifest & flag:mara_trust","text":"\"I never found the manifest.\"","reply":["I kept a copy. In here. Hold on—","*The machine shudders. A folded sheet of paper slides out of Row E, damp, warm."],"effects":["clue:manifest"]},
+     {"id":"token","condition":"!flag:walter_ready & !stock:TOKEN & !flag:crane_rest","text":"\"Mr. Crane needs a token. Walter never gave me one.\"","reply":["I can do that much.","*Something clinks into Row E."],"effects":["produce:TOKEN"]},
+     {"id":"you","text":"\"What happens to you?\"","reply":["If it breaks? I get to leave.","If it doesn't, I stay. Or you do. That's how the arrangement works. Somebody always stays."]}
+   ],
+   "outcomes":{
+     "serve:COLA":{"lines":["*She takes it, but doesn't drink it.","For the road. Tomorrow. Whatever happens.","*She steps back into the glass."],"paid":false,"effects":["flag:mara_trust+1"],"result":"good"},
+     "serve:*":{"lines":["Thank you.","*She steps back into the glass."],"paid":false,"result":"neutral"},
+     "refuse":{"lines":["*She nods.","Tomorrow, then.","*She steps back into the glass."],"result":"neutral"}
+   }}
+]

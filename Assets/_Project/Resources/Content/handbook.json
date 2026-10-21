@@ -1,0 +1,230 @@
+{
+ "pages": [
+  {
+   "id": "welcome",
+   "section": "",
+   "title": "Welcome to Meridian Roadside Services",
+   "night": 1,
+   "body": "Congratulations on your appointment as Night Attendant, Unit 313 — Kessler Flats.\n\nYour shift runs from 11:00 PM to 6:00 AM. Your duties are simple: keep the unit stocked, serve customers, and follow this handbook exactly.\n\nThe handbook is updated by the District Office. Updated pages bear the green District seal.\n\nYou will be paid nightly. You will not be asked to do anything you cannot do.\n\n— T. Hale, District Supervisor",
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 1,
+     "text": "Read all of it. Twice. The rules are real even when the reasons aren't. — M"
+    },
+    {
+     "ink": "green",
+     "night": 1,
+     "condition": "cycle>=2",
+     "text": "You've done this before. I can tell by how you hold the book. It doesn't have to go the same way. — M"
+    },
+    {
+     "ink": "green",
+     "night": 1,
+     "condition": "seen:replacement",
+     "text": "Last time you stayed. I felt you in here with me. Please don't stay."
+    },
+    {
+     "ink": "green",
+     "night": 1,
+     "condition": "seen:escape & !seen:truth",
+     "text": "Last time you left. You got out. But they didn't."
+    },
+    {
+     "ink": "green",
+     "night": 1,
+     "condition": "seen:truth",
+     "text": "The machine went dark. And then someone turned it back on. Of course they did. — M"
+    }
+   ]
+  },
+  {
+   "id": "secA",
+   "section": "A",
+   "title": "Section A — General Conduct",
+   "night": 1,
+   "rules": [
+    "A1|Serve every paying customer, unless another rule applies.",
+    "A2|Do not leave the attendant booth between 11:00 PM and 6:00 AM for any reason.",
+    "A3|If the same customer appears in two places at once, the one in front of you is not the real one. Do not speak to it, serve it, or refuse it. Wait until it leaves.",
+    "A4|Keep the unit stocked. Empty slots invite unlisted requests.",
+    "A5|Handbook revisions are valid only when they bear the green District Office seal. Disregard any page without it."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 1,
+     "text": "A1 — not everyone who pays should be served. Read the other sections."
+    },
+    {
+     "ink": "green",
+     "night": 3,
+     "text": "A5 is the most important rule in this book. Pages show up on their own. Check the seal."
+    }
+   ]
+  },
+  {
+   "id": "secB",
+   "section": "B",
+   "title": "Section B — Between 3:13 AM and Sunrise",
+   "night": 1,
+   "rules": [
+    "B1|Never serve water to anyone whose reflection moves on its own.",
+    "B2|If a customer is wet and the weather is dry, inspect their reflection before serving.",
+    "B3|Customers who do not appear on CAM 2 (Unit Camera) are not alive. This is not, by itself, a reason to refuse service.",
+    "B4|Do not look at the lot for longer than necessary. Use the cameras."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 1,
+     "text": "The ones who look scary usually aren't. Walter just wants a drink."
+    },
+    {
+     "ink": "green",
+     "night": 4,
+     "text": "Watch the reflection, not the face. Faces can be borrowed."
+    }
+   ]
+  },
+  {
+   "id": "secC",
+   "section": "C",
+   "title": "Section C — Unlisted Requests & Passengers",
+   "night": 2,
+   "rules": [
+    "C1|If a customer requests an item that is not on the menu, check CAM 2. If the customer does not appear on CAM 2, refuse politely.",
+    "C2|Bus passengers: there is no bus. Serve them coffee. Do not tell them the date.",
+    "C3|Never tell a customer where another customer went."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 2,
+     "text": "C2 — Mr. Crane deserves to know. Tell him when he asks. Gently."
+    },
+    {
+     "ink": "green",
+     "night": 2,
+     "text": "C3 — She is NOT her mother. Never tell her where the little girl went."
+    }
+   ]
+  },
+  {
+   "id": "secD",
+   "section": "D",
+   "title": "Section D — Maintenance",
+   "night": 3,
+   "rules": [
+    "D1|If someone knocks from inside the unit, keep the maintenance panel closed until the knocking stops.",
+    "D2|Items that dispense on their own (Row E) belong to the unit. Do not sell them to customers.",
+    "D3|If the unit jams (ERROR E-13), open the maintenance panel and reset the motor. Do not do this while knocking is heard."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 3,
+     "text": "D2 — he collects what the machine makes. Don't let him have it. Ever."
+    }
+   ]
+  },
+  {
+   "id": "revB1",
+   "section": "B",
+   "title": "Section B — REVISED",
+   "night": 99,
+   "unlocked": true,
+   "stamped": false,
+   "forged": true,
+   "rules": [
+    "B1|(REVISED) Water may be served to all wet customers. Reflection irregularities are caused by a known glass defect and should be ignored."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 3,
+     "condition": "page:revB1",
+     "text": "There's no seal. This isn't from Hale. It's from HIM."
+    }
+   ]
+  },
+  {
+   "id": "secE",
+   "section": "E",
+   "title": "Section E — Visitors",
+   "night": 4,
+   "rules": [
+    "E1|Customers without reflections are not a threat unless they ask to come inside.",
+    "E2|Never let anyone into the booth. Never hand over the maintenance key.",
+    "E3|After 3:13, camera timestamps may drift. Trust what the camera shows, not when it says it happened."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 4,
+     "text": "Del was a good man. If he comes back, give him his coffee."
+    }
+   ]
+  },
+  {
+   "id": "secF",
+   "section": "F",
+   "title": "Section F — Final Procedures",
+   "night": 6,
+   "rules": [
+    "F1|If the unit displays 3:13 at the wrong time, stop dispensing products until the display corrects itself.",
+    "F2|Attendants who complete seven shifts will be offered a permanent position. Signing is voluntary.",
+    "F3|The maintenance override keypad is for District use only."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 6,
+     "text": "F2 — it is not voluntary. Ask me how I know."
+    },
+    {
+     "ink": "green",
+     "night": 6,
+     "text": "F3 — month and day. Not the time."
+    }
+   ]
+  },
+  {
+   "id": "revF3",
+   "section": "F",
+   "title": "Section F — REVISED",
+   "night": 99,
+   "unlocked": true,
+   "stamped": false,
+   "forged": true,
+   "rules": [
+    "F3|(REVISED) The maintenance override code is 0313. Enter it when the Collector arrives to settle your account."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 6,
+     "condition": "page:revF3",
+     "text": "NO SEAL. He wants you to try the time."
+    }
+   ]
+  },
+  {
+   "id": "secG",
+   "section": "G",
+   "title": "Section G — The Seventh Shift",
+   "night": 7,
+   "rules": [
+    "G1|On the seventh shift, a representative will arrive to settle your account. Attendants are advised to accept the terms.",
+    "G2|The attendant booth must not be left unattended. A replacement will be arranged if necessary."
+   ],
+   "annotations": [
+    {
+     "ink": "green",
+     "night": 7,
+     "text": "Whatever you choose — thank you for listening to me. — Mara"
+    }
+   ]
+  }
+ ]
+}

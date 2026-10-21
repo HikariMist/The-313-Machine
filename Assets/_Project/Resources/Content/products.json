@@ -1,0 +1,20 @@
+[
+  {"id":"COLA","name":"Midnight Cola","price":200,"cost":80,"category":"drink","icon":"prod_cola","desc":"Dark, sweet, cold. The can sweats even in winter.","label":"MIDNIGHT COLA — BEST BEFORE YOU KNOW IT"},
+  {"id":"WATER","name":"Clearspring Water","price":150,"cost":50,"category":"drink","icon":"prod_water","desc":"Bottled spring water. Sourced from somewhere far from the reservoir, the label insists.","label":"CLEARSPRING — NOT FROM KESSLER RESERVOIR"},
+  {"id":"COFFEE","name":"Hot Canned Coffee","price":250,"cost":90,"category":"drink","icon":"prod_coffee","desc":"Heated in the machine's warm row. Steadies the nerves of whoever drinks it.","label":"HOT — HANDLE WITH CARE — STAY AWAKE"},
+  {"id":"ENERGY","name":"VOLT Energy","price":300,"cost":110,"category":"drink","icon":"prod_energy","desc":"Neon green, 300mg of something. Truckers swear by it.","label":"VOLT — DON'T SLEEP ON IT"},
+  {"id":"CHIPS","name":"Salt & Vinegar Chips","price":175,"cost":60,"category":"snack","icon":"prod_chips","desc":"Crunchy. Loud in a quiet booth.","label":"KESSLER CRISP CO."},
+  {"id":"CHOCO","name":"Caramel Bar","price":150,"cost":55,"category":"snack","icon":"prod_choco","desc":"A cheap chocolate bar with a caramel center.","label":"GOLDEN HOUR CARAMEL"},
+  {"id":"PEANUTS","name":"Roasted Peanuts","price":125,"cost":40,"category":"snack","icon":"prod_peanuts","desc":"Salted, in a crinkly bag. Dogs like them too.","label":"ROASTED — MAY CONTAIN MEMORIES OF BALLPARKS"},
+  {"id":"GUM","name":"Strawberry Gum","price":100,"cost":30,"category":"snack","icon":"prod_gum","desc":"Pink, sugary strawberry gum. A brand that stopped advertising in the eighties.","label":"BERRY BUBBLE — SINCE 1979"},
+  {"id":"NOODLES","name":"Cup Noodles","price":275,"cost":100,"category":"snack","icon":"prod_noodles","desc":"Hot water from the machine's spout. Takes three minutes. Feels like a meal.","label":"3-MINUTE NOODLE — WAIT FOR IT"},
+  {"id":"BATTERY","name":"AA Batteries (2)","price":400,"cost":160,"category":"supply","icon":"prod_battery","desc":"For flashlights, radios and things that need to stay on.","label":"LONGLIFE AA"},
+  {"id":"ASPIRIN","name":"Aspirin Travel Pack","price":350,"cost":130,"category":"supply","icon":"prod_aspirin","desc":"For headaches. The kind you get from staring at the cameras too long.","label":"TAKE 2. REST. DO NOT LOOK AT THE GLASS."},
+  {"id":"MATCHES","name":"Book of Matches","price":100,"cost":25,"category":"supply","icon":"prod_matches","desc":"A matchbook printed with the Meridian logo.","label":"MERIDIAN ROADSIDE — WE KEEP THE LIGHTS ON"},
+  {"id":"SALT","name":"Road Salt Packet","price":75,"cost":20,"category":"supply","unlockNight":2,"icon":"prod_salt","desc":"Coarse salt in a paper packet. Sold for icy steps. Old drivers say it keeps other things off them too.","label":"FOR ICE. AND OTHER THINGS THAT CREEP."},
+  {"id":"MINTS","name":"Peppermints","price":100,"cost":30,"category":"snack","icon":"prod_mints","desc":"Sharp, cold mints. Clears the head.","label":"ARCTIC MINT"},
+  {"id":"UNLABELED","name":"Unlabeled Can","price":0,"cost":0,"category":"unusual","purchasable":false,"unusual":true,"icon":"prod_unlabeled","desc":"A plain steel can with no label. It is slightly warm, as if someone was holding it.","label":""},
+  {"id":"TOKEN","name":"Coach Token 313","price":0,"cost":0,"category":"unusual","purchasable":false,"unusual":true,"icon":"prod_token","desc":"A brass bus token stamped MERIDIAN COACH LINES — 313. It is wet, and it stays wet.","label":"GOOD FOR ONE FARE"},
+  {"id":"CASSETTE","name":"Unmarked Cassette","price":0,"cost":0,"category":"unusual","purchasable":false,"unusual":true,"icon":"prod_cassette","desc":"A cassette tape with a strip of masking tape on it. Someone wrote 'M.Q. #2' and crossed it out.","label":"M.Q. #2"},
+  {"id":"EXACT","name":"Exact Change","price":0,"cost":0,"category":"unusual","purchasable":false,"unusual":true,"icon":"prod_exact","desc":"Thirteen old coins wrapped in a receipt. The receipt is blank on both sides.","label":"PAID IN FULL"}
+]
