@@ -35,10 +35,38 @@ namespace HikariForge.M313
             S.LoadPersistent();
             S.Settings.PlaytestTools = Debug.isDebugBuild;
             ApplyComfortSettings();
+            ApplyDisplay();
             _hasSave = S.HasSave();
             Ui.Sound = id => S.Sfx(id, 0.4f);
             // The launcher just played the studio cinematic: skip the video and studio credit, keep the 3:13 AM card.
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "-hf-studio-intro-shown") >= 0) { _videoStarted = true; _introT = 4.2f; }
+        }
+
+        /// <summary>
+        /// Applies the saved display mode at the monitor's native size. Done on every start so Unity's own
+        /// remembered window size (registry) can never leave a "fullscreen" game in a small window.
+        /// </summary>
+        private void ApplyDisplay()
+        {
+            var info = Screen.mainWindowDisplayInfo;
+            int w = info.width > 0 ? info.width : Display.main.systemWidth, h = info.height > 0 ? info.height : Display.main.systemHeight;
+            var st = S.Settings;
+            switch (st.DisplayMode)
+            {
+                case 0: Screen.SetResolution(w, h, FullScreenMode.ExclusiveFullScreen); break;
+                case 1: Screen.SetResolution(w, h, FullScreenMode.FullScreenWindow); break;
+                case 2: Screen.SetResolution(w, h, FullScreenMode.MaximizedWindow); break;
+                default: Screen.SetResolution(Mathf.Min(st.WindowWidth, w), Mathf.Min(st.WindowHeight, h), FullScreenMode.Windowed); break;
+            }
+        }
+
+        /// <summary>16:9 window sizes that fit the current monitor.</summary>
+        private static Vector2Int[] WindowSizes()
+        {
+            var info = Screen.mainWindowDisplayInfo;
+            var all = new[] { new Vector2Int(1280, 720), new Vector2Int(1600, 900), new Vector2Int(1920, 1080), new Vector2Int(2560, 1440), new Vector2Int(3200, 1800) };
+            var fit = all.Where(s => info.width <= 0 || (s.x <= info.width && s.y <= info.height)).ToArray();
+            return fit.Length > 0 ? fit : new[] { all[0] };
         }
 
         private void ApplyComfortSettings()
@@ -1147,19 +1175,22 @@ namespace HikariForge.M313
             st.ReducedShake = Toggle("Reduce camera shake", st.ReducedShake);
             st.Subtitles = Toggle("Subtitles for phone calls and voices", st.Subtitles);
             st.Hints = Toggle("Show tips for new night attendants", st.Hints);
-            // Display (Unity-only settings, stored by Unity itself).
+            // Display: saved with the other settings and re-applied on every start (see ApplyDisplay).
             Ui.Text("Display", x + 40, cy + 6, 380, 40, Ui.F.Body, 22);
-            if (Ui.Button(Screen.fullScreen ? "Fullscreen" : "Windowed", x + 420, cy, 200, 42, Ui.B.Normal, true, 17))
-                Screen.fullScreenMode = Screen.fullScreen ? FullScreenMode.Windowed : FullScreenMode.FullScreenWindow;
-            var res = Screen.resolutions;
-            if (res.Length > 0)
+            if (Ui.Button(GameSettings.DisplayModes[st.DisplayMode], x + 420, cy, 270, 42, Ui.B.Normal, true, 17))
             {
-                int idx = Array.FindIndex(res, r => r.width == Screen.width && r.height == Screen.height);
-                if (Ui.Button($"{Screen.width}×{Screen.height}", x + 630, cy, 230, 42, Ui.B.Normal, true, 17))
-                {
-                    var next = res[(idx + 1 + res.Length) % res.Length];
-                    Screen.SetResolution(next.width, next.height, Screen.fullScreenMode);
-                }
+                st.DisplayMode = (st.DisplayMode + 1) % GameSettings.DisplayModes.Length;
+                ApplyDisplay();
+                changed = true;
+            }
+            if (st.DisplayMode == 3 && Ui.Button($"{st.WindowWidth}×{st.WindowHeight}", x + 700, cy, 200, 42, Ui.B.Normal, true, 17))
+            {
+                var sizes = WindowSizes();
+                int idx = Array.FindIndex(sizes, s => s.x == st.WindowWidth && s.y == st.WindowHeight);
+                var next = sizes[(idx + 1) % sizes.Length];
+                st.WindowWidth = next.x; st.WindowHeight = next.y;
+                ApplyDisplay();
+                changed = true;
             }
             cy += 56;
             if (changed) { S.SaveSettings(); ApplyComfortSettings(); }

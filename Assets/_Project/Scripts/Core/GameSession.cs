@@ -68,12 +68,16 @@ namespace HikariForge.M313.Core
         public float Speed = 1f;     // playtest time multiplier
         public bool PlaytestTools = true;
         public bool Hints = true;    // first-week guidance
+        public static readonly string[] DisplayModes = { "Fullscreen", "Borderless Fullscreen", "Windowed Fullscreen", "Windowed" };
+        public int DisplayMode = 1;  // index into DisplayModes; borderless by default
+        public int WindowWidth = 1600, WindowHeight = 900;   // used by "Windowed"
 
         public string Serialize() => MiniJson.Serialize(new Dictionary<string, object>
         {
             ["master"] = (double)Master, ["music"] = (double)Music, ["sfx"] = (double)Sfx,
             ["flash"] = ReducedFlashing, ["shake"] = ReducedShake, ["scare"] = ScareLevel, ["subs"] = Subtitles,
-            ["speed"] = (double)Speed, ["tools"] = PlaytestTools, ["hints"] = Hints
+            ["speed"] = (double)Speed, ["tools"] = PlaytestTools, ["hints"] = Hints,
+            ["display"] = DisplayMode, ["winW"] = WindowWidth, ["winH"] = WindowHeight
         });
 
         public static GameSettings Parse(string json)
@@ -85,6 +89,8 @@ namespace HikariForge.M313.Core
                 s.Master = J.Float(d, "master", s.Master); s.Music = J.Float(d, "music", s.Music); s.Sfx = J.Float(d, "sfx", s.Sfx);
                 s.ReducedFlashing = J.Bool(d, "flash"); s.ReducedShake = J.Bool(d, "shake"); s.ScareLevel = J.Int(d, "scare", 2);
                 s.Subtitles = J.Bool(d, "subs", true); s.Speed = J.Float(d, "speed", 1f); s.PlaytestTools = J.Bool(d, "tools", true); s.Hints = J.Bool(d, "hints", true);
+                s.DisplayMode = Math.Max(0, Math.Min(DisplayModes.Length - 1, J.Int(d, "display", 1)));
+                s.WindowWidth = J.Int(d, "winW", 1600); s.WindowHeight = J.Int(d, "winH", 900);
             }
             catch { }
             return s;

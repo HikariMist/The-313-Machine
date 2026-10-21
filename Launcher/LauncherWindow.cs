@@ -239,8 +239,9 @@ namespace HikariForge.M313.Launcher
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = exe,
+                    // No screen arguments: the game applies its saved display mode itself (GameDisplaySettings).
                     // The game shows its own studio credit on direct launches; skip it when the cinematic just played.
-                    Arguments = _settings.UnityArgs() + (_studioIntroShown ? " -hf-studio-intro-shown" : ""),
+                    Arguments = _studioIntroShown ? "-hf-studio-intro-shown" : "",
                     WorkingDirectory = System.IO.Path.GetDirectoryName(exe)!,
                     UseShellExecute = false
                 });
@@ -332,25 +333,26 @@ namespace HikariForge.M313.Launcher
         public SettingsWindow(LauncherSettings s)
         {
             Title = "Launcher settings";
-            Width = 380; SizeToContent = SizeToContent.Height; CanResize = false;
+            Width = 400; SizeToContent = SizeToContent.Height; CanResize = false;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = new SolidColorBrush(Color.FromRgb(16, 19, 26));
-            var full = new CheckBox { Content = "Fullscreen", IsChecked = s.Fullscreen };
-            var res = new ComboBox { ItemsSource = new[] { "1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160" }, Width = 200 };
-            res.SelectedItem = $"{s.Width}x{s.Height}";
-            if (res.SelectedIndex < 0) res.SelectedIndex = 2;
+            var (mode, winW, winH) = GameDisplaySettings.Load();
+            var display = new ComboBox { ItemsSource = GameDisplaySettings.Modes, SelectedIndex = mode, Width = 220 };
+            var res = new ComboBox { ItemsSource = GameDisplaySettings.WindowSizes, Width = 220 };
+            res.SelectedItem = $"{winW}x{winH}";
+            if (res.SelectedIndex < 0) res.SelectedIndex = 1;
+            res.IsEnabled = mode == 3;
+            display.SelectionChanged += (o, e) => res.IsEnabled = display.SelectedIndex == 3;
             var close = new CheckBox { Content = "Close the launcher when the game starts", IsChecked = s.CloseAfterLaunch };
             var intro = new CheckBox { Content = "Play Studio Intro on Startup", IsChecked = s.PlayStudioIntro };
             var ok = new Button { Content = "Save", Margin = new Thickness(0, 0, 8, 0) };
             var cancel = new Button { Content = "Cancel" };
             ok.Click += (o, e) =>
             {
-                s.Fullscreen = full.IsChecked == true;
                 s.CloseAfterLaunch = close.IsChecked == true;
                 s.PlayStudioIntro = intro.IsChecked == true;
                 var parts = ((string)res.SelectedItem!).Split('x');
-                s.Width = int.Parse(parts[0]);
-                s.Height = int.Parse(parts[1]);
+                GameDisplaySettings.Save(display.SelectedIndex, int.Parse(parts[0]), int.Parse(parts[1]));
                 Close(true);
             };
             cancel.Click += (o, e) => Close(false);
@@ -359,8 +361,8 @@ namespace HikariForge.M313.Launcher
                 Margin = new Thickness(20), Spacing = 14,
                 Children =
                 {
-                    full,
-                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { new TextBlock { Text = "Resolution", VerticalAlignment = VerticalAlignment.Center }, res } },
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { new TextBlock { Text = "Display mode", Width = 110, VerticalAlignment = VerticalAlignment.Center }, display } },
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { new TextBlock { Text = "Window size", Width = 110, VerticalAlignment = VerticalAlignment.Center }, res } },
                     close,
                     intro,
                     new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Children = { ok, cancel } }

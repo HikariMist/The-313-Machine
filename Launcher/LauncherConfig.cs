@@ -28,9 +28,6 @@ namespace HikariForge.M313.Launcher
     /// <summary>Per-user launcher preferences in %APPDATA%.</summary>
     public sealed class LauncherSettings
     {
-        public bool Fullscreen { get; set; } = true;
-        public int Width { get; set; } = 1920;
-        public int Height { get; set; } = 1080;
         public bool CloseAfterLaunch { get; set; } = true;
         public bool PlayStudioIntro { get; set; } = true;
 
@@ -55,8 +52,51 @@ namespace HikariForge.M313.Launcher
             catch (Exception) { }
         }
 
-        /// <summary>Unity standalone player command-line arguments.</summary>
-        public string UnityArgs() => $"-screen-fullscreen {(Fullscreen ? 1 : 0)} -screen-width {Width} -screen-height {Height}";
+    }
+
+    /// <summary>
+    /// The game's own display setting, edited in place so the launcher and the in-game Settings screen share one value.
+    /// File: %USERPROFILE%\AppData\LocalLow\Hikari Forge Studios\The 313 Machine\Saves\settings.json (written by Unity).
+    /// The game applies it on every start; the launcher passes no screen arguments.
+    /// </summary>
+    public static class GameDisplaySettings
+    {
+        public static readonly string[] Modes = { "Fullscreen", "Borderless Fullscreen", "Windowed Fullscreen", "Windowed" };
+        public static readonly string[] WindowSizes = { "1280x720", "1600x900", "1920x1080", "2560x1440" };
+
+        private static string FilePath => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "AppData", "LocalLow", "Hikari Forge Studios", "The 313 Machine", "Saves", "settings.json");
+
+        public static (int mode, int width, int height) Load()
+        {
+            try
+            {
+                if (File.Exists(FilePath))
+                {
+                    var o = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(FilePath))!.AsObject();
+                    int mode = o.TryGetPropertyValue("display", out var m) && m != null ? (int)m.GetValue<double>() : 1;
+                    int w = o.TryGetPropertyValue("winW", out var ww) && ww != null ? (int)ww.GetValue<double>() : 1600;
+                    int h = o.TryGetPropertyValue("winH", out var hh) && hh != null ? (int)hh.GetValue<double>() : 900;
+                    return (Math.Clamp(mode, 0, Modes.Length - 1), w, h);
+                }
+            }
+            catch (Exception ex) { LauncherLog.Write("Could not read game display settings: " + ex.Message); }
+            return (1, 1600, 900);
+        }
+
+        public static void Save(int mode, int width, int height)
+        {
+            try
+            {
+                var o = File.Exists(FilePath)
+                    ? System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(FilePath))!.AsObject()
+                    : new System.Text.Json.Nodes.JsonObject();
+                o["display"] = mode; o["winW"] = width; o["winH"] = height;
+                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(FilePath)!);
+                File.WriteAllText(FilePath, o.ToJsonString());
+            }
+            catch (Exception ex) { LauncherLog.Write("Could not save game display settings: " + ex.Message); }
+        }
     }
 
     /// <summary>launcher.log next to the settings file; kept small, never throws.</summary>
