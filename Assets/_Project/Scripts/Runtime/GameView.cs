@@ -178,6 +178,12 @@ namespace HikariForge.M313
             var e = Event.current;
             if (e.type != EventType.KeyDown) return;
             if (_intro && (e.keyCode != KeyCode.None)) { EndIntro(); e.Use(); return; }
+            if (e.keyCode == KeyCode.Escape)
+            {
+                // Esc backs out of menu screens the same way their Back buttons do.
+                if (S.Screen == GameScreen.Settings) { S.CloseSettings(); e.Use(); return; }
+                if (S.Screen == GameScreen.Credits || S.Screen == GameScreen.Achievements) { S.Screen = GameScreen.Title; e.Use(); return; }
+            }
             if (S.Screen != GameScreen.Shift) return;
             switch (e.keyCode)
             {
@@ -442,10 +448,22 @@ namespace HikariForge.M313
                 Ui.Text(sl.Code, sx + 6, sy + 2, 60, 26, Ui.F.Lcd, 22, rowE ? Ui.Violet : Ui.Emerald);
                 if (p != null && sl.Count > 0)
                 {
-                    float icon = Mathf.Min(sh * 0.45f, 52);
-                    Ui.Image(Ui.Tex("Art/Products/" + p.Icon), sx + (sw - icon) / 2, sy + 22, icon, icon);
-                    Ui.Text(p.Name, sx + 4, sy + 24 + icon, sw - 8, 40, Ui.F.Label, 15, Ui.Fg, TextAnchor.UpperCenter);
-                    Ui.Text($"×{sl.Count} {(p.Price > 0 ? Ui.Money(p.Price) : "")}", sx, sy + sh - 24, sw, 22, Ui.F.Lcd, 19, Ui.Dim, TextAnchor.UpperCenter);
+                    string stock = $"×{sl.Count} {(p.Price > 0 ? Ui.Money(p.Price) : "")}";
+                    if (sh < 120 && !rowE)
+                    {
+                        // Compact cells (shift view): stock beside the slot code so a two-line name never overlaps it.
+                        Ui.Text(stock, sx + 4, sy + 4, sw - 10, 22, Ui.F.Lcd, 16, Ui.Dim, TextAnchor.UpperRight);
+                        float icon = Mathf.Min(sh * 0.34f, 40);
+                        Ui.Image(Ui.Tex("Art/Products/" + p.Icon), sx + (sw - icon) / 2, sy + 26, icon, icon);
+                        Ui.Text(p.Name, sx + 3, sy + 28 + icon, sw - 6, sh - 30 - icon, Ui.F.Label, 13, Ui.Fg, TextAnchor.UpperCenter);
+                    }
+                    else
+                    {
+                        float icon = Mathf.Min(sh * 0.45f, 52);
+                        Ui.Image(Ui.Tex("Art/Products/" + p.Icon), sx + (sw - icon) / 2, sy + 22, icon, icon);
+                        Ui.Text(p.Name, sx + 4, sy + 24 + icon, sw - 8, 40, Ui.F.Label, 15, Ui.Fg, TextAnchor.UpperCenter);
+                        Ui.Text(stock, sx, sy + sh - 24, sw, 22, Ui.F.Lcd, 19, Ui.Dim, TextAnchor.UpperCenter);
+                    }
                 }
                 else Ui.Text(rowE ? "ROW E" : "empty", sx, sy + sh / 2 - 10, sw, 24, Ui.F.Label, 15, Ui.Dim, TextAnchor.UpperCenter);
                 if (GUI.Button(Ui.R(sx, sy, sw, sh), GUIContent.none, GUIStyle.none))
@@ -688,18 +706,19 @@ namespace HikariForge.M313
             var sel = st.Slot(S.Keypad);
             if (sel != null && ctx.CanConsume(sel.ProductId) && sel.Count > 0)
                 if (Ui.Button($"Take {S.Db.Product(sel.ProductId).Name} yourself", x + 20, by + 60, w - 40, 36, Ui.B.Ghost, true, 15)) ctx.ConsumeForSelf(S.Keypad);
-            float ty = by + 104;
-            Ui.Box(x + 20, ty, w - 40, 64, Ui.Hex("07080b"), Ui.Edge);
+            float ty = by + 100;
+            Ui.Box(x + 20, ty, w - 40, 48, Ui.Hex("07080b"), Ui.Edge);
             if (S.LastDispensed != null && S.Now - S.DispenseAt < 6)
             {
                 float drop = Mathf.Clamp01((float)(S.Now - S.DispenseAt) / 0.4f);
-                Ui.Image(Ui.Tex("Art/Products/" + S.Db.Product(S.LastDispensed)?.Icon), x + w / 2 - 26, ty + 8 - (1 - drop) * 40, 52, 52);
+                Ui.Image(Ui.Tex("Art/Products/" + S.Db.Product(S.LastDispensed)?.Icon), x + w / 2 - 20, ty + 4 - (1 - drop) * 40, 40, 40);
             }
             if (S.LastReceipt != null)
             {
-                float rh = Mathf.Min(Ui.VH - (ty + 76) - 10, Ui.TextHeight(S.LastReceipt, w - 64, Ui.F.Type, 16) + 20);
-                Ui.Box(x + 20, ty + 76, w - 40, rh, Ui.Paper, Ui.Hex("b8ae96"));
-                Ui.Text(S.LastReceipt, x + 32, ty + 86, w - 64, rh - 10, Ui.F.Type, 16, Ui.Ink);
+                // Small type so a full receipt (header, time, items, sign-off) fits under the tray.
+                float rh = Mathf.Min(Ui.VH - (ty + 56) - 6, Ui.TextHeight(S.LastReceipt, w - 60, Ui.F.Type, 13) + 14);
+                Ui.Box(x + 20, ty + 56, w - 40, rh, Ui.Paper, Ui.Hex("b8ae96"));
+                Ui.Text(S.LastReceipt, x + 30, ty + 63, w - 60, rh - 8, Ui.F.Type, 13, Ui.Ink);
             }
         }
 
@@ -1177,13 +1196,13 @@ namespace HikariForge.M313
             st.Hints = Toggle("Show tips for new night attendants", st.Hints);
             // Display: saved with the other settings and re-applied on every start (see ApplyDisplay).
             Ui.Text("Display", x + 40, cy + 6, 380, 40, Ui.F.Body, 22);
-            if (Ui.Button(GameSettings.DisplayModes[st.DisplayMode], x + 420, cy, 270, 42, Ui.B.Normal, true, 17))
+            if (Ui.Button(GameSettings.DisplayModes[st.DisplayMode], x + 420, cy, 250, 42, Ui.B.Normal, true, 17))
             {
                 st.DisplayMode = (st.DisplayMode + 1) % GameSettings.DisplayModes.Length;
                 ApplyDisplay();
                 changed = true;
             }
-            if (st.DisplayMode == 3 && Ui.Button($"{st.WindowWidth}×{st.WindowHeight}", x + 700, cy, 200, 42, Ui.B.Normal, true, 17))
+            if (st.DisplayMode == 3 && Ui.Button($"{st.WindowWidth}×{st.WindowHeight}", x + 680, cy, 170, 42, Ui.B.Normal, true, 17))
             {
                 var sizes = WindowSizes();
                 int idx = Array.FindIndex(sizes, s => s.x == st.WindowWidth && s.y == st.WindowHeight);
