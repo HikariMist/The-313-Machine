@@ -20,7 +20,7 @@ namespace HikariForge.M313.EditorTools
             PlayerSettings.companyName = "Hikari Forge Studios";
             // ":" is illegal in Windows paths and productName names the save folder, so the on-disk name is "The 313 Machine".
             PlayerSettings.productName = "The 313 Machine";
-            if (string.IsNullOrEmpty(PlayerSettings.bundleVersion) || PlayerSettings.bundleVersion == "0.1") PlayerSettings.bundleVersion = "0.9.0";
+            PlayerSettings.bundleVersion = HikariForge.M313.Core.BuildInfo.Version;
             PlayerSettings.defaultScreenWidth = 1920;
             PlayerSettings.defaultScreenHeight = 1080;
             PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;

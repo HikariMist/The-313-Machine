@@ -333,3 +333,6 @@ kbd { font: 11px var(--f-lcd); border: 1px solid var(--edge); border-radius: 3px
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+.beta-tag { display: inline-block; margin-top: 16px; font: 20px var(--f-lcd); color: var(--sodium); border: 1px solid var(--sodium); padding: 0 8px; border-radius: 3px; }
+.questions { line-height: 1.8; padding-left: 22px; }
+code { font: 13px var(--f-lcd); background: #0a0c10; padding: 2px 6px; border-radius: 3px; word-break: break-all; }

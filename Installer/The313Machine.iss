@@ -10,7 +10,12 @@
 #define AppName "The 3:13 Machine"
 ; Windows forbids ":" in file and folder names, so everything on disk uses SafeName.
 #define SafeName "The 313 Machine"
-#define AppVersion "0.9.0"
+#ifndef AppVersion
+  #define AppVersion "0.1.0"
+#endif
+#ifndef SetupName
+  #define SetupName "The313Machine_Beta_Setup_v" + AppVersion
+#endif
 #define Publisher "Hikari Forge Studios"
 #define GameDir "..\Builds\Windows"
 #define LauncherDir "..\Release\launcher"
@@ -20,8 +25,12 @@
 #if !FileExists(GameDir + "\" + GameExe)
   #error The Unity build was not found in ..\Builds\Windows. Build the game first.
 #endif
-#if !FileExists(LauncherDir + "\" + LauncherExe)
-  #error The launcher was not found in ..\Release\launcher. Publish the launcher first.
+; The launcher is optional for beta builds: without it, shortcuts start the game directly.
+#if FileExists(LauncherDir + "\" + LauncherExe)
+  #define HasLauncher
+  #define StartExe LauncherExe
+#else
+  #define StartExe "Game\" + GameExe
 #endif
 
 [Setup]
@@ -40,9 +49,9 @@ PrivilegesRequiredOverridesAllowed=dialog
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=Output
-OutputBaseFilename=The313Machine_Setup
+OutputBaseFilename={#SetupName}
 SetupIconFile=setup.ico
-UninstallDisplayIcon={app}\{#LauncherExe}
+UninstallDisplayIcon={app}\{#StartExe}
 UninstallDisplayName={#AppName}
 WizardStyle=modern
 WizardImageFile=wizard_large.bmp
@@ -58,17 +67,20 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
+#ifdef HasLauncher
 Source: "{#LauncherDir}\{#LauncherExe}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#LauncherDir}\launcher.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
+#endif
+Source: "README_BETA.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme skipifsourcedoesntexist
 Source: "{#GameDir}\*"; DestDir: "{app}\Game"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*_BurstDebugInformation_DoNotShip\*,*_BackUpThisFolder_ButDontShipItWithYourGame\*"
 
 [Icons]
-Name: "{group}\{#SafeName}"; Filename: "{app}\{#LauncherExe}"
+Name: "{group}\{#SafeName}"; Filename: "{app}\{#StartExe}"
 Name: "{group}\{cm:UninstallProgram,{#SafeName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#SafeName}"; Filename: "{app}\{#LauncherExe}"; Tasks: desktopicon
+Name: "{autodesktop}\{#SafeName}"; Filename: "{app}\{#StartExe}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#LauncherExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#StartExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
 
 ; Saved games live in %USERPROFILE%\AppData\LocalLow\Hikari Forge Studios\The 313 Machine and are
 ; deliberately NOT removed on uninstall. Launcher preferences in %APPDATA% are removed.

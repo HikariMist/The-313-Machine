@@ -16,8 +16,33 @@ namespace HikariForge.M313.Core
         void Achievement(string id);
     }
 
-    public enum GameScreen { Title, Prep, Shift, Summary, Ending, Failed, Achievements, Settings, Credits, EndlessOver }
-    public enum GameOverlay { None, Handbook, Monitor, Panel, Evidence, Records, Restock, Phone, Investigation, ConfirmLeave }
+    public enum GameScreen { Title, Prep, Shift, Summary, Ending, Failed, Achievements, Settings, Credits, EndlessOver, Feedback }
+    public enum GameOverlay { None, Handbook, Monitor, Panel, Evidence, Records, Restock, Phone, Investigation, ConfirmLeave, Pause }
+
+    /// <summary>Build identity and beta configuration.</summary>
+    public static class BuildInfo
+    {
+        public const string Version = "0.1.0";
+        public const string Label = "BETA v" + Version;
+        /// <summary>HTTPS link to the tester feedback form (e.g. a Google Form). Empty until the studio sets one up.</summary>
+        public static string FeedbackUrl = "";
+        public const string LogLocation = @"%USERPROFILE%\AppData\LocalLow\Hikari Forge Studios\The 313 Machine\Player.log";
+        public const string SaveLocation = @"%USERPROFILE%\AppData\LocalLow\Hikari Forge Studios\The 313 Machine\Saves";
+
+        public static readonly string[] FeedbackQuestions =
+        {
+            "Did the game start successfully?",
+            "How long did you play?",
+            "Which night did you reach?",
+            "Were the controls understandable?",
+            "Did the upgrade prices feel fair?",
+            "Were the jumpscares too frequent, too rare, or balanced?",
+            "Were the scares effective?",
+            "Did anything break? (what were you doing, which night, what time on the clock)",
+            "What did you enjoy most?",
+            "What should be improved?"
+        };
+    }
 
     public sealed class DialogueLine
     {
@@ -258,7 +283,7 @@ namespace HikariForge.M313.Core
             Now += dt;
             Toasts.RemoveAll(t => t.Until < Now);
             if (Screen != GameScreen.Shift || Ctx == null) return;
-            bool paused = Overlay == GameOverlay.Phone || Overlay == GameOverlay.Investigation || Overlay == GameOverlay.ConfirmLeave;
+            bool paused = Overlay == GameOverlay.Phone || Overlay == GameOverlay.Investigation || Overlay == GameOverlay.ConfirmLeave || Overlay == GameOverlay.Pause;
             if (!paused) Ctx.Tick((float)(dt * Settings.Speed));
             DrainEvents();
 
@@ -556,6 +581,46 @@ namespace HikariForge.M313.Core
         {
             if (Ctx != null && Ctx.ResetMotor()) Toast("Motor reset. The machine hums back to life.");
             else PanelMessage = "NO FAULT DETECTED";
+        }
+
+        // ------------------------------------------------------------ pause
+
+        public bool ReturnToShiftFromSettings;
+
+        public void TogglePause()
+        {
+            if (Screen != GameScreen.Shift) return;
+            if (Overlay == GameOverlay.Pause) { Overlay = GameOverlay.None; return; }
+            if (Overlay == GameOverlay.Phone || Overlay == GameOverlay.Investigation) return;
+            if (Overlay == GameOverlay.Panel) ClosePanel();
+            Overlay = GameOverlay.Pause;
+        }
+
+        public void OpenSettingsFromPause()
+        {
+            ReturnToShiftFromSettings = true;
+            Screen = GameScreen.Settings;
+        }
+
+        public void CloseSettings()
+        {
+            if (ReturnToShiftFromSettings && Ctx != null && !Ctx.IsOver) { Screen = GameScreen.Shift; Overlay = GameOverlay.Pause; }
+            else Screen = GameScreen.Title;
+            ReturnToShiftFromSettings = false;
+        }
+
+        /// <summary>Leaves the shift. Progress is kept from the start of tonight (the checkpoint).</summary>
+        public void QuitToMenu()
+        {
+            if (Checkpoint != null && !Endless)
+            {
+                try { State = SaveSerializer.Deserialize(Checkpoint); State.CheckpointPhase = "prep"; SaveGame(); } catch (SaveCorruptException) { }
+            }
+            Ctx = null;
+            Overlay = GameOverlay.None;
+            Screen = GameScreen.Title;
+            Music("last_stop");
+            Ambience("wind");
         }
 
         public void LeaveBooth()

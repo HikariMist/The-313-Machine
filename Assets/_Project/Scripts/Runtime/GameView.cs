@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HikariForge.M313.Core;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace HikariForge.M313
 {
@@ -44,9 +45,45 @@ namespace HikariForge.M313
             _audio.StingerScale = S.Settings.ScareLevel == 2 ? 1f : S.Settings.ScareLevel == 1 ? 0.55f : 0.3f;
         }
 
+        private VideoPlayer _video;
+        private RenderTexture _videoTex;
+        private bool _videoStarted;
+
+        /// <summary>Plays the studio intro video from StreamingAssets when present; otherwise the drawn intro runs.</summary>
+        private void TryStartIntroVideo()
+        {
+            _videoStarted = true;
+            string path = System.IO.Path.Combine(Application.streamingAssetsPath, "Hikari_Forge_Studios_Startup_Intro.mp4");
+            if (!System.IO.File.Exists(path)) return;
+            _videoTex = new RenderTexture(1920, 1080, 0);
+            _video = gameObject.AddComponent<VideoPlayer>();
+            _video.playOnAwake = false;
+            _video.url = path;
+            _video.renderMode = VideoRenderMode.RenderTexture;
+            _video.targetTexture = _videoTex;
+            _video.audioOutputMode = VideoAudioOutputMode.Direct;
+            _video.SetDirectAudioVolume(0, S.Settings.Master);
+            _video.loopPointReached += _ => EndIntro();
+            _video.errorReceived += (_, msg) => { Debug.LogWarning("[M313] Intro video failed: " + msg); StopVideo(); };
+            _video.Play();
+        }
+
+        private void StopVideo()
+        {
+            if (_video != null) { _video.Stop(); Destroy(_video); _video = null; }
+            if (_videoTex != null) { _videoTex.Release(); Destroy(_videoTex); _videoTex = null; }
+        }
+
         private void Update()
         {
             if (S == null) return;
+            if (_intro && !_videoStarted) TryStartIntroVideo();
+            if (_intro && _video != null)
+            {
+                if (_introT > 60f) EndIntro();   // safety net if the video never reports completion
+                _introT += Time.unscaledDeltaTime;
+                return;
+            }
             float dt = Mathf.Min(0.1f, Time.unscaledDeltaTime);
             SteamService.Instance.Tick();
             if (_intro)
@@ -65,6 +102,8 @@ namespace HikariForge.M313
 
         private void EndIntro()
         {
+            if (!_intro) return;
+            StopVideo();
             _intro = false;
             S.Music("last_stop");
         }
@@ -91,6 +130,7 @@ namespace HikariForge.M313
                 case GameScreen.Settings: DrawSettings(); break;
                 case GameScreen.Credits: DrawCredits(); break;
                 case GameScreen.EndlessOver: DrawEndlessOver(); break;
+                case GameScreen.Feedback: DrawFeedback(); break;
             }
             DrawToasts();
             if (S.Error != null)
@@ -120,6 +160,7 @@ namespace HikariForge.M313
                 case KeyCode.E: Toggle(GameOverlay.Evidence); break;
                 case KeyCode.Escape:
                     if (S.Overlay == GameOverlay.Panel) S.ClosePanel();
+                    else if (S.Overlay == GameOverlay.None || S.Overlay == GameOverlay.Pause) S.TogglePause();
                     else if (S.Overlay != GameOverlay.Phone && S.Overlay != GameOverlay.Investigation) S.Overlay = GameOverlay.None;
                     break;
                 default: return;
@@ -140,6 +181,13 @@ namespace HikariForge.M313
         private void DrawIntro()
         {
             Ui.Fill(0, 0, Ui.VW, Ui.VH, Color.black);
+            if (_video != null)
+            {
+                if (_videoTex != null && _video.isPlaying) Ui.Image(_videoTex, 0, 0, Ui.VW, Ui.VH, ScaleMode.ScaleToFit);
+                Ui.Text("Click or press any key to skip", 0, 1030, Ui.VW - 30, 30, Ui.F.Body, 16, new Color(1, 1, 1, 0.25f), TextAnchor.MiddleRight);
+                if (Event.current.type == EventType.MouseDown) { EndIntro(); Event.current.Use(); }
+                return;
+            }
             float t = _introT;
             if (t < 4.2f)
             {
@@ -188,28 +236,31 @@ namespace HikariForge.M313
             Ui.Text("MACHINE", x, 380, 800, 140, Ui.F.LabelMed, 120, Ui.Bone);
             Ui.Text("<i>Some customers shouldn't exist. Unfortunately, they still expect service.</i>", x, 525, 640, 60, Ui.F.Italic, 22, Ui.Dim);
             float y = 600;
-            if (_hasSave && Ui.Button("Continue", x, y, 420, 50, Ui.B.Primary)) { S.ContinueGame(); }
-            if (_hasSave) y += 60;
-            if (Ui.Button("New Game", x, y, 420, 50, _hasSave ? Ui.B.Normal : Ui.B.Primary)) { S.NewGame(); _hasSave = true; }
-            y += 60;
+            if (_hasSave && Ui.Button("Continue", x, y, 420, 46, Ui.B.Primary)) { S.ContinueGame(); }
+            if (_hasSave) y += 52;
+            if (Ui.Button("New Game", x, y, 420, 46, _hasSave ? Ui.B.Normal : Ui.B.Primary)) { S.NewGame(); _hasSave = true; }
+            y += 52;
             bool endless = S.Profile.EndlessUnlocked(S.Db);
-            if (Ui.Button(endless ? "Endless Mode" : "Endless Mode  (locked)", x, y, 420, 50, Ui.B.Normal, endless)) S.StartEndless();
-            y += 60;
-            if (Ui.Button($"Endings & Achievements  {S.Profile.EndingCount(S.Db)}/15", x, y, 420, 50)) S.Screen = GameScreen.Achievements;
-            y += 60;
-            if (Ui.Button("Settings", x, y, 420, 50)) { _settingsReturn = "title"; S.Screen = GameScreen.Settings; }
-            y += 60;
-            if (Ui.Button("Credits", x, y, 200, 50)) S.Screen = GameScreen.Credits;
-            if (Ui.Button("Quit", x + 220, y, 200, 50)) Application.Quit();
+            if (Ui.Button(endless ? "Endless Mode" : "Endless Mode  (locked)", x, y, 420, 46, Ui.B.Normal, endless)) S.StartEndless();
+            y += 52;
+            if (Ui.Button($"Endings & Achievements  {S.Profile.EndingCount(S.Db)}/15", x, y, 420, 46)) S.Screen = GameScreen.Achievements;
+            y += 52;
+            if (Ui.Button("Settings", x, y, 420, 46)) { _settingsReturn = "title"; S.Screen = GameScreen.Settings; }
+            y += 52;
+            if (Ui.Button("Report a bug / Give feedback", x, y, 420, 46)) S.Screen = GameScreen.Feedback;
+            y += 52;
+            if (Ui.Button("Credits", x, y, 200, 46)) S.Screen = GameScreen.Credits;
+            if (Ui.Button("Quit", x + 220, y, 200, 46)) Application.Quit();
             if (S.Settings.PlaytestTools)
             {
-                y += 80;
-                Ui.Text("PLAYTEST TOOLS (development builds only)", x, y, 600, 24, Ui.F.Label, 16, Ui.Dim);
+                float tx = 1240, ty = 990;
+                Ui.Text("PLAYTEST TOOLS (development builds only)", tx, ty, 640, 24, Ui.F.Label, 16, Ui.Dim);
                 for (int n = 2; n <= 7; n++)
-                    if (Ui.Button("N" + n, x + (n - 2) * 70, y + 28, 62, 36, Ui.B.Ghost, true, 16)) S.SkipToNight(n);
-                if (Ui.Button("Unlock endless", x + 430, y + 28, 180, 36, Ui.B.Ghost, true, 16)) S.UnlockAllEndings();
+                    if (Ui.Button("N" + n, tx + (n - 2) * 66, ty + 28, 60, 36, Ui.B.Ghost, true, 16)) S.SkipToNight(n);
+                if (Ui.Button("Unlock endless", tx + 400, ty + 28, 180, 36, Ui.B.Ghost, true, 16)) S.UnlockAllEndings();
             }
-            Ui.Text($"v{Application.version}", 20, 1040, 300, 30, Ui.F.Body, 16, Ui.Dim);
+            Ui.Box(1700, 30, 190, 40, new Color(0, 0, 0, 0.5f), Ui.Sodium);
+            Ui.Text(BuildInfo.Label, 1700, 30, 190, 40, Ui.F.Lcd, 26, Ui.Sodium, TextAnchor.MiddleCenter);
         }
 
         // ================================================================== prep
@@ -388,7 +439,8 @@ namespace HikariForge.M313
             if (Ui.Button("Evidence [E]", bx, 8, 150, 40, S.Overlay == GameOverlay.Evidence ? Ui.B.On : Ui.B.Normal, true, 16)) Toggle(GameOverlay.Evidence); bx += 158;
             if (Ui.Button("Restock", bx, 8, 110, 40, Ui.B.Normal, true, 16)) Toggle(GameOverlay.Restock); bx += 118;
             if (Ui.Button("Receipts", bx, 8, 120, 40, Ui.B.Normal, true, 16)) Toggle(GameOverlay.Records); bx += 128;
-            if (Ui.Button("Leave", bx, 8, 90, 40, Ui.B.Ghost, true, 16)) S.Overlay = GameOverlay.ConfirmLeave;
+            if (Ui.Button("Leave", bx, 8, 90, 40, Ui.B.Ghost, true, 16)) S.Overlay = GameOverlay.ConfirmLeave; bx += 98;
+            if (Ui.Button("Pause", bx, 8, 90, 40, Ui.B.Normal, true, 16)) S.TogglePause();
 
             DrawMachine(ctx, st, cur);
             DrawShiftOverlay();
@@ -685,6 +737,16 @@ namespace HikariForge.M313
                     break;
                 }
                 case GameOverlay.Investigation: DrawInvestigation(); break;
+                case GameOverlay.Pause:
+                    Modal(520, 470, out x, out y);
+                    Ui.Text(BuildInfo.Label, x + 30, y + 24, 460, 26, Ui.F.Lcd, 22, Ui.Sodium);
+                    Ui.Text("PAUSED", x + 30, y + 52, 460, 44, Ui.F.Label, 36);
+                    Ui.Text("The clock is stopped. Quitting keeps your progress from the start of tonight.", x + 30, y + 100, 460, 60, Ui.F.Body, 18, Ui.Dim);
+                    if (Ui.Button("Resume", x + 30, y + 170, 460, 50, Ui.B.Primary)) S.TogglePause();
+                    if (Ui.Button("Settings", x + 30, y + 230, 460, 50)) S.OpenSettingsFromPause();
+                    if (Ui.Button("Report a bug / Give feedback", x + 30, y + 290, 460, 50)) S.Screen = GameScreen.Feedback;
+                    if (Ui.Button("Quit to main menu", x + 30, y + 370, 460, 50, Ui.B.Ghost)) { S.QuitToMenu(); _hasSave = S.HasSave(); }
+                    break;
                 case GameOverlay.ConfirmLeave:
                     Modal(700, 300, out x, out y);
                     Ui.Text("LEAVE THE BOOTH?", x + 30, y + 24, 640, 34, Ui.F.Label, 26);
@@ -1044,7 +1106,7 @@ namespace HikariForge.M313
             }
             cy += 56;
             if (changed) { S.SaveSettings(); ApplyComfortSettings(); }
-            if (Ui.Button("Back", x + 40, y + 820, 180, 50)) S.Screen = _settingsReturn == "title" ? GameScreen.Title : GameScreen.Prep;
+            if (Ui.Button("Back", x + 40, y + 820, 180, 50)) S.CloseSettings();
         }
 
         private void DrawCredits()
@@ -1061,6 +1123,36 @@ namespace HikariForge.M313
                 "Thank you for working the night shift.";
             Ui.Text(credits, x + 40, y + 140, 920, 500, Ui.F.Body, 21);
             if (Ui.Button("Back", x + 40, y + 680, 180, 50)) S.Screen = GameScreen.Title;
+        }
+
+        private void DrawFeedback()
+        {
+            Card(1100, 900, Ui.Hex("0b0d12"), Ui.Hex("07080b"), out float x, out float y);
+            Ui.Text(BuildInfo.Label + " · CLOSED BETA", x + 40, y + 30, 1000, 26, Ui.F.Label, 18, Ui.Sodium);
+            Ui.Text("Report a bug / Give feedback", x + 40, y + 56, 1000, 56, Ui.F.Label, 44);
+            Ui.Text("Thank you for testing The 3:13 Machine. Please answer as many of these as you can:", x + 40, y + 124, 1000, 30, Ui.F.Body, 20);
+            float cy = y + 162;
+            for (int i = 0; i < BuildInfo.FeedbackQuestions.Length; i++)
+            {
+                Ui.Text($"{i + 1}. {BuildInfo.FeedbackQuestions[i]}", x + 60, cy, 980, 32, Ui.F.Body, 20);
+                cy += 36;
+            }
+            cy += 10;
+            if (!string.IsNullOrEmpty(BuildInfo.FeedbackUrl))
+            {
+                if (Ui.Button("Open the feedback form", x + 40, cy, 360, 50, Ui.B.Primary)) Application.OpenURL(BuildInfo.FeedbackUrl);
+                cy += 66;
+            }
+            else
+            {
+                Ui.Text("Send your answers through the itch.io page or the contact you received with your beta key.", x + 40, cy, 1000, 30, Ui.F.Body, 19, Ui.Dim);
+                cy += 40;
+            }
+            Ui.Text("If something broke, please attach this log file:", x + 40, cy, 1000, 28, Ui.F.Body, 19, Ui.Dim);
+            Ui.Text(Application.consoleLogPath, x + 40, cy + 30, 1000, 30, Ui.F.Lcd, 22, Ui.Emerald);
+            if (Ui.Button("Open log folder", x + 40, cy + 70, 240, 44)) Application.OpenURL("file:///" + System.IO.Path.GetDirectoryName(Application.consoleLogPath));
+            if (Ui.Button("Back", x + 40, y + 820, 180, 50))
+                S.Screen = S.Ctx != null && !S.Ctx.IsOver ? GameScreen.Shift : GameScreen.Title;
         }
 
         private void DrawEndlessOver()

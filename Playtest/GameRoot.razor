@@ -20,6 +20,7 @@ else
         case GameScreen.Settings: @SettingsScreen() break;
         case GameScreen.Credits: @CreditsScreen() break;
         case GameScreen.EndlessOver: @EndlessOverScreen() break;
+        case GameScreen.Feedback: @FeedbackScreen() break;
     }
     <div class="toasts" aria-live="polite">
         @foreach (var t in S.Toasts)
@@ -107,7 +108,11 @@ else
             case "h": case "H": Toggle(GameOverlay.Handbook); break;
             case "m": case "M": Toggle(GameOverlay.Monitor); break;
             case "e": case "E": Toggle(GameOverlay.Evidence); break;
-            case "Escape": if (S.Overlay == GameOverlay.Panel) S.ClosePanel(); else if (S.Overlay != GameOverlay.Phone && S.Overlay != GameOverlay.Investigation) S.Overlay = GameOverlay.None; break;
+            case "Escape":
+                if (S.Overlay == GameOverlay.Panel) S.ClosePanel();
+                else if (S.Overlay == GameOverlay.None || S.Overlay == GameOverlay.Pause) S.TogglePause();
+                else if (S.Overlay != GameOverlay.Phone && S.Overlay != GameOverlay.Investigation) S.Overlay = GameOverlay.None;
+                break;
         }
     }
 
@@ -145,6 +150,7 @@ else
                     </button>
                     <button class="btn" @onclick="() => S.Screen = GameScreen.Achievements">Endings &amp; Achievements <span class="count">@S.Profile.EndingCount(S.Db)/15</span></button>
                     <button class="btn" @onclick="() => S.Screen = GameScreen.Settings">Settings</button>
+                    <button class="btn" @onclick="() => S.Screen = GameScreen.Feedback">Report a bug / Give feedback</button>
                     <button class="btn" @onclick="() => S.Screen = GameScreen.Credits">Credits</button>
                 </nav>
                 @if (S.Settings.PlaytestTools)
@@ -164,6 +170,7 @@ else
                         </div>
                     </details>
                 }
+                <p class="beta-tag">@BuildInfo.Label</p>
                 <p class="fine">Playtest build · Browser version · Progress saves in this browser · Headphones recommended</p>
             </div>
         </div>
@@ -274,9 +281,6 @@ else
                             </div>
                         }
                     </div>
-                            </div>
-                        }
-                    </div>
                 }
                 else if (_prepTab == "handbook")
                 {
@@ -361,6 +365,7 @@ else
                     <button class="btn tiny @(S.Overlay == GameOverlay.Evidence ? "on" : "")" @onclick="() => Toggle(GameOverlay.Evidence)">Evidence <kbd>E</kbd></button>
                     <button class="btn tiny" @onclick="() => Toggle(GameOverlay.Restock)">Restock</button>
                     <button class="btn tiny" @onclick="() => Toggle(GameOverlay.Records)">Receipts</button>
+                    <button class="btn tiny" @onclick="S.TogglePause">Pause <kbd>Esc</kbd></button>
                     <button class="btn tiny ghost" @onclick="() => S.Overlay = GameOverlay.ConfirmLeave">Leave booth</button>
                 </div>
             </header>
@@ -594,6 +599,19 @@ else
                 break;
             case GameOverlay.Investigation:
                 @Investigation()
+                break;
+            case GameOverlay.Pause:
+                <div class="modal-back"><div class="modal small">
+                    <div class="eyebrow">@BuildInfo.Label</div>
+                    <h3>Paused</h3>
+                    <p class="dim">The clock is stopped. Quitting to the menu keeps your progress from the start of tonight.</p>
+                    <div class="menu">
+                        <button class="btn primary" @onclick="S.TogglePause">Resume</button>
+                        <button class="btn" @onclick="S.OpenSettingsFromPause">Settings</button>
+                        <button class="btn" @onclick="() => S.Screen = GameScreen.Feedback">Report a bug / Give feedback</button>
+                        <button class="btn ghost" @onclick="S.QuitToMenu">Quit to main menu</button>
+                    </div>
+                </div></div>
                 break;
             case GameOverlay.ConfirmLeave:
                 <div class="modal-back"><div class="modal small">
@@ -903,7 +921,31 @@ else
                     </select>
                 </label>
                 <label class="set check"><input type="checkbox" checked="@st.PlaytestTools" @onchange="async e => { st.PlaytestTools = (bool)e.Value; S.SaveSettings(); }" /> Show playtest tools on the title screen</label>
-                <button class="btn" @onclick="() => S.Screen = S.Ctx != null && S.Screen == GameScreen.Settings && false ? GameScreen.Shift : GameScreen.Title">Back</button>
+                <button class="btn" @onclick="S.CloseSettings">Back</button>
+            </div>
+        </div>
+    };
+
+    RenderFragment FeedbackScreen() => __builder =>
+    {
+        <div class="result">
+            <div class="card wide">
+                <div class="eyebrow">@BuildInfo.Label · CLOSED BETA</div>
+                <h2>Report a bug / Give feedback</h2>
+                <p>Thank you for testing The 3:13 Machine. Please answer as many of these as you can:</p>
+                <ol class="questions">
+                    @foreach (var q in BuildInfo.FeedbackQuestions) { <li>@q</li> }
+                </ol>
+                @if (!string.IsNullOrEmpty(BuildInfo.FeedbackUrl))
+                {
+                    <a class="btn primary" href="@BuildInfo.FeedbackUrl" target="_blank" rel="noopener">Open the feedback form</a>
+                }
+                else
+                {
+                    <p class="dim">Send your answers to the developer through the itch.io page comments or the contact you received with your beta key.</p>
+                }
+                <p class="dim">If something broke in the Windows build, attach the log file: <code>@BuildInfo.LogLocation</code></p>
+                <button class="btn" @onclick="() => S.Screen = S.Ctx != null && !S.Ctx.IsOver ? GameScreen.Shift : GameScreen.Title">Back</button>
             </div>
         </div>
     };

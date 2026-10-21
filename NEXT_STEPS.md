@@ -1,3 +1,4 @@
+1. **Beta tonight:** follow BETA_READINESS.md → run `PACKAGE_BETA.bat`, smoke-test, then ITCH_BETA.md.
 # Next steps (exact continuation)
 
 1. Owner: double-click `BUILD_AND_PLAY.bat` (finds Unity 6, builds, launches; errors → `Builds/build_log.txt`).
