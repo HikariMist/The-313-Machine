@@ -1,7 +1,7 @@
 # Known issues
 
-- Unity layer has never run; expect first-run fixes. URP is listed in the manifest but the game renders with IMGUI
-  and does not depend on URP features.
+- Unity layer has never run; expect first-run fixes. The game renders with IMGUI on the built-in pipeline; URP was
+  removed from the manifest because nothing uses it and a version mismatch could block the first import.
 - `ProjectVersion.txt` says 6000.3.0f1; Unity Hub may offer to open with the installed 6.3 patch — accept.
 - Approved Hikari Forge logo files not supplied: intro shows a plain text studio credit as a placeholder.
 - Remaining portraits (Del, Crane, nurse, officer, Hale, etc.), backgrounds, product icons and scare plates are

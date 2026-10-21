@@ -1,6 +1,7 @@
 # Next steps (exact continuation)
 
-1. Owner: open the project in Unity 6.3 LTS. Run **Hikari Forge → Configure Project**, press Play, report errors.
+1. Owner: double-click `BUILD_AND_PLAY.bat` (finds Unity 6, builds, launches; errors → `Builds/build_log.txt`).
+   Or open the project in Unity 6.3 LTS. Run **Hikari Forge → Configure Project**, press Play, report errors.
    Then **Hikari Forge → Build Windows (x64)** → `Builds/Windows/The313Machine.exe`. Commit the generated `.meta`
    files and `ProjectSettings/` after first open.
 2. Fix whatever the first Unity run reveals (it has only been compile-checked).
