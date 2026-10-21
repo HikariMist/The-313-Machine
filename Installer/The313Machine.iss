@@ -26,9 +26,13 @@
   #error The Unity build was not found in ..\Builds\Windows. Build the game first.
 #endif
 ; The launcher is optional for beta builds: without it, shortcuts start the game directly.
+#define IntroVideo "Intro\Hikari_Forge_Studios_Startup_Intro.mp4"
 #if FileExists(LauncherDir + "\" + LauncherExe)
   #define HasLauncher
   #define StartExe LauncherExe
+  #if !FileExists(LauncherDir + "\" + IntroVideo)
+    #error The studio intro video is missing from ..\Release\launcher\Intro. Re-publish the launcher.
+  #endif
 #else
   #define StartExe "Game\" + GameExe
 #endif
@@ -70,6 +74,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 #ifdef HasLauncher
 Source: "{#LauncherDir}\{#LauncherExe}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#LauncherDir}\launcher.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
+; Studio cinematic, played by the launcher from {app}\Intro (WPF/.NET runtime is bundled inside the launcher exe).
+; The game carries its own copy in Game\The313Machine_Data\StreamingAssets for direct launches.
+Source: "{#LauncherDir}\{#IntroVideo}"; DestDir: "{app}\Intro"; Flags: ignoreversion
 #endif
 Source: "README_BETA.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme skipifsourcedoesntexist
 Source: "{#GameDir}\*"; DestDir: "{app}\Game"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*_BurstDebugInformation_DoNotShip\*,*_BackUpThisFolder_ButDontShipItWithYourGame\*"
@@ -86,3 +93,4 @@ Filename: "{app}\{#StartExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Fla
 ; deliberately NOT removed on uninstall. Launcher preferences in %APPDATA% are removed.
 [UninstallDelete]
 Type: files; Name: "{userappdata}\Hikari Forge Studios\The 313 Machine\launcher_settings.json"
+Type: files; Name: "{userappdata}\Hikari Forge Studios\The 313 Machine\launcher.log"

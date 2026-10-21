@@ -102,14 +102,15 @@ namespace HikariForge.M313
             Frame(x, y, w, h, edge);
         }
 
-        public static void Image(Texture tex, float x, float y, float w, float h, ScaleMode mode = ScaleMode.ScaleToFit, float alpha = 1f, Color? tint = null)
+        /// <param name="alphaBlend">False for textures with no meaningful alpha (video frames); <paramref name="alpha"/> then has no effect.</param>
+        public static void Image(Texture tex, float x, float y, float w, float h, ScaleMode mode = ScaleMode.ScaleToFit, float alpha = 1f, Color? tint = null, bool alphaBlend = true)
         {
             if (tex == null) return;
             var old = GUI.color;
             var c = tint ?? Color.white;
             c.a *= alpha;
             GUI.color = c;
-            GUI.DrawTexture(R(x, y, w, h), tex, mode, true);
+            GUI.DrawTexture(R(x, y, w, h), tex, mode, alphaBlend);
             GUI.color = old;
         }
 

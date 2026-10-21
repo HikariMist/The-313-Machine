@@ -43,7 +43,7 @@ if exist "%STAGE%" rmdir /s /q "%STAGE%"
 mkdir "%STAGE%\Game"
 xcopy /e /i /q /y "Builds\Windows" "%STAGE%\Game" >nul
 for /d %%D in ("%STAGE%\Game\*_DoNotShip" "%STAGE%\Game\*_BackUpThisFolder_ButDontShipItWithYourGame") do rmdir /s /q "%%D"
-if exist "Release\launcher\The313MachineLauncher.exe" copy /y "Release\launcher\The313MachineLauncher.exe" "%STAGE%" >nul & copy /y "Release\launcher\launcher.json" "%STAGE%" >nul
+if exist "Release\launcher\The313MachineLauncher.exe" copy /y "Release\launcher\The313MachineLauncher.exe" "%STAGE%" >nul & copy /y "Release\launcher\launcher.json" "%STAGE%" >nul & xcopy /e /i /q /y "Release\launcher\Intro" "%STAGE%\Intro" >nul
 copy /y "Installer\README_BETA.txt" "%STAGE%" >nul
 if exist "Release\The313Machine_Beta_v%VERSION%_Windows.zip" del "Release\The313Machine_Beta_v%VERSION%_Windows.zip"
 powershell -NoProfile -Command "Compress-Archive -Path '%STAGE%\*' -DestinationPath 'Release\The313Machine_Beta_v%VERSION%_Windows.zip'"

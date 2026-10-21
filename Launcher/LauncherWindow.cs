@@ -31,10 +31,14 @@ namespace HikariForge.M313.Launcher
         private readonly List<Line> _rain = new List<Line>();
         private readonly TextBlock _status, _lcd;
         private readonly Rectangle _topGlow, _bottomGlow;
+        private readonly Rectangle _blackCover;
+        private readonly bool _studioIntroShown;
         private double _t;
 
-        public LauncherWindow()
+        /// <param name="studioIntroShown">True when the studio cinematic played this run, so the game can skip its own studio credit.</param>
+        public LauncherWindow(bool studioIntroShown)
         {
+            _studioIntroShown = studioIntroShown;
             _config = LauncherConfig.Load(_baseDir);
             Title = "The 3:13 Machine";
             Width = W; Height = H;
@@ -95,12 +99,29 @@ namespace HikariForge.M313.Launcher
             _status.Width = 560;
             _status.TextWrapping = TextWrapping.Wrap;
             Add(canvas, _status, 40, 520);
+            // Covers everything while coming out of the studio intro; see FadeInFromBlack.
+            _blackCover = new Rectangle { Width = W, Height = H, Fill = Brushes.Black, IsVisible = studioIntroShown, IsHitTestVisible = false };
+            canvas.Children.Add(_blackCover);
             Content = canvas;
 
             var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             timer.Tick += (s, e) => Animate();
             timer.Start();
             Closed += (s, e) => timer.Stop();
+        }
+
+        /// <summary>Reveals the launcher from black after the studio intro.</summary>
+        public void FadeInFromBlack()
+        {
+            var started = DateTime.UtcNow;
+            var fade = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            fade.Tick += (s, e) =>
+            {
+                double k = Math.Min(1, (DateTime.UtcNow - started).TotalMilliseconds / 500);
+                _blackCover.Opacity = 1 - k;
+                if (k >= 1) { fade.Stop(); _blackCover.IsVisible = false; }
+            };
+            fade.Start();
         }
 
         private static void Place(Line l, double x, double y)
@@ -205,7 +226,8 @@ namespace HikariForge.M313.Launcher
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = exe,
-                    Arguments = _settings.UnityArgs(),
+                    // The game shows its own studio credit on direct launches; skip it when the cinematic just played.
+                    Arguments = _settings.UnityArgs() + (_studioIntroShown ? " -hf-studio-intro-shown" : ""),
                     WorkingDirectory = System.IO.Path.GetDirectoryName(exe)!,
                     UseShellExecute = false
                 });
@@ -305,12 +327,14 @@ namespace HikariForge.M313.Launcher
             res.SelectedItem = $"{s.Width}x{s.Height}";
             if (res.SelectedIndex < 0) res.SelectedIndex = 2;
             var close = new CheckBox { Content = "Close the launcher when the game starts", IsChecked = s.CloseAfterLaunch };
+            var intro = new CheckBox { Content = "Play Studio Intro on Startup", IsChecked = s.PlayStudioIntro };
             var ok = new Button { Content = "Save", Margin = new Thickness(0, 0, 8, 0) };
             var cancel = new Button { Content = "Cancel" };
             ok.Click += (o, e) =>
             {
                 s.Fullscreen = full.IsChecked == true;
                 s.CloseAfterLaunch = close.IsChecked == true;
+                s.PlayStudioIntro = intro.IsChecked == true;
                 var parts = ((string)res.SelectedItem!).Split('x');
                 s.Width = int.Parse(parts[0]);
                 s.Height = int.Parse(parts[1]);
@@ -325,6 +349,7 @@ namespace HikariForge.M313.Launcher
                     full,
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { new TextBlock { Text = "Resolution", VerticalAlignment = VerticalAlignment.Center }, res } },
                     close,
+                    intro,
                     new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Children = { ok, cancel } }
                 }
             };

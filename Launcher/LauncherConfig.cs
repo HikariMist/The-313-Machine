@@ -32,9 +32,11 @@ namespace HikariForge.M313.Launcher
         public int Width { get; set; } = 1920;
         public int Height { get; set; } = 1080;
         public bool CloseAfterLaunch { get; set; } = true;
+        public bool PlayStudioIntro { get; set; } = true;
 
-        private static string Path => System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hikari Forge Studios", "The 313 Machine", "launcher_settings.json");
+        internal static string Folder => System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hikari Forge Studios", "The 313 Machine");
+        private static string Path => System.IO.Path.Combine(Folder, "launcher_settings.json");
 
         public static LauncherSettings Load()
         {
@@ -55,5 +57,26 @@ namespace HikariForge.M313.Launcher
 
         /// <summary>Unity standalone player command-line arguments.</summary>
         public string UnityArgs() => $"-screen-fullscreen {(Fullscreen ? 1 : 0)} -screen-width {Width} -screen-height {Height}";
+    }
+
+    /// <summary>launcher.log next to the settings file; kept small, never throws.</summary>
+    public static class LauncherLog
+    {
+        private static readonly object Gate = new object();
+
+        public static void Write(string message)
+        {
+            try
+            {
+                lock (Gate)
+                {
+                    Directory.CreateDirectory(LauncherSettings.Folder);
+                    var path = System.IO.Path.Combine(LauncherSettings.Folder, "launcher.log");
+                    if (File.Exists(path) && new FileInfo(path).Length > 256 * 1024) File.Delete(path);
+                    File.AppendAllText(path, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
+                }
+            }
+            catch (Exception) { }
+        }
     }
 }

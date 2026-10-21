@@ -37,7 +37,8 @@ namespace HikariForge.M313
             ApplyComfortSettings();
             _hasSave = S.HasSave();
             Ui.Sound = id => S.Sfx(id, 0.4f);
-            S.Sfx("machine_hum_start", 0.4f);
+            // The launcher just played the studio cinematic: skip the video and studio credit, keep the 3:13 AM card.
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-hf-studio-intro-shown") >= 0) { _videoStarted = true; _introT = 4.2f; }
         }
 
         private void ApplyComfortSettings()
@@ -54,7 +55,8 @@ namespace HikariForge.M313
         {
             _videoStarted = true;
             string path = System.IO.Path.Combine(Application.streamingAssetsPath, "Hikari_Forge_Studios_Startup_Intro.mp4");
-            if (!System.IO.File.Exists(path)) return;
+            // The boot hum only plays with the drawn intro; the cinematic has its own audio.
+            if (!System.IO.File.Exists(path)) { S.Sfx("machine_hum_start", 0.4f); return; }
             _videoTex = new RenderTexture(1920, 1080, 0);
             _video = gameObject.AddComponent<VideoPlayer>();
             _video.playOnAwake = false;
@@ -183,7 +185,8 @@ namespace HikariForge.M313
             Ui.Fill(0, 0, Ui.VW, Ui.VH, Color.black);
             if (_video != null)
             {
-                if (_videoTex != null && _video.isPlaying) Ui.Image(_videoTex, 0, 0, Ui.VW, Ui.VH, ScaleMode.ScaleToFit);
+                // Opaque: video frames carry no usable alpha, and blending makes them near-invisible.
+                if (_videoTex != null && _video.isPlaying) Ui.Image(_videoTex, 0, 0, Ui.VW, Ui.VH, ScaleMode.ScaleToFit, alphaBlend: false);
                 Ui.Text("Click or press any key to skip", 0, 1030, Ui.VW - 30, 30, Ui.F.Body, 16, new Color(1, 1, 1, 0.25f), TextAnchor.MiddleRight);
                 if (Event.current.type == EventType.MouseDown) { EndIntro(); Event.current.Use(); }
                 return;

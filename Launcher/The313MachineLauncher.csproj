@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Dedicated launcher for THE 3:13 MACHINE (itch.io / direct installs; Steam launches the game directly).
        Avalonia UI so the Windows build can be produced on any OS:
-       dotnet publish -c Release -o ../Release/launcher  → The313MachineLauncher.exe (self-contained, no .NET install). -->
+       dotnet publish -c Release -o ../Release/launcher  → The313MachineLauncher.exe (self-contained, no .NET install)
+       plus Intro\Hikari_Forge_Studios_Startup_Intro.mp4 beside it.
+       WPF is used only for the studio intro's MediaElement (StudioIntroPlayer); EnableWindowsTargeting keeps
+       the build working on Linux/macOS. -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>The313MachineLauncher</AssemblyName>
@@ -19,7 +25,8 @@
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- WPF text layout (intro skip hint) needs real culture data; invariant mode makes it throw. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
     <DebugType>none</DebugType>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
@@ -30,7 +37,15 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
   </ItemGroup>
   <ItemGroup>
+    <!-- UseWPF removes System.IO from the implicit usings; the launcher code relies on it. -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
     <AvaloniaResource Include="Assets/**" />
     <None Update="launcher.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- MediaElement plays from a file path, so the cinematic stays a loose file next to the exe.
+         Single source: the same MP4 the Unity game plays from StreamingAssets. -->
+    <None Include="..\Assets\StreamingAssets\Hikari_Forge_Studios_Startup_Intro.mp4" Link="Intro\Hikari_Forge_Studios_Startup_Intro.mp4"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 </Project>

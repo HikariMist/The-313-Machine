@@ -12,6 +12,8 @@ _Last updated: session 1._
 | Unity runtime (IMGUI renderer, audio, bootstrap, Steam hooks, build script) | Written and compile-checked; **never run in Unity** |
 | Art | Studio art for title, Drenched Man, Smiling Woman, Hat Stranger (Collector), Child (Lily), Corrupted Worker (Mara/mimic), Faceless Passenger (the Attendant). Everything else is procedural placeholder |
 | Music (15 tracks) / SFX (74) | Procedural originals, generated; not listened to by a human yet |
-| Launcher | Built (exe), screenshot-verified; not run on real Windows |
+| Launcher | Built and run on real Windows (owner PC) |
+| Studio intro (launcher) | `Launcher/StudioIntroPlayer.cs`: plays `Assets/StreamingAssets/Hikari_Forge_Studios_Startup_Intro.mp4` (linked into `Release/launcher/Intro`) borderless, skippable (any key / click, not Alt/Win), fades to black into the launcher; setting "Play Studio Intro on Startup"; missing/corrupt video logs to `%APPDATA%\Hikari Forge Studios\The 313 Machine\launcher.log` and opens the launcher. Tested on Windows: natural end, Esc/Enter/Space/click skip, Alt+Tab, disabled/re-enabled, missing and corrupt file. Launcher passes `-hf-studio-intro-shown` so the game skips its own copy |
+| Studio intro (game, direct launch) | Unity plays the same MP4 from StreamingAssets, then the title; verified in a Windows build |
 | Installer | Script compiles; install/uninstall verified under Wine with a stand-in game |
 | Store kits, marketing, licenses | Written (`STEAM_RELEASE.md`, `ITCH_RELEASE.md`, `Docs/Marketing`, `LICENSES.md`) |
