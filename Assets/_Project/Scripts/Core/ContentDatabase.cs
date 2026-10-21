@@ -115,7 +115,8 @@ namespace HikariForge.M313.Core
                         {
                             Id = J.Str(d, "id"), Title = J.Str(d, "title"), Condition = J.Str(d, "condition"),
                             Priority = J.Int(d, "priority"), Lines = J.Strings(d, "lines"),
-                            Music = J.Str(d, "music"), Image = J.Str(d, "image")
+                            Music = J.Str(d, "music"), Image = J.Str(d, "image"),
+                            Achievement = J.Str(d, "achievement"), AchievementDesc = J.Str(d, "achievementDesc")
                         });
                     }
                     Endings.Sort((a, b) => b.Priority.CompareTo(a.Priority));

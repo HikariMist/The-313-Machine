@@ -1,27 +1,39 @@
-using System.Reflection;
-using HikariForge.M313.Core;
-using Microsoft.JSInterop;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace HikariForge.M313.Playtest
+namespace HikariForge.M313.Core
 {
-    public enum Screen { Title, Prep, Shift, Summary, Ending, Failed, Achievements, Settings, Credits, EndlessOver }
-    public enum Overlay { None, Handbook, Monitor, Panel, Evidence, Records, Restock, Phone, Investigation, ConfirmLeave }
+    /// <summary>What a front end (Unity, browser) must provide: storage, audio and platform services.</summary>
+    public interface IPlatform
+    {
+        string Load(string key);
+        void Save(string key, string value);
+        void Music(string id);
+        void Sfx(string id, float volume);
+        void Ambience(string id);
+        void Volumes(float master, float music, float sfx);
+        void Achievement(string id);
+    }
 
-    public sealed class Line
+    public enum GameScreen { Title, Prep, Shift, Summary, Ending, Failed, Achievements, Settings, Credits, EndlessOver }
+    public enum GameOverlay { None, Handbook, Monitor, Panel, Evidence, Records, Restock, Phone, Investigation, ConfirmLeave }
+
+    public sealed class DialogueLine
     {
         public string Speaker;
         public string Text;
         public bool Narration;
     }
 
-    public sealed class Toast
+    public sealed class ToastMessage
     {
         public string Text;
         public string Kind;   // clue, achievement, notice, warn
         public double Until;
     }
 
-    public sealed class Settings
+    public sealed class GameSettings
     {
         public float Master = 0.8f, Music = 0.7f, Sfx = 0.8f;
         public bool ReducedFlashing;
@@ -38,9 +50,9 @@ namespace HikariForge.M313.Playtest
             ["speed"] = (double)Speed, ["tools"] = PlaytestTools
         });
 
-        public static Settings Parse(string json)
+        public static GameSettings Parse(string json)
         {
-            var s = new Settings();
+            var s = new GameSettings();
             try
             {
                 var d = J.Obj(MiniJson.Parse(json));
@@ -54,22 +66,23 @@ namespace HikariForge.M313.Playtest
     }
 
     /// <summary>
-    /// Front-end controller for the browser playtest. Owns the campaign state, the running shift and
-    /// all UI-side state (dialogue, overlays, toasts, scares). Rendering lives in GameRoot.razor.
+    /// Front-end-independent game flow. Owns the campaign state, the running shift and all
+    /// presentation state (screens, dialogue, overlays, toasts, scares). Unity (OnGUI) and the
+    /// browser playtest (Razor) only render this object and forward input to it.
     /// </summary>
     public sealed class GameSession
     {
         public readonly ContentDatabase Db;
         public GameState State;
         public Profile Profile = new Profile();
-        public Settings Settings = new Settings();
+        public GameSettings Settings = new GameSettings();
         public ShiftContext Ctx;
-        public Screen Screen = Screen.Title;
-        public Overlay Overlay = Overlay.None;
+        public GameScreen Screen = GameScreen.Title;
+        public GameOverlay Overlay = GameOverlay.None;
         public bool Endless;
 
         // Dialogue
-        public readonly List<Line> Lines = new List<Line>();
+        public readonly List<DialogueLine> Lines = new List<DialogueLine>();
         public int LineIndex;
         public bool ShowingOutcome;
         public string InspectText;
@@ -77,7 +90,7 @@ namespace HikariForge.M313.Playtest
         public string MachineDisplay = "";
         public double MachineDisplayUntil;
         public readonly List<string> Feed = new List<string>();
-        public readonly List<Toast> Toasts = new List<Toast>();
+        public readonly List<ToastMessage> Toasts = new List<ToastMessage>();
         public string LastReceipt;
         public string LastDispensed;
         public double DispenseAt = -10;
@@ -112,69 +125,59 @@ namespace HikariForge.M313.Playtest
         public bool NewEndlessBest;
         public string Error;
 
-        private readonly IJSRuntime _js;
+        private readonly IPlatform _p;
 
-        public GameSession(IJSRuntime js)
+        public GameSession(IPlatform platform, Func<string, string> contentProvider)
         {
-            _js = js;
-            var asm = Assembly.GetExecutingAssembly();
-            Db = ContentDatabase.Load(name =>
-            {
-                using var s = asm.GetManifestResourceStream($"Content.{name}.json");
-                if (s == null) return null;
-                using var r = new StreamReader(s);
-                return r.ReadToEnd();
-            });
+            _p = platform;
+            Db = ContentDatabase.Load(contentProvider);
         }
 
         // ------------------------------------------------------------ persistence
 
-        public async Task LoadPersistentAsync()
+        public void LoadPersistent()
         {
-            try { Profile = Profile.Deserialize(await Get("m313.profile")); } catch { Profile = new Profile(); }
-            Settings = Settings.Parse(await Get("m313.settings") ?? "{}");
-            await ApplyAudioSettings();
+            try { Profile = Profile.Deserialize(Get("m313.profile")); } catch { Profile = new Profile(); }
+            Settings = GameSettings.Parse(Get("m313.settings") ?? "{}");
+            ApplyAudioSettings();
         }
 
-        public async Task<bool> HasSaveAsync() => !string.IsNullOrEmpty(await Get("m313.save"));
+        public bool HasSave() => !string.IsNullOrEmpty(Get("m313.save"));
 
-        private async Task<string> Get(string key)
+        private string Get(string key)
         {
-            try { return await _js.InvokeAsync<string>("m313.load", key); } catch { return null; }
+            try { return _p.Load(key); } catch { return null; }
         }
 
-        private async Task Set(string key, string value)
+        private void Set(string key, string value)
         {
-            try { await _js.InvokeVoidAsync("m313.save", key, value); } catch { }
+            try { _p.Save(key, value); } catch { }
         }
 
-        public Task SaveProfile() => Set("m313.profile", Profile.Serialize());
-        public async Task SaveSettings() { await Set("m313.settings", Settings.Serialize()); await ApplyAudioSettings(); }
-        private Task SaveGame() => Endless ? Task.CompletedTask : Set("m313.save", SaveSerializer.Serialize(State));
+        public void SaveProfile() => Set("m313.profile", Profile.Serialize());
+        public void SaveSettings() { Set("m313.settings", Settings.Serialize()); ApplyAudioSettings(); }
+        private void SaveGame() { if (!Endless) Set("m313.save", SaveSerializer.Serialize(State)); }
 
-        public async Task ApplyAudioSettings()
-        {
-            try { await _js.InvokeVoidAsync("m313.audio.volume", Settings.Master, Settings.Music, Settings.Sfx); } catch { }
-        }
+        public void ApplyAudioSettings() => _p.Volumes(Settings.Master, Settings.Music, Settings.Sfx);
 
-        public void Music(string id) { if (!string.IsNullOrEmpty(id)) _ = _js.InvokeVoidAsync("m313.audio.music", id); }
-        public void Sfx(string id, float vol = 1f) { if (!string.IsNullOrEmpty(id)) _ = _js.InvokeVoidAsync("m313.audio.sfx", id, vol); }
-        public void Ambience(string id) => _ = _js.InvokeVoidAsync("m313.audio.ambience", id ?? "");
+        public void Music(string id) { if (!string.IsNullOrEmpty(id)) _p.Music(id); }
+        public void Sfx(string id, float vol = 1f) { if (!string.IsNullOrEmpty(id)) _p.Sfx(id, vol); }
+        public void Ambience(string id) => _p.Ambience(id ?? "");
 
         // ------------------------------------------------------------ flow
 
-        public async Task NewGame()
+        public void NewGame()
         {
             Endless = false;
             State = GameState.NewGame();
-            await SaveGame();
+            SaveGame();
             GoPrep();
         }
 
-        public async Task<bool> ContinueGame()
+        public bool ContinueGame()
         {
             Endless = false;
-            var json = await Get("m313.save");
+            var json = Get("m313.save");
             if (string.IsNullOrEmpty(json)) return false;
             try
             {
@@ -199,8 +202,8 @@ namespace HikariForge.M313.Playtest
 
         public void GoPrep()
         {
-            Screen = Screen.Prep;
-            Overlay = Overlay.None;
+            Screen = GameScreen.Prep;
+            Overlay = GameOverlay.None;
             Music("last_stop");
             Ambience("wind");
         }
@@ -211,8 +214,8 @@ namespace HikariForge.M313.Playtest
             Checkpoint = SaveSerializer.Serialize(State);
             Ctx = Endless ? Endless_Build() : new ShiftContext(State, Db, 313 + State.Cycle * 31);
             Ctx.Director.Intensity = Settings.ScareLevel == 0 ? 0.25f : Settings.ScareLevel == 1 ? 0.6f : 1f;
-            Screen = Screen.Shift;
-            Overlay = Overlay.None;
+            Screen = GameScreen.Shift;
+            Overlay = GameOverlay.None;
             Lines.Clear();
             Feed.Clear();
             InspectText = null;
@@ -235,16 +238,16 @@ namespace HikariForge.M313.Playtest
             GoPrep();
         }
 
-        public async Task AfterSummary()
+        public void AfterSummary()
         {
-            await SaveGame();
+            SaveGame();
             GoPrep();
         }
 
-        public async Task NextCycle()
+        public void NextCycle()
         {
             State = Campaign.StartNextCycle(State);
-            await SaveGame();
+            SaveGame();
             GoPrep();
         }
 
@@ -254,20 +257,20 @@ namespace HikariForge.M313.Playtest
         {
             Now += dt;
             Toasts.RemoveAll(t => t.Until < Now);
-            if (Screen != Screen.Shift || Ctx == null) return;
-            bool paused = Overlay == Overlay.Phone || Overlay == Overlay.Investigation || Overlay == Overlay.ConfirmLeave;
+            if (Screen != GameScreen.Shift || Ctx == null) return;
+            bool paused = Overlay == GameOverlay.Phone || Overlay == GameOverlay.Investigation || Overlay == GameOverlay.ConfirmLeave;
             if (!paused) Ctx.Tick((float)(dt * Settings.Speed));
             DrainEvents();
 
-            if (Ctx.Phase == ShiftPhase.Phone && Overlay != Overlay.Phone) { Overlay = Overlay.Phone; Sfx("phone_ring"); }
-            if (Ctx.Phase == ShiftPhase.Investigation && Overlay != Overlay.Investigation) Overlay = Overlay.Investigation;
+            if (Ctx.Phase == ShiftPhase.Phone && Overlay != GameOverlay.Phone) { Overlay = GameOverlay.Phone; Sfx("phone_ring"); }
+            if (Ctx.Phase == ShiftPhase.Investigation && Overlay != GameOverlay.Investigation) Overlay = GameOverlay.Investigation;
         }
 
         private void Say(IEnumerable<string> lines, string speaker)
         {
             foreach (var raw in lines ?? Enumerable.Empty<string>())
             {
-                var l = new Line { Speaker = speaker, Text = raw };
+                var l = new DialogueLine { Speaker = speaker, Text = raw };
                 if (raw.StartsWith("*")) { l.Narration = true; l.Text = raw.Substring(1); l.Speaker = null; }
                 else
                 {
@@ -283,7 +286,7 @@ namespace HikariForge.M313.Playtest
         }
 
         public bool LinesPending => LineIndex < Lines.Count - 1;
-        public Line CurrentLine => Lines.Count == 0 ? null : Lines[Math.Min(LineIndex, Lines.Count - 1)];
+        public DialogueLine CurrentLine => Lines.Count == 0 ? null : Lines[Math.Min(LineIndex, Lines.Count - 1)];
 
         public void AdvanceLine()
         {
@@ -303,7 +306,7 @@ namespace HikariForge.M313.Playtest
 
         public void Toast(string text, string kind = "notice", double seconds = 4)
         {
-            Toasts.Add(new Toast { Text = text, Kind = kind, Until = Now + seconds });
+            Toasts.Add(new ToastMessage { Text = text, Kind = kind, Until = Now + seconds });
         }
 
         private void DrainEvents()
@@ -391,13 +394,13 @@ namespace HikariForge.M313.Playtest
                     case PresEventType.Failed:
                         FailLines = e.Lines ?? new List<string>();
                         FailReason = e.Id;
-                        Screen = Screen.Failed;
-                        Overlay = Overlay.None;
+                        Screen = GameScreen.Failed;
+                        Overlay = GameOverlay.None;
                         Music("no_more_change");
                         Ambience("");
                         break;
-                    case PresEventType.Sunrise: _ = OnSunrise(); break;
-                    case PresEventType.Ending: _ = OnEnding(e.Id); break;
+                    case PresEventType.Sunrise: OnSunrise(); break;
+                    case PresEventType.Ending: OnEnding(e.Id); break;
                 }
 
                 // Outcome lines arrive once the encounter is resolved.
@@ -426,7 +429,7 @@ namespace HikariForge.M313.Playtest
             if (!Settings.ReducedFlashing && (id.Contains("light") || id == "margin_surge")) FlickerUntil = Now + 1.5;
         }
 
-        private async Task OnSunrise()
+        private void OnSunrise()
         {
             Music("sunrise");
             Ambience("birds");
@@ -439,32 +442,32 @@ namespace HikariForge.M313.Playtest
             else
             {
                 Summary = Campaign.CompleteNight(State, Db, Ctx);
-                await SaveGame();
+                SaveGame();
             }
-            Screen = Screen.Summary;
-            Overlay = Overlay.None;
+            Screen = GameScreen.Summary;
+            Overlay = GameOverlay.None;
         }
 
-        private async Task OnEnding(string requested)
+        private void OnEnding(string requested)
         {
             Ending = Campaign.ResolveEnding(State, Db, requested);
             State.EndingReached = Ending.Id;
             NewAchievements = Profile.RecordEnding(Ending.Id, Db);
-            await SaveProfile();
-            await SaveGame();
+            SaveProfile();
+            SaveGame();
             foreach (var a in NewAchievements)
-                _ = _js.InvokeVoidAsync("m313.achievement", a);
-            Screen = Screen.Ending;
-            Overlay = Overlay.None;
+                _p.Achievement(a);
+            Screen = GameScreen.Ending;
+            Overlay = GameOverlay.None;
             Music(Ending.Music);
             Ambience("");
         }
 
-        public async Task EndlessDeath()
+        public void EndlessDeath()
         {
             NewEndlessBest = Profile.RecordEndlessRun(HikariForge.M313.Core.Endless.Round(State), EndlessEarnings + Ctx.NightEarnings);
-            await SaveProfile();
-            Screen = Screen.EndlessOver;
+            SaveProfile();
+            Screen = GameScreen.EndlessOver;
         }
 
         // ------------------------------------------------------------ actions
@@ -520,7 +523,7 @@ namespace HikariForge.M313.Playtest
         public void OpenPanel()
         {
             Ctx?.OpenPanel();
-            Overlay = Overlay.Panel;
+            Overlay = GameOverlay.Panel;
             PanelCode = "";
             PanelMessage = Ctx != null && Ctx.Jammed ? "ERROR E-13: MOTOR JAM" : "DIAGNOSTICS NOMINAL";
             Sfx("panel_open");
@@ -529,7 +532,7 @@ namespace HikariForge.M313.Playtest
         public void ClosePanel()
         {
             Ctx?.ClosePanel();
-            Overlay = Overlay.None;
+            Overlay = GameOverlay.None;
             Sfx("panel_close");
         }
 
@@ -543,7 +546,7 @@ namespace HikariForge.M313.Playtest
                 bool used = Ctx != null && Ctx.EnterCode(PanelCode);
                 PanelMessage = used ? "CODE ACCEPTED" : "ACCESS DENIED — DISTRICT USE ONLY";
                 PanelCode = "";
-                if (used) { Overlay = Overlay.None; Ctx.ClosePanel(); }
+                if (used) { Overlay = GameOverlay.None; Ctx.ClosePanel(); }
                 return;
             }
             if (PanelCode.Length < 4) PanelCode += k;
@@ -557,14 +560,14 @@ namespace HikariForge.M313.Playtest
 
         public void LeaveBooth()
         {
-            Overlay = Overlay.None;
+            Overlay = GameOverlay.None;
             Ctx?.LeaveBooth();
         }
 
         // ------------------------------------------------------------ playtest tools
 
         /// <summary>Plays earlier nights automatically with a careful policy so testers can jump ahead.</summary>
-        public async Task SkipToNight(int night)
+        public void SkipToNight(int night)
         {
             Endless = false;
             var s = GameState.NewGame();
@@ -576,15 +579,15 @@ namespace HikariForge.M313.Playtest
                 Campaign.CompleteNight(s, Db, ctx);
             }
             State = s;
-            await SaveGame();
+            SaveGame();
             GoPrep();
             Toast($"Playtest: auto-played to Night {s.Night} on the careful route.", "notice", 6);
         }
 
-        public async Task UnlockAllEndings()
+        public void UnlockAllEndings()
         {
             foreach (var e in Db.Endings) Profile.RecordEnding(e.Id, Db);
-            await SaveProfile();
+            SaveProfile();
             Toast("Playtest: all endings marked as seen. Endless Mode unlocked.", "achievement", 6);
         }
     }

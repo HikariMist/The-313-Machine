@@ -10,16 +10,16 @@ else
 {
     @switch (S.Screen)
     {
-        case Screen.Title: @TitleScreen() break;
-        case Screen.Prep: @PrepScreen() break;
-        case Screen.Shift: @ShiftScreen() break;
-        case Screen.Summary: @SummaryScreen() break;
-        case Screen.Ending: @EndingScreen() break;
-        case Screen.Failed: @FailedScreen() break;
-        case Screen.Achievements: @AchievementsScreen() break;
-        case Screen.Settings: @SettingsScreen() break;
-        case Screen.Credits: @CreditsScreen() break;
-        case Screen.EndlessOver: @EndlessOverScreen() break;
+        case GameScreen.Title: @TitleScreen() break;
+        case GameScreen.Prep: @PrepScreen() break;
+        case GameScreen.Shift: @ShiftScreen() break;
+        case GameScreen.Summary: @SummaryScreen() break;
+        case GameScreen.Ending: @EndingScreen() break;
+        case GameScreen.Failed: @FailedScreen() break;
+        case GameScreen.Achievements: @AchievementsScreen() break;
+        case GameScreen.Settings: @SettingsScreen() break;
+        case GameScreen.Credits: @CreditsScreen() break;
+        case GameScreen.EndlessOver: @EndlessOverScreen() break;
     }
     <div class="toasts" aria-live="polite">
         @foreach (var t in S.Toasts)
@@ -44,8 +44,8 @@ else
     string _creditsReturn = "title";
 
     string RootClasses => S == null ? "" : string.Join(" ",
-        S.Screen == Screen.Shift && S.Ctx != null ? "weather-" + S.Ctx.NightDef.Weather : "",
-        S.Screen == Screen.Shift && S.Ctx != null && S.Ctx.InMargin ? "margin" : "",
+        S.Screen == GameScreen.Shift && S.Ctx != null ? "weather-" + S.Ctx.NightDef.Weather : "",
+        S.Screen == GameScreen.Shift && S.Ctx != null && S.Ctx.InMargin ? "margin" : "",
         S.LightsOut ? "lights-out" : "",
         S.Now < S.FlickerUntil && !S.Settings.ReducedFlashing ? "flicker" : "",
         S.Settings.ReducedShake ? "no-shake" : "",
@@ -53,10 +53,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        S = new GameSession(JS);
+        S = new GameSession(new JsPlatform(JS), JsPlatform.Content);
         if (S.Db.LoadErrors.Count > 0) S.Error = "Content failed to load: " + string.Join("; ", S.Db.LoadErrors);
-        await S.LoadPersistentAsync();
-        _hasSave = await S.HasSaveAsync();
+        S.LoadPersistent();
+        _hasSave = S.HasSave();
         _ = Loop();
     }
 
@@ -72,14 +72,14 @@ else
             last = now;
             try { S.Tick(dt); }
             catch (Exception e) { S.Error = "Game error: " + e.Message; Console.WriteLine(e); }
-            if (S.Screen == Screen.Failed && S.Endless) await S.EndlessDeath();
+            if (S.Screen == GameScreen.Failed && S.Endless) S.EndlessDeath();
             StateHasChanged();
         }
     }
 
     public void Dispose() => _running = false;
 
-    Screen _lastScreen;
+    GameScreen _lastScreen;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (S != null && (firstRender || S.Screen != _lastScreen))
@@ -94,29 +94,29 @@ else
         if (_audioUnlocked) return;
         _audioUnlocked = true;
         try { await JS.InvokeVoidAsync("m313.audio.unlock"); } catch { }
-        await S.ApplyAudioSettings();
+        S.ApplyAudioSettings();
         S.Music("last_stop");
     }
 
     void OnKey(KeyboardEventArgs e)
     {
-        if (S?.Screen != Screen.Shift) return;
+        if (S?.Screen != GameScreen.Shift) return;
         switch (e.Key)
         {
-            case " ": case "Enter": if (S.Overlay == Overlay.None) S.AdvanceLine(); break;
-            case "h": case "H": Toggle(Overlay.Handbook); break;
-            case "m": case "M": Toggle(Overlay.Monitor); break;
-            case "e": case "E": Toggle(Overlay.Evidence); break;
-            case "Escape": if (S.Overlay == Overlay.Panel) S.ClosePanel(); else if (S.Overlay != Overlay.Phone && S.Overlay != Overlay.Investigation) S.Overlay = Overlay.None; break;
+            case " ": case "Enter": if (S.Overlay == GameOverlay.None) S.AdvanceLine(); break;
+            case "h": case "H": Toggle(GameOverlay.Handbook); break;
+            case "m": case "M": Toggle(GameOverlay.Monitor); break;
+            case "e": case "E": Toggle(GameOverlay.Evidence); break;
+            case "Escape": if (S.Overlay == GameOverlay.Panel) S.ClosePanel(); else if (S.Overlay != GameOverlay.Phone && S.Overlay != GameOverlay.Investigation) S.Overlay = GameOverlay.None; break;
         }
     }
 
-    void Toggle(Overlay o)
+    void Toggle(GameOverlay o)
     {
-        if (S.Overlay == Overlay.Phone || S.Overlay == Overlay.Investigation) return;
-        if (S.Overlay == Overlay.Panel) S.ClosePanel();
-        S.Overlay = S.Overlay == o ? Overlay.None : o;
-        S.Sfx(o == Overlay.Handbook ? "paper_rustle" : o == Overlay.Monitor ? "monitor_on" : "ui_click", 0.5f);
+        if (S.Overlay == GameOverlay.Phone || S.Overlay == GameOverlay.Investigation) return;
+        if (S.Overlay == GameOverlay.Panel) S.ClosePanel();
+        S.Overlay = S.Overlay == o ? GameOverlay.None : o;
+        S.Sfx(o == GameOverlay.Handbook ? "paper_rustle" : o == GameOverlay.Monitor ? "monitor_on" : "ui_click", 0.5f);
     }
 
     static string Money(int cents) => $"${cents / 100}.{Math.Abs(cents % 100):00}";
@@ -143,9 +143,9 @@ else
                     <button class="btn" disabled="@(!endless)" title="@(endless ? "" : "Unlock all 15 endings")" @onclick="EndlessClicked">
                         Endless Mode @(endless ? "" : "🔒")
                     </button>
-                    <button class="btn" @onclick="() => S.Screen = Screen.Achievements">Endings &amp; Achievements <span class="count">@S.Profile.EndingCount(S.Db)/15</span></button>
-                    <button class="btn" @onclick="() => S.Screen = Screen.Settings">Settings</button>
-                    <button class="btn" @onclick="() => S.Screen = Screen.Credits">Credits</button>
+                    <button class="btn" @onclick="() => S.Screen = GameScreen.Achievements">Endings &amp; Achievements <span class="count">@S.Profile.EndingCount(S.Db)/15</span></button>
+                    <button class="btn" @onclick="() => S.Screen = GameScreen.Settings">Settings</button>
+                    <button class="btn" @onclick="() => S.Screen = GameScreen.Credits">Credits</button>
                 </nav>
                 @if (S.Settings.PlaytestTools)
                 {
@@ -169,10 +169,10 @@ else
         </div>
     };
 
-    async Task ContinueClicked() { await UnlockAudio(); await S.ContinueGame(); }
-    async Task NewGameClicked() { await UnlockAudio(); await S.NewGame(); }
+    async Task ContinueClicked() { await UnlockAudio(); S.ContinueGame(); }
+    async Task NewGameClicked() { await UnlockAudio(); S.NewGame(); }
     async Task EndlessClicked() { await UnlockAudio(); S.StartEndless(); }
-    async Task SkipClicked(int n) { await UnlockAudio(); await S.SkipToNight(n); }
+    async Task SkipClicked(int n) { await UnlockAudio(); S.SkipToNight(n); }
 
     // ------------------------------------------------------------------ prep
 
@@ -281,7 +281,7 @@ else
                 }
             </div>
             <footer class="prep-foot">
-                <button class="btn ghost" @onclick="() => S.Screen = Screen.Title">Main menu</button>
+                <button class="btn ghost" @onclick="() => S.Screen = GameScreen.Title">Main menu</button>
                 <button class="btn primary big" @onclick="S.StartShift">Start shift · 11:00 PM</button>
             </footer>
         </div>
@@ -348,13 +348,13 @@ else
                     <div class="meter"><div class="fill" style="width:@(st.Instability)%"></div></div>
                 </div>
                 <div class="hud-r">
-                    <button class="btn tiny @(S.Overlay == Overlay.Handbook ? "on" : "")" @onclick="() => Toggle(Overlay.Handbook)">Handbook <kbd>H</kbd></button>
-                    <button class="btn tiny @(S.Overlay == Overlay.Monitor ? "on" : "")" @onclick="() => Toggle(Overlay.Monitor)">Cameras <kbd>M</kbd></button>
+                    <button class="btn tiny @(S.Overlay == GameOverlay.Handbook ? "on" : "")" @onclick="() => Toggle(GameOverlay.Handbook)">Handbook <kbd>H</kbd></button>
+                    <button class="btn tiny @(S.Overlay == GameOverlay.Monitor ? "on" : "")" @onclick="() => Toggle(GameOverlay.Monitor)">Cameras <kbd>M</kbd></button>
                     <button class="btn tiny @(S.KnockActive ? "danger" : "")" @onclick="S.OpenPanel">Maint. panel</button>
-                    <button class="btn tiny @(S.Overlay == Overlay.Evidence ? "on" : "")" @onclick="() => Toggle(Overlay.Evidence)">Evidence <kbd>E</kbd></button>
-                    <button class="btn tiny" @onclick="() => Toggle(Overlay.Restock)">Restock</button>
-                    <button class="btn tiny" @onclick="() => Toggle(Overlay.Records)">Receipts</button>
-                    <button class="btn tiny ghost" @onclick="() => S.Overlay = Overlay.ConfirmLeave">Leave booth</button>
+                    <button class="btn tiny @(S.Overlay == GameOverlay.Evidence ? "on" : "")" @onclick="() => Toggle(GameOverlay.Evidence)">Evidence <kbd>E</kbd></button>
+                    <button class="btn tiny" @onclick="() => Toggle(GameOverlay.Restock)">Restock</button>
+                    <button class="btn tiny" @onclick="() => Toggle(GameOverlay.Records)">Receipts</button>
+                    <button class="btn tiny ghost" @onclick="() => S.Overlay = GameOverlay.ConfirmLeave">Leave booth</button>
                 </div>
             </header>
 
@@ -504,17 +504,17 @@ else
     {
         switch (S.Overlay)
         {
-            case Overlay.Handbook:
-                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Handbook()<button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button></div></div>
+            case GameOverlay.Handbook:
+                <div class="modal-back" @onclick="() => S.Overlay = GameOverlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Handbook()<button class="btn close" @onclick="() => S.Overlay = GameOverlay.None">Close</button></div></div>
                 break;
-            case Overlay.Monitor:
-                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Monitor()<button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button></div></div>
+            case GameOverlay.Monitor:
+                <div class="modal-back" @onclick="() => S.Overlay = GameOverlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Monitor()<button class="btn close" @onclick="() => S.Overlay = GameOverlay.None">Close</button></div></div>
                 break;
-            case Overlay.Evidence:
-                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Evidence()<button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button></div></div>
+            case GameOverlay.Evidence:
+                <div class="modal-back" @onclick="() => S.Overlay = GameOverlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Evidence()<button class="btn close" @onclick="() => S.Overlay = GameOverlay.None">Close</button></div></div>
                 break;
-            case Overlay.Records:
-                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal" @onclick:stopPropagation="true">
+            case GameOverlay.Records:
+                <div class="modal-back" @onclick="() => S.Overlay = GameOverlay.None"><div class="modal" @onclick:stopPropagation="true">
                     <h3>Transaction history — tonight</h3>
                     <div class="records">
                     @foreach (var t in S.State.Transactions.Where(t => t.Night == S.State.Night).Reverse())
@@ -523,11 +523,11 @@ else
                     }
                     @if (!S.State.Transactions.Any(t => t.Night == S.State.Night)) { <p class="dim">No sales yet tonight.</p> }
                     </div>
-                    <button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button>
+                    <button class="btn close" @onclick="() => S.Overlay = GameOverlay.None">Close</button>
                 </div></div>
                 break;
-            case Overlay.Restock:
-                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal" @onclick:stopPropagation="true">
+            case GameOverlay.Restock:
+                <div class="modal-back" @onclick="() => S.Overlay = GameOverlay.None"><div class="modal" @onclick:stopPropagation="true">
                     <h3>Restock from the stockroom</h3>
                     <p class="dim">@(S.Ctx.CanRestockNow ? (S.State.Upgrades.Contains(UpgradeIds.FastRestock) ? "Rear hatch: 2 minutes per slot, even with a customer waiting." : "Takes 12 minutes per slot. Only between customers.") : "You can't restock while a customer is waiting. (Faster Restocking upgrade allows it.)")</p>
                     <div class="restock">
@@ -544,10 +544,10 @@ else
                             </div>
                         }
                     </div>
-                    <button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button>
+                    <button class="btn close" @onclick="() => S.Overlay = GameOverlay.None">Close</button>
                 </div></div>
                 break;
-            case Overlay.Panel:
+            case GameOverlay.Panel:
                 <div class="modal-back"><div class="modal panel-modal">
                     <h3>Maintenance panel — Unit 313</h3>
                     @if (S.KnockActive) { <p class="warn">The knocking is right behind the panel.</p> }
@@ -573,7 +573,7 @@ else
                     <button class="btn close" @onclick="S.ClosePanel">Close panel</button>
                 </div></div>
                 break;
-            case Overlay.Phone:
+            case GameOverlay.Phone:
                 var call = S.Ctx.PendingPhone;
                 <div class="modal-back"><div class="modal phone">
                     <div class="eyebrow">INCOMING CALL</div>
@@ -582,18 +582,18 @@ else
                     {
                         <p class="@(l.StartsWith("[") ? "narr" : "")">@l</p>
                     }
-                    <button class="btn primary" @onclick='() => { S.Ctx.AcknowledgePhone(); S.Overlay = Overlay.None; S.Sfx("phone_hangup"); }'>Hang up</button>
+                    <button class="btn primary" @onclick='() => { S.Ctx.AcknowledgePhone(); S.Overlay = GameOverlay.None; S.Sfx("phone_hangup"); }'>Hang up</button>
                 </div></div>
                 break;
-            case Overlay.Investigation:
+            case GameOverlay.Investigation:
                 @Investigation()
                 break;
-            case Overlay.ConfirmLeave:
+            case GameOverlay.ConfirmLeave:
                 <div class="modal-back"><div class="modal small">
                     <h3>Leave the booth?</h3>
                     <p>Rule A2: Do not leave the attendant booth between 11:00 PM and 6:00 AM for any reason.</p>
                     <div class="row">
-                        <button class="btn" @onclick="() => S.Overlay = Overlay.None">Stay inside</button>
+                        <button class="btn" @onclick="() => S.Overlay = GameOverlay.None">Stay inside</button>
                         <button class="btn danger" @onclick="S.LeaveBooth">Open the door</button>
                     </div>
                 </div></div>
@@ -734,7 +734,7 @@ else
             }
             <div class="row between">
                 <span class="dim">@(ctx.CanFinishInvestigation ? "You've found what you came for. You can keep looking or go back out." : "You need at least her file and a tape before you go back out.")</span>
-                <button class="btn primary" disabled="@(!ctx.CanFinishInvestigation)" @onclick="() => { ctx.FinishInvestigation(); S.Overlay = Overlay.None; }">Back to the counter</button>
+                <button class="btn primary" disabled="@(!ctx.CanFinishInvestigation)" @onclick="() => { ctx.FinishInvestigation(); S.Overlay = GameOverlay.None; }">Back to the counter</button>
             </div>
         </div></div>
     };
@@ -774,7 +774,7 @@ else
                 <p class="dim">Check the handbook and the cameras. Every death in this game is avoidable with information you have.</p>
                 <div class="row">
                     <button class="btn primary" @onclick="S.RetryNight">Retry the night</button>
-                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Title">Main menu</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = GameScreen.Title">Main menu</button>
                 </div>
             </div>
         </div>
@@ -795,8 +795,8 @@ else
                 }
                 <div class="row">
                     <button class="btn primary big" @onclick="S.NextCycle">Begin cycle @(S.State.Cycle + 1)</button>
-                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Achievements">Endings</button>
-                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Credits">Credits</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = GameScreen.Achievements">Endings</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = GameScreen.Credits">Credits</button>
                 </div>
                 <p class="dim">The machine never really stops. A new cycle starts at Night 1 — and Unit 313 will remember you.</p>
             </div>
@@ -858,7 +858,7 @@ else
                         <div class="ach-desc">@(endless ? $"Unlocked. Best: round {S.Profile.EndlessBestRound}, {Money(S.Profile.EndlessBestEarnings)}." : "Discover all 15 endings.")</div>
                     </div>
                 </div>
-                <button class="btn" @onclick="() => S.Screen = Screen.Title">Back</button>
+                <button class="btn" @onclick="() => S.Screen = GameScreen.Title">Back</button>
             </div>
         </div>
     };
@@ -880,23 +880,23 @@ else
         <div class="result">
             <div class="card">
                 <h2>Settings</h2>
-                <label class="set">Master volume <input type="range" min="0" max="1" step="0.05" value="@st.Master" @onchange="async e => { st.Master = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }" /></label>
-                <label class="set">Music volume <input type="range" min="0" max="1" step="0.05" value="@st.Music" @onchange="async e => { st.Music = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }" /></label>
-                <label class="set">Sound effects <input type="range" min="0" max="1" step="0.05" value="@st.Sfx" @onchange="async e => { st.Sfx = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }" /></label>
+                <label class="set">Master volume <input type="range" min="0" max="1" step="0.05" value="@st.Master" @onchange="async e => { st.Master = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); S.SaveSettings(); }" /></label>
+                <label class="set">Music volume <input type="range" min="0" max="1" step="0.05" value="@st.Music" @onchange="async e => { st.Music = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); S.SaveSettings(); }" /></label>
+                <label class="set">Sound effects <input type="range" min="0" max="1" step="0.05" value="@st.Sfx" @onchange="async e => { st.Sfx = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); S.SaveSettings(); }" /></label>
                 <label class="set">Scare intensity
-                    <select value="@st.ScareLevel" @onchange="async e => { st.ScareLevel = int.Parse(e.Value.ToString()); await S.SaveSettings(); }">
+                    <select value="@st.ScareLevel" @onchange="async e => { st.ScareLevel = int.Parse(e.Value.ToString()); S.SaveSettings(); }">
                         <option value="2">Full</option><option value="1">Reduced</option><option value="0">Minimal (no full-screen scares)</option>
                     </select>
                 </label>
-                <label class="set check"><input type="checkbox" checked="@st.ReducedFlashing" @onchange="async e => { st.ReducedFlashing = (bool)e.Value; await S.SaveSettings(); }" /> Reduce flashing</label>
-                <label class="set check"><input type="checkbox" checked="@st.ReducedShake" @onchange="async e => { st.ReducedShake = (bool)e.Value; await S.SaveSettings(); }" /> Reduce screen shake</label>
+                <label class="set check"><input type="checkbox" checked="@st.ReducedFlashing" @onchange="async e => { st.ReducedFlashing = (bool)e.Value; S.SaveSettings(); }" /> Reduce flashing</label>
+                <label class="set check"><input type="checkbox" checked="@st.ReducedShake" @onchange="async e => { st.ReducedShake = (bool)e.Value; S.SaveSettings(); }" /> Reduce screen shake</label>
                 <label class="set">Game speed (playtest)
-                    <select value="@st.Speed.ToString(System.Globalization.CultureInfo.InvariantCulture)" @onchange="async e => { st.Speed = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }">
+                    <select value="@st.Speed.ToString(System.Globalization.CultureInfo.InvariantCulture)" @onchange="async e => { st.Speed = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); S.SaveSettings(); }">
                         <option value="1">Normal</option><option value="1.5">1.5×</option><option value="2">2×</option>
                     </select>
                 </label>
-                <label class="set check"><input type="checkbox" checked="@st.PlaytestTools" @onchange="async e => { st.PlaytestTools = (bool)e.Value; await S.SaveSettings(); }" /> Show playtest tools on the title screen</label>
-                <button class="btn" @onclick="() => S.Screen = S.Ctx != null && S.Screen == Screen.Settings && false ? Screen.Shift : Screen.Title">Back</button>
+                <label class="set check"><input type="checkbox" checked="@st.PlaytestTools" @onchange="async e => { st.PlaytestTools = (bool)e.Value; S.SaveSettings(); }" /> Show playtest tools on the title screen</label>
+                <button class="btn" @onclick="() => S.Screen = S.Ctx != null && S.Screen == GameScreen.Settings && false ? GameScreen.Shift : GameScreen.Title">Back</button>
             </div>
         </div>
     };
@@ -912,7 +912,7 @@ else
                 <p>All music and sound effects are original procedural compositions made for this game.</p>
                 <p>Fonts: Special Elite, VT323, Reenie Beanie, Barlow and Barlow Condensed (SIL Open Font License / Apache 2.0), via Google Fonts.</p>
                 <p class="dim">Thank you for working the night shift.</p>
-                <button class="btn" @onclick="() => S.Screen = Screen.Title">Back</button>
+                <button class="btn" @onclick="() => S.Screen = GameScreen.Title">Back</button>
             </div>
         </div>
     };
@@ -929,7 +929,7 @@ else
                 <p class="dim">Best: round @S.Profile.EndlessBestRound · @Money(S.Profile.EndlessBestEarnings)</p>
                 <div class="row">
                     <button class="btn primary" @onclick="S.StartEndless">New run</button>
-                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Title">Main menu</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = GameScreen.Title">Main menu</button>
                 </div>
             </div>
         </div>

@@ -88,5 +88,39 @@ def main(root):
             fit_portrait(key_out(sheet.crop(box)), bottom_fade=0.2).save(os.path.join(cust, name + ".png"), optimize=True)
 
 
+# Character sheets share one layout: a 3x2 "head expressions" grid at the top right.
+COL_CENTERS = (515, 748, 980)
+ROWS = ((135, 358), (402, 628))
+
+
+def bust(sheet, col, row, half_w=108):
+    cx = COL_CENTERS[col]
+    y0, y1 = ROWS[row]
+    return sheet.crop((cx - half_w, y0, cx + half_w, y1))
+
+
+SHEET_BUSTS = {
+    # sheet file: [(portrait name, col, row, span_fill)]
+    "hat_stranger_sheet.png": [("cust_collector", 0, 0, True), ("cust_collector_true", 1, 1, True)],
+    "child_sheet.png": [("cust_lily", 0, 0, False)],
+    "corrupted_worker_sheet.png": [("cust_mara", 0, 0, False), ("cust_mara_mimic", 2, 1, True)],
+    "faceless_passenger_sheet.png": [("cust_double", 2, 1, False)],
+}
+
+
+def import_busts(root):
+    src = os.path.join(root, "Art", "Source")
+    cust = os.path.join(root, "Assets", "_Project", "Resources", "Art", "Customers")
+    for sheet_name, items in SHEET_BUSTS.items():
+        p = os.path.join(src, sheet_name)
+        if not os.path.exists(p):
+            continue
+        sheet = Image.open(p).convert("RGB")
+        for name, col, row, span in items:
+            fit_portrait(key_out(bust(sheet, col, row), thresh=8 if span else 11, span_fill=span), bottom_fade=0.2).save(os.path.join(cust, name + ".png"), optimize=True)
+
+
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+    root = sys.argv[1] if len(sys.argv) > 1 else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    main(root)
+    import_busts(root)

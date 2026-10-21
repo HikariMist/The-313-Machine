@@ -197,5 +197,7 @@ namespace HikariForge.M313.Core
         public List<string> Lines = new List<string>();
         public string Music;
         public string Image;
+        public string Achievement;
+        public string AchievementDesc;
     }
 }

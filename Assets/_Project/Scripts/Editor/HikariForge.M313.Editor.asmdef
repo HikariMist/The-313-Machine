@@ -1,0 +1,14 @@
+{
+    "name": "HikariForge.M313.Editor",
+    "rootNamespace": "HikariForge.M313.EditorTools",
+    "references": ["HikariForge.M313.Core", "HikariForge.M313.Runtime"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,14 @@
+{
+    "name": "HikariForge.M313.Runtime",
+    "rootNamespace": "HikariForge.M313",
+    "references": ["HikariForge.M313.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
