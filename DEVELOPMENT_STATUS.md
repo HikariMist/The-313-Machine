@@ -8,7 +8,7 @@ _Last updated: session 1._
 | Content: 7 nights, 52 campaign encounters, 14 endless templates, 26 clues, handbook A–G with forged pages | Done (needs human playtest for pacing) |
 | 15 endings + achievements, campaign loop (cycles), Endless Mode unlocked by all 15 | Done, every ending reached by automated playthrough |
 | Save system (checksum, backup, corrupt-save fallback), profile, settings | Done in Core; Unity file IO written, not run |
-| Browser playtest (Blazor WASM) | Done, published as a private artifact, Night 1 auto-played in headless Chrome |
+| Browser playtest (Blazor WASM) | Internal testing tool only — not distributed (players use the launcher) |
 | Unity runtime (IMGUI renderer, audio, bootstrap, Steam hooks, build script) | Written and compile-checked; **never run in Unity** |
 | Art | Studio art for title, Drenched Man, Smiling Woman, Hat Stranger (Collector), Child (Lily), Corrupted Worker (Mara/mimic), Faceless Passenger (the Attendant). Everything else is procedural placeholder |
 | Music (15 tracks) / SFX (74) | Procedural originals, generated; not listened to by a human yet |
@@ -17,3 +17,6 @@ _Last updated: session 1._
 | Studio intro (game, direct launch) | Unity plays the same MP4 from StreamingAssets, then the title; verified in a Windows build |
 | Installer | Script compiles; install/uninstall verified under Wine with a stand-in game |
 | Store kits, marketing, licenses | Written (`STEAM_RELEASE.md`, `ITCH_RELEASE.md`, `Docs/Marketing`, `LICENSES.md`) |
+
+| Night pacing | Adaptive clock: nights land at ~10–15 real minutes; verified with simulated fast/typical/slow players |
+| Title screen | Animated rain, splashes, mist and rare lightning (Unity) |

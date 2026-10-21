@@ -230,6 +230,7 @@ namespace HikariForge.M313
                 float breathe = 1f + Mathf.Sin(Time.unscaledTime * 0.45f) * 0.01f;
                 Ui.Image(bg, 540 - 20 * breathe, -10 * breathe, 1400 * breathe, 1100 * breathe, ScaleMode.ScaleAndCrop);
             }
+            DrawTitleWeather();
             for (int i = 0; i < 40; i++) Ui.Fill(i * 22, 0, 22, Ui.VH, new Color(0.027f, 0.031f, 0.043f, Mathf.Clamp01(1.4f - i / 28f)));
             float x = 130;
             Ui.Text("HIKARI FORGE STUDIOS PRESENTS", x, 90, 700, 30, Ui.F.Label, 18, Ui.Dim);
@@ -264,6 +265,46 @@ namespace HikariForge.M313
             }
             Ui.Box(1700, 30, 190, 40, new Color(0, 0, 0, 0.5f), Ui.Sodium);
             Ui.Text(BuildInfo.Label, 1700, 30, 190, 40, Ui.F.Lcd, 26, Ui.Sodium, TextAnchor.MiddleCenter);
+        }
+
+        /// <summary>Title-screen motion: two layers of falling rain, drifting mist, splashes and rare lightning.</summary>
+        private void DrawTitleWeather()
+        {
+            float t = Time.unscaledTime;
+            // Far rain: thin, slow, faint. Near rain: longer, faster, brighter.
+            for (int layer = 0; layer < 2; layer++)
+            {
+                int drops = layer == 0 ? 110 : 70;
+                float speed = layer == 0 ? 700f : 1250f, len = layer == 0 ? 18f : 34f, w = layer == 0 ? 1.2f : 2f;
+                var c = new Color(0.72f, 0.8f, 0.92f, layer == 0 ? 0.13f : 0.2f);
+                for (int i = 0; i < drops; i++)
+                {
+                    float seed = i * 53.13f + layer * 911f;
+                    float x = 420f + Mathf.Repeat(seed * 17.31f - t * (speed * 0.08f), Ui.VW - 380f);
+                    float y = Mathf.Repeat(seed * 9.7f + t * (speed + (i % 5) * 60f), Ui.VH + 60f) - 40f;
+                    Ui.Fill(x, y, w, len, c);
+                }
+            }
+            // Splashes on the wet concrete near the bottom.
+            for (int i = 0; i < 26; i++)
+            {
+                float phase = Mathf.Repeat(t * 1.7f + i * 0.37f, 1f);
+                float x = 560f + Mathf.Repeat(i * 211.7f, 1300f), y = 900f + (i * 37) % 150;
+                float r = 4f + phase * 18f;
+                Ui.Fill(x - r, y, r * 2f, 1.5f, new Color(0.75f, 0.82f, 0.95f, 0.22f * (1f - phase)));
+            }
+            // Mist drifting across the lot.
+            for (int i = 0; i < 4; i++)
+            {
+                float x = Mathf.Repeat(i * 520f + t * (10f + i * 4f), Ui.VW + 800f) - 800f;
+                Ui.Fill(x, 640f + i * 70f, 900f, 120f, new Color(0.55f, 0.58f, 0.66f, 0.035f));
+            }
+            // Rare lightning: a soft double flash every ~14 s (skipped with Reduce flashing).
+            if (!S.Settings.ReducedFlashing)
+            {
+                float l = Mathf.Repeat(t, 14f);
+                if (l < 0.08f || (l > 0.18f && l < 0.24f)) Ui.Fill(0, 0, Ui.VW, Ui.VH, new Color(0.75f, 0.8f, 1f, 0.12f));
+            }
         }
 
         // ================================================================== prep

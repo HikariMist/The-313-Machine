@@ -12,3 +12,7 @@
 - On-disk name is "The 313 Machine" (Windows forbids ":"); the window title bar therefore reads "The 313 Machine".
 - Launcher and installer were tested under Wine/Xvfb, not on real Windows. The launcher is unsigned (SmartScreen may warn).
 - Launcher update check needs a real HTTPS manifest URL in launcher.json; until then it opens the store page.
+- Distribution is launcher-only (installer or portable ZIP). `Playtest/` (browser build) is an internal testing tool
+  and is not shipped to players.
+- Nights are paced to 10–15 real minutes (owner's request), so a first full week takes roughly 75–95 minutes plus
+  replays for other endings.

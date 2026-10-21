@@ -21,6 +21,10 @@ namespace HikariForge.M313.Core
         public string UpgradeStrategy = "none";
         public int UpgradeReserve = 1500;
         public readonly List<string> Purchases = new List<string>();
+        /// <summary>Human pacing for length tests: seconds per dialogue line, and thinking time before each decision.</summary>
+        public float ReadSeconds, DecideSeconds, InvestigateSeconds;
+        private float _wait;
+        private object _waitingFor;
         private readonly Random _rng = new Random(313);
 
         public static readonly string[] Staples =
@@ -77,6 +81,7 @@ namespace HikariForge.M313.Core
             for (int i = 0; i < maxTicks && !ctx.IsOver; i++)
             {
                 ctx.Tick(0.5f);
+                if (ReadSeconds > 0 && HumanWait(ctx)) continue;
                 while (ctx.Events.Count > 0)
                 {
                     var e = ctx.Events.Dequeue();
@@ -110,6 +115,29 @@ namespace HikariForge.M313.Core
                 }
             }
             return ctx;
+        }
+
+        /// <summary>Simulates reading and thinking time. Returns true while the "player" is still busy.</summary>
+        private bool HumanWait(ShiftContext ctx)
+        {
+            object key = null;
+            float need = 0;
+            switch (ctx.Phase)
+            {
+                case ShiftPhase.Phone: key = ctx.PendingPhone; need = (ctx.PendingPhone?.Lines?.Count ?? 1) * ReadSeconds; break;
+                case ShiftPhase.Investigation: key = ctx.PendingInvestigation; need = InvestigateSeconds; break;
+                case ShiftPhase.Encounter:
+                    var cur = ctx.Current;
+                    if (cur.Stage == EncounterStage.Talking) { key = cur; need = cur.Def.Lines.Count * ReadSeconds; }
+                    else if (cur.Stage == EncounterStage.Awaiting) { key = cur.Def.Id + ":decide"; need = DecideSeconds; }
+                    else { key = cur.Def.Id + ":outcome"; need = (cur.Outcome?.Lines.Count ?? 1) * ReadSeconds; }
+                    break;
+            }
+            if (key == null) return false;
+            if (!Equals(key, _waitingFor)) { _waitingFor = key; _wait = need; }
+            if (_wait <= 0) return false;
+            _wait -= 0.5f;
+            return true;
         }
 
         private string[] PolicyFor(string id)

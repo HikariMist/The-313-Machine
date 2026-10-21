@@ -3,7 +3,7 @@ setlocal EnableDelayedExpansion
 rem ============================================================================
 rem  THE 3:13 MACHINE - package the closed beta
 rem  1. Builds the Windows game (Unity batch mode)
-rem  2. Publishes the launcher if the .NET 8 SDK is installed (optional)
+rem  2. Publishes the launcher (requires the .NET 8 SDK)
 rem  3. Creates Release\The313Machine_Beta_v0.1.0_Windows.zip (portable)
 rem  4. Compiles Release\The313Machine_Beta_Setup_v0.1.0.exe if Inno Setup 6+ is installed
 rem ============================================================================
@@ -30,11 +30,11 @@ if not exist "Builds\Windows\The313Machine.exe" (
 )
 > "Builds\Windows\version.txt" echo %VERSION%
 
-rem ---- 2. Launcher (optional) ----------------------------------------------
+rem ---- 2. Launcher (required: players start the game through the launcher) --
 echo [2/4] Launcher...
-where dotnet >nul 2>&1 && (
-    dotnet publish Launcher\The313MachineLauncher.csproj -c Release -o Release\launcher >nul && echo      launcher built
-) || echo      .NET SDK not found - beta ships without the launcher (game starts directly)
+where dotnet >nul 2>&1 || ( echo The .NET 8 SDK is required to build the launcher: https://dotnet.microsoft.com/download & pause & exit /b 1 )
+dotnet publish Launcher\The313MachineLauncher.csproj -c Release -o Release\launcher
+if not exist "Release\launcher\The313MachineLauncher.exe" ( echo LAUNCHER BUILD FAILED & pause & exit /b 1 )
 
 rem ---- 3. Portable ZIP ------------------------------------------------------
 echo [3/4] Portable ZIP...
@@ -43,7 +43,8 @@ if exist "%STAGE%" rmdir /s /q "%STAGE%"
 mkdir "%STAGE%\Game"
 xcopy /e /i /q /y "Builds\Windows" "%STAGE%\Game" >nul
 for /d %%D in ("%STAGE%\Game\*_DoNotShip" "%STAGE%\Game\*_BackUpThisFolder_ButDontShipItWithYourGame") do rmdir /s /q "%%D"
-if exist "Release\launcher\The313MachineLauncher.exe" copy /y "Release\launcher\The313MachineLauncher.exe" "%STAGE%" >nul & copy /y "Release\launcher\launcher.json" "%STAGE%" >nul & xcopy /e /i /q /y "Release\launcher\Intro" "%STAGE%\Intro" >nul
+copy /y "Release\launcher\The313MachineLauncher.exe" "%STAGE%" >nul
+copy /y "Release\launcher\launcher.json" "%STAGE%" >nul & xcopy /e /i /q /y "Release\launcher\Intro" "%STAGE%\Intro" >nul
 copy /y "Installer\README_BETA.txt" "%STAGE%" >nul
 if exist "Release\The313Machine_Beta_v%VERSION%_Windows.zip" del "Release\The313Machine_Beta_v%VERSION%_Windows.zip"
 powershell -NoProfile -Command "Compress-Archive -Path '%STAGE%\*' -DestinationPath 'Release\The313Machine_Beta_v%VERSION%_Windows.zip'"

@@ -36,7 +36,12 @@ namespace HikariForge.M313.Core
     /// </summary>
     public sealed class ShiftContext
     {
-        public const float IdleRate = 3.0f;        // game minutes per real second between customers
+        public const float IdleRate = 3.0f;        // reference rate; between customers the clock is paced adaptively
+        public const float MinIdleRate = 0.7f, MaxIdleRate = 4f;
+        /// <summary>Target real length of a night shift (seconds). Design goal: 10-15 minutes.</summary>
+        public static float TargetNightSeconds = 750f;
+        /// <summary>Expected real time a player spends with one customer, used to plan the idle pace.</summary>
+        public const float ExpectedEncounterSeconds = 70f;
         public const float EncounterRate = 0.25f;  // game minutes per real second during a customer
         public const int SlowRestockMinutes = 12;
         public const int FastRestockMinutes = 2;
@@ -152,7 +157,8 @@ namespace HikariForge.M313.Core
             if (_blockingQueue.Count > 0) { StartBlocking(_blockingQueue.Dequeue()); return; }
 
             float target = NextScheduledTime();
-            float rate = BlackoutActive && !BackupPowerActive ? IdleRate * 0.5f : IdleRate;
+            float rate = PacedIdleRate();
+            if (BlackoutActive && !BackupPowerActive) rate *= 0.5f;
             AdvanceClock(Math.Min(target, Clock + dt * rate));
             FireDueEvents();
             if (Phase != ShiftPhase.Idle) return;
@@ -168,6 +174,20 @@ namespace HikariForge.M313.Core
 
             if (Clock >= ContentDatabase.ShiftEnd && _pendingEncounters.Count == 0 && _pendingEvents.Count == 0)
                 EndShift();
+        }
+
+        /// <summary>
+        /// Paces the empty stretches so the whole night lands near <see cref="TargetNightSeconds"/>:
+        /// the remaining clock (minus what upcoming customers will use) is spread over the remaining real time.
+        /// </summary>
+        private float PacedIdleRate()
+        {
+            int pending = _pendingEncounters.Count;
+            float gameLeft = ContentDatabase.ShiftEnd - Clock - pending * ExpectedEncounterSeconds * EncounterRate;
+            float realLeft = TargetNightSeconds - RealTime - pending * ExpectedEncounterSeconds;
+            if (gameLeft <= 0) return MaxIdleRate;
+            if (realLeft <= 20f) return MaxIdleRate;
+            return Math.Max(MinIdleRate, Math.Min(MaxIdleRate, gameLeft / realLeft));
         }
 
         private void TickEncounter(float dt)

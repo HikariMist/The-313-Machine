@@ -14,7 +14,8 @@ At session start read: DEVELOPMENT_STATUS.md, NEXT_STEPS.md, TASK_QUEUE.md, KNOW
   `GameView` (IMGUI renderer for every screen, virtual 1920x1080), `AudioDirector`, `UnityPlatform` (saves in
   persistentDataPath with .bak), `SteamService` (no-op unless STEAMWORKS_NET defined).
 - `Assets/_Project/Scripts/Editor/BuildScript.cs` — menu **Hikari Forge → Build Windows (x64)**.
-- `Playtest/` — Blazor WebAssembly front end over the same Core + content. `Tools/publish_playtest.sh` builds it.
+- `Playtest/` — Blazor WebAssembly front end over the same Core + content, **internal testing only** (players get the
+  game only through the launcher/installer). `Tools/publish_playtest.sh` builds it.
 
 ## Commands (cloud container, no Unity)
 - Install .NET: `apt-get install -y dotnet-sdk-8.0`
@@ -27,6 +28,8 @@ At session start read: DEVELOPMENT_STATUS.md, NEXT_STEPS.md, TASK_QUEUE.md, KNOW
 - Audio: `python3 Tools/AudioGen/audiogen.py Assets/_Project/Resources/Audio [music|sfx]` (music takes ~7 min).
 
 ## Rules
+- Nights must take 10–15 real minutes (adaptive clock in `ShiftContext.PacedIdleRate`; `NightLengthTests` guard it).
+- 7 nights per week, 15 endings, Endless Mode unlocks only after all 15.
 - Studio art in `Art/Source` is approved by the owner and wins over generated art.
 - Do not recreate the Hikari Forge logos; intro uses `Resources/Branding/hf_emblem.png` / `hf_wordmark.png` when supplied.
 - Never claim Unity builds/tests ran unless they did — this container has no Unity.

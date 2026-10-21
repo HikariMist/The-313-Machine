@@ -651,4 +651,39 @@ namespace HikariForge.M313.Tests
             }
         }
     }
+
+    public class NightLengthTests
+    {
+        private static List<float> PlayWeek(float read, float decide, float investigate)
+        {
+            var db = TestContent.Db;
+            var s = GameState.NewGame();
+            var bot = AutoPlayer.TruthSeeker();
+            bot.ReadSeconds = read; bot.DecideSeconds = decide; bot.InvestigateSeconds = investigate;
+            var minutes = new List<float>();
+            for (int n = 1; n <= 7; n++)
+            {
+                var ctx = bot.PlayNight(s, db, 80000);
+                Assert.IsTrue(ctx.IsOver && ctx.Phase != ShiftPhase.Failed, $"night {n}: {ctx.FailReason}");
+                minutes.Add(ctx.RealTime / 60f);
+                if (ctx.RequestedEnding == null) Campaign.CompleteNight(s, db, ctx);
+            }
+            TestContext.WriteLine($"read {read}s/line, decide {decide}s: " + string.Join(", ", minutes.Select((m, i) => $"N{i + 1} {m:0.0} min")) + $" — total {minutes.Sum():0} min");
+            return minutes;
+        }
+
+        [Test]
+        public void TypicalPlayerNightsTakeTenToFifteenMinutes()
+        {
+            var m = PlayWeek(4f, 25f, 120f);
+            foreach (var x in m) Assert.That(x, Is.InRange(10f, 15f));
+        }
+
+        [Test]
+        public void FastAndSlowPlayersStayCloseToTheTarget()
+        {
+            foreach (var x in PlayWeek(2f, 8f, 45f)) Assert.That(x, Is.InRange(8.5f, 15f), "fast reader");
+            foreach (var x in PlayWeek(6f, 45f, 200f)) Assert.That(x, Is.InRange(10f, 19f), "slow, careful reader");
+        }
+    }
 }
