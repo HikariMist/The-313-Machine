@@ -1,7 +1,7 @@
 # itch.io release kit
 
 - **Uploads:** `The313Machine_Setup.exe` (Windows installer) and `The313Machine_Portable.zip` (launcher + `Game/`).
-- **Price:** $4.99 USD, "No payments" off; optional pay more.
+- **Price:** $5.99 USD, "No payments" off; optional pay more. Optional launch sale 15% off for the first week.
 - **Kind of project:** Downloadable · Genre: Interactive Fiction / Simulation · Tags: horror, psychological-horror, mystery, management, multiple-endings, atmospheric, 2d
 - **Description:** `Docs/Marketing/itch_description.md`
 - **Cover image:** 630×500 from the title key art.

@@ -23,7 +23,7 @@ steamcmd +login <builder_account> +run_app_build ..\scripts\app_build_<APPID>.vd
 - **Short description (≤300 chars):** You run a lonely roadside vending machine on the night shift. At exactly 3:13 AM, customers arrive who shouldn't exist. Follow the handbook, watch the cameras, check every reflection — and decide who gets served, who gets refused, and who gets to go home.
 - **Long description:** see `Docs/Marketing/steam_description.md`.
 - **Tags:** Psychological Horror, Horror, Mystery, Management, Atmospheric, Story Rich, Multiple Endings, Choices Matter, Dark, Singleplayer, 2D, Indie
-- **Price:** $4.99 USD
+- **Price:** $5.99 USD (launch week: 15% off → $5.09; Steam requires the base price to be live 30 days before later discounts)
 - **System requirements (minimum, to be confirmed after the Unity build is profiled):** Windows 10 64-bit; 2 GHz dual core; 4 GB RAM; DirectX 11 GPU with 1 GB; 500 MB disk. No internet required.
 - **Capsules (Steam sizes):** header 920×430, small 462×174, main 1232×706, vertical 748×896, library hero 3840×1240, library logo 1280×720 (transparent). Build from the title key art; keep "3:13" legible at small sizes.
 - **Screenshots:** at least 5, 1920×1080, from the real game only (see `Docs/Marketing/screenshot_guide.md`).

@@ -3,7 +3,7 @@ Hikari Forge Studios presents **THE 3:13 MACHINE**, a psychological horror game 
 
 Work seven night shifts. Follow the handbook. Watch the cameras. And at exactly 3:13 AM, decide who gets served.
 
-15 endings. One machine. Coming to Steam and itch.io for $4.99.
+15 endings. One machine. Coming to Steam and itch.io for $5.99.
 [store link]
 
 # Discord announcement
@@ -19,7 +19,7 @@ Wishlist: [Steam link] · itch.io: [link]
 Tell us in #313-theories what you think happened to the bus.
 
 # Launch announcement (day of release)
-**THE 3:13 MACHINE is out now** on Steam and itch.io for $4.99.
+**THE 3:13 MACHINE is out now** on Steam and itch.io for $5.99.
 Seven nights. Fifty-plus customers. Fifteen endings. One rule above all others: check the seal.
 Thank you for working the night shift with us. — Hikari Forge Studios
 [links]

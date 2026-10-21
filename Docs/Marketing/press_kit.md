@@ -2,7 +2,7 @@
 
 - **Developer / Publisher:** Hikari Forge Studios
 - **Platforms:** Windows (Steam, itch.io)
-- **Price:** $4.99 USD
+- **Price:** $5.99 USD
 - **Genre:** Psychological horror / mystery / management
 - **Length:** 2–3 hours for a first playthrough (to be confirmed by playtesting); 15 endings; Endless Mode
 - **Elevator pitch:** You run a roadside vending machine on the night shift. At 3:13 AM, customers arrive who shouldn't exist, and you have to decide who to serve.

@@ -12,4 +12,4 @@
 | 8 | 44–50 | Knocking inside the machine; player hovers over Maint. panel… doesn't open it | knock_inside |
 | 9 | 50–56 | Quick cuts of nights 5–7: stockroom search, wrong-time display, flooded lot | *No More Change* |
 | 10 | 56–60 | Smash cut to black. Text: "15 ENDINGS" | stinger_soft |
-| 11 | 60–68 | Logo "THE 3:13 MACHINE", tagline, platforms, $4.99 | *Three Thirteen* fades |
+| 11 | 60–68 | Logo "THE 3:13 MACHINE", tagline, platforms, $5.99 | *Three Thirteen* fades |
