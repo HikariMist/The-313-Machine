@@ -7,7 +7,7 @@ Use a **new, separate project** (not the ONE MORE BAG page). Nothing here requir
 2. Title: `The 3:13 Machine (Closed Beta)` · URL: `the-313-machine` · Kind: **Downloadable**.
 3. Pricing: **$0 or donate → "No payments"**.
 4. Uploads: `Release/The313Machine_Beta_v0.1.0_Windows.zip` (tick **Windows**) and, if built,
-   `Release/The313Machine_Beta_Setup_v0.1.0.exe` (tick **Windows**). Set the version to `0.1.0`.
+   `Release/The313Machine_setup.exe` (tick **Windows**). Set the version to `0.1.0`.
 5. Description: paste the block below. Cover image: crop `Art/Source/title_keyart.png` to 630×500.
 6. **Visibility & access → Restricted** ("Only owners & people with download keys can access").
    Save as **Draft** first, check the page, then switch to Restricted. **Do not choose Public.**

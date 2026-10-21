@@ -5,7 +5,7 @@ rem  THE 3:13 MACHINE - package the closed beta
 rem  1. Builds the Windows game (Unity batch mode)
 rem  2. Publishes the launcher (requires the .NET 8 SDK)
 rem  3. Creates Release\The313Machine_Beta_v0.1.0_Windows.zip (portable)
-rem  4. Compiles Release\The313Machine_Beta_Setup_v0.1.0.exe if Inno Setup 6+ is installed
+rem  4. Compiles Release\The313Machine_setup.exe if Inno Setup 6+ is installed
 rem ============================================================================
 set "VERSION=0.1.0"
 cd /d "%~dp0"
@@ -56,7 +56,7 @@ set "ISCC="
 for %%I in ("%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" "%ProgramFiles%\Inno Setup 6\ISCC.exe" "%ProgramFiles%\Inno Setup 7\ISCC.exe" "%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe") do if exist %%I set "ISCC=%%~I"
 if defined ISCC (
     pushd Installer
-    "%ISCC%" /Q /DAppVersion=%VERSION% /O"..\Release" The313Machine.iss && echo      Release\The313Machine_Beta_Setup_v%VERSION%.exe
+    "%ISCC%" /Q /DAppVersion=%VERSION% /O"..\Release" The313Machine.iss && echo      Release\The313Machine_setup.exe
     popd
 ) else (
     echo      Inno Setup not found - skipped. Install it from jrsoftware.org to build the installer.

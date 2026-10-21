@@ -4,7 +4,7 @@ Hikari Forge Studios
 Thank you for testing! This is an early beta: please expect rough edges.
 
 INSTALL
-  Installer: run The313Machine_Beta_Setup_v0.1.0.exe and follow the steps.
+  Installer: run The313Machine_setup.exe and follow the steps.
              No administrator rights needed. Start from the desktop or Start menu.
   Portable:  unzip The313Machine_Beta_v0.1.0_Windows.zip anywhere and run
              The313MachineLauncher.exe, then press PLAY.

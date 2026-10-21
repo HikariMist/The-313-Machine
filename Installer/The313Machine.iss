@@ -14,7 +14,7 @@
   #define AppVersion "0.1.0"
 #endif
 #ifndef SetupName
-  #define SetupName "The313Machine_Beta_Setup_v" + AppVersion
+  #define SetupName "The313Machine_setup"
 #endif
 #define Publisher "Hikari Forge Studios"
 #define GameDir "..\Builds\Windows"
@@ -55,7 +55,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=Output
 OutputBaseFilename={#SetupName}
 SetupIconFile=setup.ico
-UninstallDisplayIcon={app}\{#StartExe}
+UninstallDisplayIcon={app}\The313Machine.ico
 UninstallDisplayName={#AppName}
 WizardStyle=modern
 WizardImageFile=wizard_large.bmp
@@ -78,13 +78,16 @@ Source: "{#LauncherDir}\launcher.json"; DestDir: "{app}"; Flags: ignoreversion o
 ; The game carries its own copy in Game\The313Machine_Data\StreamingAssets for direct launches.
 Source: "{#LauncherDir}\{#IntroVideo}"; DestDir: "{app}\Intro"; Flags: ignoreversion
 #endif
+; Game logo icon (Tools/ArtGen/make_app_icon.ps1). Shortcuts point at this standalone .ico so Windows
+; cannot keep showing a cached icon from an older exe.
+Source: "setup.ico"; DestDir: "{app}"; DestName: "The313Machine.ico"; Flags: ignoreversion
 Source: "README_BETA.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme skipifsourcedoesntexist
 Source: "{#GameDir}\*"; DestDir: "{app}\Game"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*_BurstDebugInformation_DoNotShip\*,*_BackUpThisFolder_ButDontShipItWithYourGame\*"
 
 [Icons]
-Name: "{group}\{#SafeName}"; Filename: "{app}\{#StartExe}"
+Name: "{group}\{#SafeName}"; Filename: "{app}\{#StartExe}"; IconFilename: "{app}\The313Machine.ico"
 Name: "{group}\{cm:UninstallProgram,{#SafeName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#SafeName}"; Filename: "{app}\{#StartExe}"; Tasks: desktopicon
+Name: "{autodesktop}\{#SafeName}"; Filename: "{app}\{#StartExe}"; IconFilename: "{app}\The313Machine.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#StartExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
