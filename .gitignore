@@ -126,3 +126,6 @@ steam_appid.txt
 *.p12
 /Playtest/bin/
 /Playtest/obj/
+!/Playtest/Playtest.csproj
+!/Tools/CoreTests/CoreTests.csproj
+__pycache__/
