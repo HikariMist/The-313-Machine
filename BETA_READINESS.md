@@ -35,9 +35,9 @@ Wages $20→$30 per night plus sales. Typical: one upgrade level per night; focu
 
 ## Not verified yet (needs the owner's PC, ~20 minutes)
 - Hands-on play of the .exe after rebuilding (title, a night, save/continue, settings, intro video).
-- Intro video: code plays `StreamingAssets/Hikari_Forge_Studios_Startup_Intro.mp4` if present — **the file is
-  not in the repository yet**; copy it to `Assets/StreamingAssets/` before building, otherwise the text intro plays.
-- Launcher on real Windows (optional for beta; shortcuts start the game directly without it).
+- Intro video: in the repo (`Assets/StreamingAssets/`), plays in the launcher and on direct game launches —
+  verified on the owner's PC. Audio track detected, not yet listened to by a human.
+- Launcher: run on the owner's PC (intro, skip, settings, fallbacks). PLAY from an installed copy not yet clicked.
 - Human campaign length (2–3 h target) and scare frequency feel at human speed.
 
 ## Owner actions, in order

@@ -82,7 +82,20 @@ namespace HikariForge.M313.Launcher
             canvas.Children.Add(_topGlow);
             canvas.Children.Add(_bottomGlow);
 
-            Add(canvas, Text("HIKARI FORGE STUDIOS", 12, Dim, FontWeight.Bold, 3), 40, 26);
+            // Studio credit: a short emerald-to-violet rule (the emblem's colours) and a quiet "presents" line.
+            Add(canvas, new Rectangle
+            {
+                Width = 28, Height = 2,
+                Fill = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
+                    GradientStops = { new GradientStop(Emerald, 0), new GradientStop(Violet, 1) }
+                }
+            }, 40, 33);
+            var credit = new TextBlock { FontSize = 11, LetterSpacing = 4, FontFamily = new FontFamily("Bahnschrift, Segoe UI, Inter, sans-serif") };
+            credit.Inlines!.Add(new Avalonia.Controls.Documents.Run("HIKARI FORGE STUDIOS") { Foreground = new SolidColorBrush(Bone), FontWeight = FontWeight.SemiBold });
+            credit.Inlines.Add(new Avalonia.Controls.Documents.Run("   PRESENTS") { Foreground = new SolidColorBrush(Dim) });
+            Add(canvas, credit, 80, 27);
             Add(canvas, Text("THE", 30, Bone, FontWeight.Normal, 6), 38, 46);
             _lcd = Text("3:13", 96, LcdRed, FontWeight.Bold, 0, "Consolas, Courier New, monospace");
             Add(canvas, _lcd, 30, 72);

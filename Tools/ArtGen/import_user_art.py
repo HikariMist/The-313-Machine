@@ -69,7 +69,11 @@ def main(root):
     p = os.path.join(src, "title_keyart.png")
     if os.path.exists(p):
         im = Image.open(p).convert("RGB")
-        im.crop((560, 0, im.width, im.height)).save(os.path.join(art, "bg", "title.jpg"), quality=88)
+        im = im.crop((560, 0, im.width, im.height))
+        # The crop leaves the tail of the mockup tagline ("...ervice.") at the left edge; cover it with
+        # the sky strip directly above so the pole and wires stay continuous.
+        im.paste(im.crop((0, 446, 95, 486)), (0, 488))
+        im.save(os.path.join(art, "bg", "title.jpg"), quality=88)
 
     p = os.path.join(src, "drenched_man_sheet.png")
     if os.path.exists(p):
