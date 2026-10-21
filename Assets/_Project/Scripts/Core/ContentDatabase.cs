@@ -217,7 +217,7 @@ namespace HikariForge.M313.Core
                 Id = J.Str(d, "id"), Night = J.Int(d, "night"), Time = ParseTime(J.Str(d, "time", "23:30")),
                 Condition = J.Str(d, "condition"), Character = J.Str(d, "character"), Name = J.Str(d, "name"),
                 Portrait = J.Str(d, "portrait"), Supernatural = J.Bool(d, "supernatural"), Lines = J.Strings(d, "lines"),
-                Request = J.Str(d, "request"), RequestText = J.Str(d, "requestText"), Quantity = J.Int(d, "quantity"), Pays = J.Int(d, "pays"),
+                Request = J.Str(d, "request"), RequestText = J.Str(d, "requestText"), Quantity = J.Int(d, "quantity"), Optional = J.Bool(d, "optional"), Pays = J.Int(d, "pays"),
                 PaymentDesc = J.Str(d, "payment"), Patience = J.Float(d, "patience", 75f), Music = J.Str(d, "music"),
                 ArriveScare = J.Str(d, "arriveScare"), ArriveEffects = J.Strings(d, "arriveEffects"),
                 Rules = J.Strings(d, "rules"), NoReflection = J.Bool(d, "noReflection"), ReflectionLags = J.Bool(d, "reflectionLags")

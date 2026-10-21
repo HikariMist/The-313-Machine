@@ -661,14 +661,16 @@ namespace HikariForge.M313.Tests
             var bot = AutoPlayer.TruthSeeker();
             bot.ReadSeconds = read; bot.DecideSeconds = decide; bot.InvestigateSeconds = investigate;
             var minutes = new List<float>();
+            int skipped = 0;
             for (int n = 1; n <= 7; n++)
             {
                 var ctx = bot.PlayNight(s, db, 80000);
                 Assert.IsTrue(ctx.IsOver && ctx.Phase != ShiftPhase.Failed, $"night {n}: {ctx.FailReason}");
                 minutes.Add(ctx.RealTime / 60f);
+                skipped += ctx.SkippedWalkIns;
                 if (ctx.RequestedEnding == null) Campaign.CompleteNight(s, db, ctx);
             }
-            TestContext.WriteLine($"read {read}s/line, decide {decide}s: " + string.Join(", ", minutes.Select((m, i) => $"N{i + 1} {m:0.0} min")) + $" — total {minutes.Sum():0} min");
+            TestContext.WriteLine($"read {read}s/line, decide {decide}s: " + string.Join(", ", minutes.Select((m, i) => $"N{i + 1} {m:0.0} min")) + $" — total {minutes.Sum():0} min, walk-ins skipped {skipped}");
             return minutes;
         }
 

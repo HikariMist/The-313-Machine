@@ -181,6 +181,7 @@ namespace HikariForge.M313.Core
             {
                 var next = _pendingEncounters[0];
                 _pendingEncounters.RemoveAt(0);
+                if (next.Optional && RunningLate) { SkippedWalkIns++; continue; }
                 if (Conditions.Evaluate(next.Condition, State, Db, this)) { StartEncounter(next); return; }
             }
 
@@ -192,6 +193,15 @@ namespace HikariForge.M313.Core
         /// Paces the empty stretches so the whole night lands near <see cref="TargetNightSeconds"/>:
         /// the remaining clock (minus what upcoming customers will use) is spread over the remaining real time.
         /// </summary>
+        /// <summary>True when the customers still to come would push the night well past its target length.</summary>
+        private bool RunningLate =>
+            RealTime + (_pendingEncounters.Count + 1) * ExpectedEncounterSeconds > TargetNightSeconds + LateSlackSeconds;
+
+        public const float LateSlackSeconds = 60f;
+
+        /// <summary>Optional walk-ins dropped tonight to keep a slow night near its target length.</summary>
+        public int SkippedWalkIns { get; private set; }
+
         private float PacedIdleRate()
         {
             int pending = _pendingEncounters.Count;

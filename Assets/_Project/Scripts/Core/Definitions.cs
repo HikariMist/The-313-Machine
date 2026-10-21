@@ -134,6 +134,7 @@ namespace HikariForge.M313.Core
         public List<string> Lines = new List<string>();
         public string Request;    // product id, or "UNLISTED"
         public string RequestText;
+        public bool Optional;     // walk-in: skipped when the night is already running long
         public int Quantity;      // items per order; 0 = grows with night and cycle, 1 = always a single item
         public int Pays;
         public string PaymentDesc;
