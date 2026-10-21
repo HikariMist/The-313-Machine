@@ -17,3 +17,6 @@ Session 1, later:
   silent uninstall removed install dir and shortcuts, **kept a planted save file**, removed launcher settings.
   This testing found and fixed a real bug: ":" in "The 3:13 Machine" is illegal in Windows paths, so all on-disk
   names (install folder, shortcuts, Unity productName/save folder, launcher settings) now use "The 313 Machine".
+- Browser end-to-end: Playtest tools → Night 7 (careful route auto-played) → full night played through the UI →
+  override keypad 1013 at the Collector → **THE TRUTH ending shown, "Clause Thirteen" achievement unlocked**, no page
+  errors (278 s). Found and fixed: tall result/ending cards were clipped at the top.
