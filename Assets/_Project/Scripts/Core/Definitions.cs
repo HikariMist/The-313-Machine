@@ -18,14 +18,22 @@ namespace HikariForge.M313.Core
         public bool Unusual;
     }
 
+    public sealed class UpgradeLevelDef
+    {
+        public int Price;      // cents
+        public string Effect;  // what this level adds, shown in the shop
+    }
+
     public sealed class UpgradeDef
     {
         public string Id;
         public string Name;
-        public int Price;
         public int UnlockNight = 1;
         public string Description;
-        public string Effect;
+        public List<UpgradeLevelDef> Levels = new List<UpgradeLevelDef>();
+        public int MaxLevel => Levels.Count;
+        public int Price => Levels.Count > 0 ? Levels[0].Price : 0;
+        public string Effect => Levels.Count > 0 ? Levels[0].Effect : "";
     }
 
     public sealed class AnnotationDef

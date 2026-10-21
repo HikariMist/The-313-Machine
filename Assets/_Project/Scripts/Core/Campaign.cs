@@ -76,7 +76,7 @@ namespace HikariForge.M313.Core
             next.Cycle = finished.Cycle + 1;
             foreach (var e in finished.EndingsSeen) next.EndingsSeen.Add(e);
             if (!string.IsNullOrEmpty(finished.EndingReached)) next.EndingsSeen.Add(finished.EndingReached);
-            foreach (var u in finished.Upgrades) next.Upgrades.Add(u);
+            foreach (var u in finished.Upgrades) next.SetLevel(u, finished.Level(u));
             next.SetFlag("cycle_prev_" + (finished.EndingReached ?? "none"), 1);
             return next;
         }

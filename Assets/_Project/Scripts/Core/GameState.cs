@@ -32,7 +32,7 @@ namespace HikariForge.M313.Core
     /// <summary>Complete persistent campaign state. Everything here is saved.</summary>
     public sealed class GameState
     {
-        public const int SaveVersion = 1;
+        public const int SaveVersion = 2;   // 2: upgrade levels (v1 saves migrate)
         public const int Rows = 4, Cols = 4;
         public const int BaseCapacity = 4, ExpandedCapacity = 8;
         public const int StartingMoney = 2500;
@@ -50,7 +50,9 @@ namespace HikariForge.M313.Core
 
         public readonly Dictionary<string, int> Stockroom = new Dictionary<string, int>();
         public readonly List<MachineSlot> Slots = new List<MachineSlot>();
+        /// <summary>Ids of upgrades owned at level 1 or higher (kept in sync with UpgradeLevels).</summary>
         public readonly HashSet<string> Upgrades = new HashSet<string>();
+        public readonly Dictionary<string, int> UpgradeLevels = new Dictionary<string, int>();
         public readonly Dictionary<string, int> Flags = new Dictionary<string, int>();
         public readonly HashSet<string> Clues = new HashSet<string>();
         public readonly HashSet<string> UnlockedPages = new HashSet<string>();
@@ -92,7 +94,20 @@ namespace HikariForge.M313.Core
             slot.Count = count;
         }
 
-        public int SlotCapacity => Upgrades.Contains(UpgradeIds.ExpandedStorage) ? ExpandedCapacity : BaseCapacity;
+        public int Level(string upgradeId) =>
+            UpgradeLevels.TryGetValue(upgradeId, out var l) ? l : (Upgrades.Contains(upgradeId) ? 1 : 0);
+
+        public void SetLevel(string upgradeId, int level)
+        {
+            UpgradeLevels[upgradeId] = level;
+            if (level > 0) Upgrades.Add(upgradeId); else Upgrades.Remove(upgradeId);
+        }
+
+        // Upgrade effect tables, indexed by level 0..3. Balance lives here and in upgrades.json (prices).
+        public static readonly int[] StorageCapacity = { 4, 5, 6, 8 };
+        public static readonly float[] LightingInstability = { 1f, 0.85f, 0.7f, 0.6f };
+
+        public int SlotCapacity => StorageCapacity[Math.Min(3, Level(UpgradeIds.ExpandedStorage))];
 
         public MachineSlot Slot(string code) => Slots.FirstOrDefault(s => string.Equals(s.Code, code, StringComparison.OrdinalIgnoreCase));
 
@@ -119,7 +134,7 @@ namespace HikariForge.M313.Core
 
         public void AddInstability(int amount)
         {
-            if (amount > 0 && Upgrades.Contains(UpgradeIds.Lighting)) amount = (int)Math.Ceiling(amount * 0.7);
+            if (amount > 0) amount = (int)Math.Ceiling(amount * LightingInstability[Math.Min(3, Level(UpgradeIds.Lighting))]);
             Instability = Math.Max(0, Math.Min(100, Instability + amount));
             if (amount > 0) Exposure += amount;
         }
@@ -203,11 +218,21 @@ namespace HikariForge.M313.Core
             return true;
         }
 
+        /// <summary>Price of the next level, or -1 when the upgrade is maxed.</summary>
+        public int NextUpgradePrice(UpgradeDef u)
+        {
+            int lv = Level(u.Id);
+            return lv < u.MaxLevel ? u.Levels[lv].Price : -1;
+        }
+
+        /// <summary>Buys the next level. Never overspends, never exceeds the max level.</summary>
         public bool BuyUpgrade(UpgradeDef u)
         {
-            if (u == null || Upgrades.Contains(u.Id) || Money < u.Price) return false;
-            Money -= u.Price;
-            Upgrades.Add(u.Id);
+            if (u == null) return false;
+            int price = NextUpgradePrice(u);
+            if (price < 0 || Money < price) return false;
+            Money -= price;
+            SetLevel(u.Id, Level(u.Id) + 1);
             return true;
         }
 

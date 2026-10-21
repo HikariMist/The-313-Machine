@@ -86,6 +86,7 @@ namespace HikariForge.M313.Core
                 ["stockroom"] = stock,
                 ["slots"] = slots,
                 ["upgrades"] = new List<object>(s.Upgrades),
+                ["upgradeLevels"] = LevelsDict(s),
                 ["flags"] = flags,
                 ["clues"] = new List<object>(s.Clues),
                 ["pages"] = new List<object>(s.UnlockedPages),
@@ -125,7 +126,12 @@ namespace HikariForge.M313.Core
                 slot.Count = Math.Max(0, J.Int(sd, "count"));
                 if (slot.ProductId == null) slot.Count = 0;
             }
-            foreach (var u in J.Strings(d, "upgrades")) s.Upgrades.Add(u);
+            // Version 1 saves only stored owned upgrade ids: they migrate to level 1.
+            foreach (var u in J.Strings(d, "upgrades")) s.SetLevel(u, 1);
+            var levels = J.Obj(J.Get(d, "upgradeLevels"));
+            if (levels != null)
+                foreach (var kv in levels)
+                    if (kv.Value is double lv) s.SetLevel(kv.Key, Math.Max(0, Math.Min(3, (int)lv)));
             var flags = J.Obj(J.Get(d, "flags"));
             if (flags != null)
                 foreach (var kv in flags)
@@ -150,6 +156,13 @@ namespace HikariForge.M313.Core
                 });
             }
             return s;
+        }
+
+        private static Dictionary<string, object> LevelsDict(GameState s)
+        {
+            var d = new Dictionary<string, object>();
+            foreach (var u in s.Upgrades) d[u] = s.Level(u);
+            return d;
         }
 
         private static int Clamp(int v, int lo, int hi) => v < lo ? lo : v > hi ? hi : v;

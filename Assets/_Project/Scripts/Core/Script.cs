@@ -89,7 +89,7 @@ namespace HikariForge.M313.Core
                 case "false": return 0;
                 case "flag": return s.Flag(arg);
                 case "clue": return s.Clues.Contains(arg) ? 1 : 0;
-                case "upgrade": return s.Upgrades.Contains(arg) ? 1 : 0;
+                case "upgrade": return s.Level(arg);
                 case "page": return s.UnlockedPages.Contains(arg) ? 1 : 0;
                 case "night": return s.Night;
                 case "cycle": return s.Cycle;
@@ -187,9 +187,9 @@ namespace HikariForge.M313.Core
                     ctx?.Emit(PresEventType.Produced, arg);
                     break;
                 case "upgrade":
-                    s.Upgrades.Add(arg);
+                    if (s.Level(arg) == 0) s.SetLevel(arg, 1);
                     break;
-                case "scare": ctx?.Emit(PresEventType.Scare, arg); break;
+                case "scare": ctx?.TriggerScare(arg, false, "effect"); break;
                 case "music": ctx?.Emit(PresEventType.Music, arg); break;
                 case "sfx": ctx?.Emit(PresEventType.Sfx, arg); break;
                 case "machine": ctx?.Emit(PresEventType.MachineMessage, null, arg); break;

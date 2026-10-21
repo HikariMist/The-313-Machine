@@ -281,17 +281,20 @@ namespace HikariForge.M313
             int i = 0;
             foreach (var u in S.Db.UpgradeList)
             {
-                float x = 60 + (i % 3) * 610, y = 250 + (i / 3) * 330;
-                bool owned = st.Upgrades.Contains(u.Id), locked = u.UnlockNight > st.Night;
-                Ui.Box(x, y, 590, 310, Ui.Panel, owned ? Ui.Hex("1f5b41") : Ui.Edge);
-                Ui.Text(u.Name, x + 20, y + 18, 550, 34, Ui.F.Label, 26);
-                Ui.Text(u.Description, x + 20, y + 60, 550, 140, Ui.F.Body, 20, Ui.Hex("b4b9c2"));
-                Ui.Text(u.Effect, x + 20, y + 200, 550, 50, Ui.F.Lcd, 24, Ui.Emerald);
-                Ui.Text(owned ? "Installed" : locked ? $"Available night {u.UnlockNight}" : Ui.Money(u.Price), x + 20, y + 262, 300, 34, Ui.F.Lcd, 28, Ui.Sodium);
-                if (!owned && !locked && Ui.Button("Buy", x + 450, y + 258, 120, 40, Ui.B.Normal, st.Money >= u.Price) && st.BuyUpgrade(u))
+                float x = 60 + (i % 3) * 610, y = 250 + (i / 3) * 360;
+                int lv = st.Level(u.Id), next = st.NextUpgradePrice(u);
+                bool locked = u.UnlockNight > st.Night;
+                Ui.Box(x, y, 590, 340, Ui.Panel, lv > 0 ? Ui.Hex("1f5b41") : Ui.Edge);
+                Ui.Text(u.Name, x + 20, y + 16, 440, 34, Ui.F.Label, 26);
+                Ui.Text($"Lv {lv}/{u.MaxLevel}", x + 450, y + 18, 120, 30, Ui.F.Lcd, 26, Ui.Sodium, TextAnchor.UpperRight);
+                Ui.Text(u.Description, x + 20, y + 56, 550, 80, Ui.F.Body, 18, Ui.Hex("b4b9c2"));
+                for (int l = 0; l < u.MaxLevel; l++)
+                    Ui.Text($"{(l < lv ? "✓" : "·")} Lv {l + 1}: {u.Levels[l].Effect}", x + 20, y + 140 + l * 34, 550, 32, Ui.F.Lcd, 20, l < lv ? Ui.Emerald : Ui.Dim);
+                Ui.Text(next < 0 ? "Maxed" : locked ? $"Available night {u.UnlockNight}" : $"Lv {lv + 1}: {Ui.Money(next)}", x + 20, y + 290, 360, 34, Ui.F.Lcd, 28, Ui.Sodium);
+                if (next >= 0 && !locked && Ui.Button("Buy", x + 450, y + 286, 120, 40, Ui.B.Normal, st.Money >= next) && st.BuyUpgrade(u))
                 {
                     S.Sfx("purchase");
-                    S.Toast(u.Name + " installed.");
+                    S.Toast($"{u.Name} upgraded to level {st.Level(u.Id)}.");
                 }
                 i++;
             }
@@ -622,7 +625,8 @@ namespace HikariForge.M313
                     var ctx = S.Ctx;
                     Modal(820, 900, out x, out y);
                     Ui.Text("RESTOCK FROM THE STOCKROOM", x + 30, y + 24, 760, 34, Ui.F.Label, 24);
-                    string note = ctx.CanRestockNow ? (S.State.Upgrades.Contains(UpgradeIds.FastRestock) ? "Rear hatch: 2 minutes per slot, even with a customer waiting." : "Takes 12 minutes per slot. Only between customers.") : "You can't restock while a customer is waiting. (Faster Restocking allows it.)";
+                    int rlv = Math.Min(3, S.State.Level(UpgradeIds.FastRestock));
+                    string note = ctx.CanRestockNow ? $"Takes {ShiftContext.RestockMinutes[rlv]} minutes per slot." + (rlv >= 2 ? " Works even with a customer waiting." : " Only between customers.") : "You can't restock while a customer is waiting. (Faster Restocking level 2 allows it.)";
                     Ui.Text(note, x + 30, y + 64, 760, 30, Ui.F.Body, 18, Ui.Dim);
                     float ry = y + 110;
                     foreach (var sl in S.State.Slots.Where(s => s.Code != "E1"))
@@ -747,7 +751,7 @@ namespace HikariForge.M313
         private void DrawMonitor(float x, float y)
         {
             var ctx = S.Ctx;
-            var cams = ShiftContext.Cameras.Where(c => (c != "cam4" || S.State.Upgrades.Contains(UpgradeIds.Monitor)) && (c != "cam0" || S.State.Flag("cam0") > 0)).ToList();
+            var cams = ShiftContext.Cameras.Where(c => (c != "cam4" || S.State.Level(UpgradeIds.Monitor) >= 1) && (c != "cam0" || S.State.Flag("cam0") > 0)).ToList();
             string[] names = { "CAM 1 · LOT", "CAM 2 · UNIT", "CAM 3 · STOCKROOM", "CAM 4 · ROUTE 9", "CAM 0 · OBSERVATION" };
             if (!cams.Contains(S.MonitorCam)) S.MonitorCam = "cam1";
             float bx = x;

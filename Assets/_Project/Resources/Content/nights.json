@@ -7,7 +7,7 @@
   "music": "graveyard_shift",
   "marginMusic": "something_approaches",
   "tier": 1,
-  "wage": 1500,
+  "wage": 2000,
   "briefing": "Stock the unit. Read the handbook. Serve the customers. Survive until 6:00 AM.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [
@@ -73,7 +73,7 @@
   "music": "something_outside",
   "marginMusic": "wrong_customer",
   "tier": 1,
-  "wage": 1600,
+  "wage": 2100,
   "briefing": "New handbook section: C — Unlisted Requests & Passengers.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [
@@ -111,7 +111,7 @@
   "music": "read_the_rules",
   "marginMusic": "dont_look_behind_you",
   "tier": 2,
-  "wage": 1700,
+  "wage": 2200,
   "briefing": "New handbook section: D — Maintenance. Pages may update during the shift. Check every seal.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [
@@ -182,7 +182,7 @@
   "music": "false_reflection",
   "marginMusic": "dont_look_behind_you",
   "tier": 2,
-  "wage": 1800,
+  "wage": 2300,
   "briefing": "New handbook section: E — Visitors. Storm warning on Route 9: power interruptions likely.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [
@@ -236,7 +236,7 @@
   "music": "employee_no_0",
   "marginMusic": "wrong_customer",
   "tier": 3,
-  "wage": 2000,
+  "wage": 2500,
   "briefing": "District request: clear out the previous attendant's belongings from the stockroom before the shift.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [
@@ -375,7 +375,7 @@
   "music": "machine_remembers",
   "marginMusic": "no_more_change",
   "tier": 3,
-  "wage": 2200,
+  "wage": 2700,
   "briefing": "New handbook section: F — Final Procedures.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [
@@ -455,7 +455,7 @@
   "music": "three_thirteen",
   "marginMusic": "no_more_change",
   "tier": 4,
-  "wage": 2500,
+  "wage": 3000,
   "briefing": "Section G added. A representative will arrive to settle your account.",
   "phoneSpeaker": "Mr. Hale — District Office",
   "phone": [

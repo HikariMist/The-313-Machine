@@ -65,10 +65,14 @@ namespace HikariForge.M313.Core
                         var d = J.Obj(o);
                         var u = new UpgradeDef
                         {
-                            Id = J.Str(d, "id"), Name = J.Str(d, "name"), Price = J.Int(d, "price"),
-                            UnlockNight = J.Int(d, "unlockNight", 1), Description = J.Str(d, "desc"),
-                            Effect = J.Str(d, "effect")
+                            Id = J.Str(d, "id"), Name = J.Str(d, "name"),
+                            UnlockNight = J.Int(d, "unlockNight", 1), Description = J.Str(d, "desc")
                         };
+                        foreach (var lv in J.List(d, "levels"))
+                        {
+                            var ld = J.Obj(lv);
+                            u.Levels.Add(new UpgradeLevelDef { Price = J.Int(ld, "price"), Effect = J.Str(ld, "effect") });
+                        }
                         Upgrades[u.Id] = u;
                         UpgradeList.Add(u);
                     }

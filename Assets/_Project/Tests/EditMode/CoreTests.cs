@@ -221,9 +221,9 @@ namespace HikariForge.M313.Tests
             Assert.AreEqual(money - db.Product("GUM").Cost * 10, s.Money);
             int moved = s.LoadSlot("D4", "GUM");
             Assert.AreEqual(GameState.BaseCapacity, moved);
-            s.Upgrades.Add(UpgradeIds.ExpandedStorage);
+            s.SetLevel(UpgradeIds.ExpandedStorage, 3);
             moved = s.LoadSlot("D4", "GUM");
-            Assert.AreEqual(GameState.ExpandedCapacity - GameState.BaseCapacity, moved);
+            Assert.AreEqual(GameState.StorageCapacity[3] - GameState.BaseCapacity, moved);
             Assert.IsFalse(s.BuyStock(db.Product("BATTERY"), 1000), "cannot overspend");
             Assert.IsFalse(s.BuyStock(db.Product("TOKEN"), 1), "machine-only items cannot be bought");
             Assert.AreEqual(0, s.LoadSlot("E1", "GUM"), "Row E cannot be loaded by hand");
@@ -235,11 +235,19 @@ namespace HikariForge.M313.Tests
             var db = TestContent.Db;
             var s = GameState.NewGame();
             s.Money = 100000;
-            Assert.IsTrue(s.BuyUpgrade(db.Upgrades[UpgradeIds.Lighting]));
-            Assert.IsFalse(s.BuyUpgrade(db.Upgrades[UpgradeIds.Lighting]));
+            var lighting = db.Upgrades[UpgradeIds.Lighting];
+            int spent = 0;
+            for (int l = 1; l <= 3; l++)
+            {
+                spent += s.NextUpgradePrice(lighting);
+                Assert.IsTrue(s.BuyUpgrade(lighting));
+                Assert.AreEqual(l, s.Level(lighting.Id));
+            }
+            Assert.IsFalse(s.BuyUpgrade(lighting), "cannot exceed max level");
+            Assert.AreEqual(100000 - spent, s.Money);
             s.Instability = 0;
             s.AddInstability(10);
-            Assert.AreEqual(7, s.Instability, "Improved lighting reduces instability gain by 30%");
+            Assert.AreEqual(6, s.Instability, "Lighting level 3 reduces instability gain by 40%");
         }
 
         [Test]
@@ -499,6 +507,148 @@ namespace HikariForge.M313.Tests
             Assert.IsTrue(Campaign.VisibleAnnotations(page, next, db).Any(a => a.Condition == "cycle>=2"), "the machine remembers the previous cycle");
             var ctx = AutoPlayer.Survivor().PlayNight(next, db);
             Assert.AreEqual(ShiftPhase.Ended, ctx.Phase);
+        }
+    }
+
+    public class BetaBalanceTests
+    {
+        [Test]
+        public void EveryUpgradeHasThreePricedLevelsThatRise()
+        {
+            foreach (var u in TestContent.Db.UpgradeList)
+            {
+                Assert.AreEqual(3, u.MaxLevel, u.Id);
+                for (int i = 1; i < u.MaxLevel; i++) Assert.Greater(u.Levels[i].Price, u.Levels[i - 1].Price, u.Id);
+                Assert.IsTrue(u.Levels.All(l => !string.IsNullOrEmpty(l.Effect)), u.Id);
+            }
+        }
+
+        [Test]
+        public void EveryUpgradeLevelChangesGameplay()
+        {
+            Assert.That(GameState.StorageCapacity, Is.Ordered.Ascending);
+            Assert.That(GameState.StorageCapacity.Distinct().Count(), Is.EqualTo(4));
+            Assert.That(ShiftContext.RestockMinutes, Is.Ordered.Descending);
+            Assert.That(ShiftContext.BlackoutFactor, Is.Ordered.Descending);
+            Assert.That(GameState.LightingInstability, Is.Ordered.Descending);
+        }
+
+        [Test]
+        public void VersionOneSavesMigrateUpgradesToLevelOne()
+        {
+            var s = GameState.NewGame();
+            s.SetLevel(UpgradeIds.Monitor, 1);
+            var json = SaveSerializer.Serialize(s);
+            // Rebuild a v1 envelope: no upgradeLevels, version 1, recomputed checksum.
+            var env = J.Obj(MiniJson.Parse(json));
+            var data = J.Obj(J.Get(env, "data"));
+            data.Remove("upgradeLevels");
+            env["version"] = 1;
+            env["checksum"] = SaveSerializer.Checksum(MiniJson.Serialize(data));
+            var migrated = SaveSerializer.Deserialize(MiniJson.Serialize(env));
+            Assert.AreEqual(1, migrated.Level(UpgradeIds.Monitor));
+            Assert.AreEqual(0, migrated.Level(UpgradeIds.Lighting));
+            var again = SaveSerializer.Deserialize(SaveSerializer.Serialize(migrated));
+            Assert.AreEqual(1, again.Level(UpgradeIds.Monitor));
+        }
+
+        private static (GameState s, AutoPlayer bot, List<int> moneyAfterNight) Campaign7(AutoPlayer bot)
+        {
+            var db = TestContent.Db;
+            var s = GameState.NewGame();
+            var money = new List<int>();
+            for (int n = 1; n <= 7; n++)
+            {
+                var ctx = bot.PlayNight(s, db);
+                Assert.AreEqual(ShiftPhase.Ended, ctx.Phase, $"Night {n}: {ctx.FailReason}\n" + string.Join("\n", bot.Log));
+                Assert.GreaterOrEqual(s.Money, 0);
+                if (n < 7) Campaign.CompleteNight(s, db, ctx);
+                money.Add(s.Money);
+            }
+            return (s, bot, money);
+        }
+
+        public static IEnumerable<TestCaseData> Players()
+        {
+            AutoPlayer P(double mistakes, string strategy) { var b = AutoPlayer.TruthSeeker(); b.MistakeRate = mistakes; b.UpgradeStrategy = strategy; return b; }
+            yield return new TestCaseData(P(0.0, "spread")).SetName("Economy_careful_spread");
+            yield return new TestCaseData(P(0.25, "spread")).SetName("Economy_average_spread");
+            yield return new TestCaseData(P(0.6, "spread")).SetName("Economy_poor_spread");
+            yield return new TestCaseData(P(0.25, "focus:monitor")).SetName("Economy_average_focus_monitor");
+            yield return new TestCaseData(P(0.25, "focus:storage")).SetName("Economy_average_focus_storage");
+            yield return new TestCaseData(P(0.6, "none")).SetName("Economy_poor_no_upgrades");
+        }
+
+        [TestCaseSource(nameof(Players))]
+        public void EveryPlaystyleCanFinishTheCampaign(AutoPlayer bot)
+        {
+            var (s, b, money) = Campaign7(bot);
+            TestContext.WriteLine("Money after each night: " + string.Join(", ", money.Select(m => "$" + m / 100)));
+            TestContext.WriteLine("Purchases: " + string.Join("; ", b.Purchases));
+            if (b.UpgradeStrategy != "none") Assert.IsNotEmpty(b.Purchases, "should afford at least one upgrade");
+        }
+
+        [Test]
+        public void FirstUpgradeIsAffordableAfterNightOne()
+        {
+            var db = TestContent.Db;
+            var s = GameState.NewGame();
+            var bot = AutoPlayer.TruthSeeker();
+            bot.MistakeRate = 0.25;
+            var ctx = bot.PlayNight(s, db);
+            Campaign.CompleteNight(s, db, ctx);
+            int cheapest = db.UpgradeList.Where(u => u.UnlockNight <= 2).Min(u => u.Price);
+            Assert.GreaterOrEqual(s.Money, cheapest, $"after night 1 money ${s.Money / 100}, cheapest upgrade ${cheapest / 100}");
+        }
+
+        [Test]
+        public void FullCampaignCannotMaxEverything()
+        {
+            var bot = AutoPlayer.TruthSeeker();
+            bot.UpgradeStrategy = "spread";
+            bot.UpgradeReserve = 0;
+            var (s, _, _) = Campaign7(bot);
+            int maxed = TestContent.Db.UpgradeList.Count(u => s.Level(u.Id) == u.MaxLevel);
+            Assert.Less(maxed, TestContent.Db.UpgradeList.Count, "players must choose priorities");
+        }
+
+        [Test]
+        public void ScarePacingRespectsNightlyBudgetsAndSpacing()
+        {
+            var db = TestContent.Db;
+            var s = GameState.NewGame();
+            var bot = AutoPlayer.TruthSeeker();
+            for (int n = 1; n <= 7; n++)
+            {
+                var ctx = bot.PlayNight(s, db);
+                var log = ctx.Director.Log;
+                var loud = log.Where(e => e.Kind == "sudden" || e.Kind == "major").ToList();
+                TestContext.WriteLine($"Night {n}: {loud.Count} noticeable scares, {log.Count(e => e.Kind == "atmosphere")} atmospheric, {log.Count(e => e.Kind == "softened")} softened");
+                foreach (var e in log.Where(e => e.Kind != "atmosphere")) TestContext.WriteLine("  " + e);
+                Assert.LessOrEqual(loud.Count, HorrorDirector.SuddenBudget[n], $"night {n} over budget");
+                var majors = loud.Where(e => e.Kind == "major").ToList();
+                for (int i = 1; i < majors.Count; i++)
+                    Assert.GreaterOrEqual(majors[i].Time - majors[i - 1].Time, HorrorDirector.MajorGap - 0.01f, $"night {n} majors too close");
+                if (ctx.Phase != ShiftPhase.Ended) Assert.Fail($"night {n} did not end");
+                if (n < 7) Campaign.CompleteNight(s, db, ctx);
+            }
+        }
+
+        [Test]
+        public void MinimalScareSettingStopsRandomSuddenScares()
+        {
+            var db = TestContent.Db;
+            var bot = AutoPlayer.TruthSeeker();
+            var s = GameState.NewGame();
+            for (int n = 1; n <= 4; n++)
+            {
+                bot.Prep(s, db);
+                var ctx = new ShiftContext(s, db);
+                ctx.Director.Intensity = 0.25f;
+                bot.PlayShift(ctx);
+                Assert.IsFalse(ctx.Director.Log.Any(e => e.Kind == "sudden" || e.Kind == "major"), $"night {n}");
+                Campaign.CompleteNight(s, db, ctx);
+            }
         }
     }
 }

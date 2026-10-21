@@ -103,6 +103,8 @@ kbd { font: 11px var(--f-lcd); border: 1px solid var(--edge); border-radius: 3px
 .upgrade h4 { margin: 0 0 6px; font: 700 17px var(--f-label); letter-spacing: .05em; }
 .upgrade p { margin: 0 0 8px; color: #b4b9c2; flex: 1; }
 .upgrade .effect { font: 15px var(--f-lcd); color: var(--emerald); }
+.upgrade .effect.dim { color: var(--dim); }
+.upgrade .lvl { font: 15px var(--f-lcd); color: var(--sodium); margin-left: 6px; }
 .upgrade.owned { border-color: #1f5b41; }
 .price { font: 18px var(--f-lcd); color: var(--sodium); }
 .prep-foot { display: flex; justify-content: space-between; margin-top: 28px; border-top: 1px solid var(--edge); padding-top: 16px; gap: 10px; flex-wrap: wrap; }

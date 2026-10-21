@@ -224,8 +224,7 @@ namespace HikariForge.M313.Core
             {
                 case "machine": Emit(PresEventType.MachineMessage, ev.Id, string.Join("\n", ev.Lines)); break;
                 case "scare":
-                    Emit(PresEventType.Scare, ev.Id);
-                    Director.NotifyScripted(ev.Id);
+                    TriggerScare(ev.Id, false, "event " + ev.Id);
                     break;
                 case "page": break; // handled by effects (page:id)
                 case "knock":
@@ -234,9 +233,12 @@ namespace HikariForge.M313.Core
                     Emit(PresEventType.KnockStart, ev.Id, null, (int)ev.Duration);
                     break;
                 case "blackout":
-                    BackupPowerActive = State.Upgrades.Contains(UpgradeIds.PowerBackup);
-                    _blackoutRemaining = BackupPowerActive ? ev.Duration * 0.35f : ev.Duration;
-                    if (!BackupPowerActive) State.AddInstability(8);
+                {
+                    int power = State.Level(UpgradeIds.PowerBackup);
+                    BackupPowerActive = power > 0;
+                    _blackoutRemaining = ev.Duration * BlackoutFactor[Math.Min(3, power)];
+                    if (!BackupPowerActive && State.Level(UpgradeIds.Lighting) < 3) State.AddInstability(8);
+                }
                     Emit(PresEventType.BlackoutStart, ev.Id, null, BackupPowerActive ? 1 : 0);
                     break;
                 case "wrongtime":
@@ -285,8 +287,7 @@ namespace HikariForge.M313.Core
             Emit(PresEventType.Arrive, def.Id, def.Name);
             if (!string.IsNullOrEmpty(def.ArriveScare))
             {
-                Emit(PresEventType.Scare, def.ArriveScare);
-                Director.NotifyScripted(def.ArriveScare);
+                TriggerScare(def.ArriveScare, false, "arrival " + def.Id);
             }
             if (!string.IsNullOrEmpty(def.Music)) Emit(PresEventType.Music, def.Music);
         }
@@ -312,9 +313,16 @@ namespace HikariForge.M313.Core
             InspectResult result = new InspectResult { Spot = spot, Label = defs[0].Label };
             foreach (var d in defs)
             {
-                if (!string.IsNullOrEmpty(d.Upgrade) && !State.Upgrades.Contains(d.Upgrade))
+                // The Customer ID Tool shows authored scan readings from level 2; level 1 gives a basic reading.
+                int needed = d.Upgrade == UpgradeIds.IdTool ? 2 : 1;
+                if (!string.IsNullOrEmpty(d.Upgrade) && State.Level(d.Upgrade) < needed)
                 {
-                    if (defs.Count == 1) { result.Locked = true; result.RequiredUpgrade = d.Upgrade; }
+                    if (defs.Count == 1)
+                    {
+                        // ID Tool level 1 still gives the basic reading.
+                        if (spot == "scan" && State.Level(UpgradeIds.IdTool) == 1) return DefaultInspection(spot);
+                        result.Locked = true; result.RequiredUpgrade = d.Upgrade;
+                    }
                     continue;
                 }
                 parts.Add(d.Text);
@@ -325,6 +333,7 @@ namespace HikariForge.M313.Core
                 }
             }
             result.Text = parts.Count > 0 ? string.Join("\n\n", parts) : "You would need better equipment to tell.";
+            if (spot == "scan" && parts.Count > 0) result.Text += RuleHint();
             return result;
         }
 
@@ -353,19 +362,27 @@ namespace HikariForge.M313.Core
             }
             if (spot == "scan")
             {
-                if (!State.Upgrades.Contains(UpgradeIds.IdTool))
+                if (State.Level(UpgradeIds.IdTool) == 0)
                     return new InspectResult { Spot = spot, Label = "SCAN", Locked = true, RequiredUpgrade = UpgradeIds.IdTool, Text = "You would need better equipment to tell." };
-                return new InspectResult { Spot = spot, Label = "SCAN", Text = d.Supernatural ? "PULSE: NONE.  RESIDUE: HIGH." : "PULSE: NORMAL.  RESIDUE: NONE." };
+                return new InspectResult { Spot = spot, Label = "SCAN", Text = (d.Supernatural ? "PULSE: NONE.  RESIDUE: HIGH." : "PULSE: NORMAL.  RESIDUE: NONE.") + RuleHint() };
             }
             return new InspectResult { Spot = spot, Text = "Nothing unusual." };
+        }
+
+        /// <summary>Customer ID Tool level 3: names the handbook sections that apply, never the answer.</summary>
+        private string RuleHint()
+        {
+            if (State.Level(UpgradeIds.IdTool) < 3 || Current == null || Current.Def.Rules.Count == 0) return "";
+            var sections = Current.Def.Rules.Select(r => r.Substring(0, 1)).Distinct().OrderBy(x => x);
+            return "\nCROSS-REFERENCE: handbook section " + string.Join(", ", sections) + ".";
         }
 
         public static readonly string[] Cameras = { "cam1", "cam2", "cam3", "cam4", "cam0" };
 
         public bool CameraAvailable(string cam)
         {
-            if (BlackoutActive && !BackupPowerActive) return false;
-            if (cam == "cam4") return State.Upgrades.Contains(UpgradeIds.Monitor);
+            if (BlackoutActive && !BackupPowerActive && State.Level(UpgradeIds.Monitor) < 3) return false;
+            if (cam == "cam4") return State.Level(UpgradeIds.Monitor) >= 1;
             if (cam == "cam0") return State.Flag("cam0") > 0;
             return true;
         }
@@ -390,6 +407,9 @@ namespace HikariForge.M313.Core
                 view.Note = c.Note;
                 if (!string.IsNullOrEmpty(c.Timestamp)) view.Timestamp = c.Timestamp;
             }
+            // Enhanced Monitor level 2: anomaly alert when the customer's reflection is wrong.
+            if (cam == "cam2" && State.Level(UpgradeIds.Monitor) >= 2 && (d.NoReflection || d.ReflectionLags))
+                view.Note = (string.IsNullOrEmpty(view.Note) ? "" : view.Note + " ") + "[ANOMALY ALERT: reflection does not match subject.]";
             return view;
         }
 
@@ -498,7 +518,10 @@ namespace HikariForge.M313.Core
             return true;
         }
 
-        public bool CanRestockNow => Phase == ShiftPhase.Idle || (Phase == ShiftPhase.Encounter && State.Upgrades.Contains(UpgradeIds.FastRestock));
+        public static readonly int[] RestockMinutes = { 12, 8, 4, 2 };
+        public static readonly float[] BlackoutFactor = { 1f, 0.6f, 0.35f, 0.2f };
+
+        public bool CanRestockNow => Phase == ShiftPhase.Idle || (Phase == ShiftPhase.Encounter && State.Level(UpgradeIds.FastRestock) >= 2);
 
         public int Restock(string slotCode, string productId)
         {
@@ -506,7 +529,7 @@ namespace HikariForge.M313.Core
             int moved = State.LoadSlot(slotCode, productId);
             if (moved > 0)
             {
-                int minutes = State.Upgrades.Contains(UpgradeIds.FastRestock) ? FastRestockMinutes : SlowRestockMinutes;
+                int minutes = RestockMinutes[Math.Min(3, State.Level(UpgradeIds.FastRestock))];
                 if (Phase == ShiftPhase.Idle) AdvanceClock(Math.Min(Clock + minutes, NextScheduledTime()));
                 Emit(PresEventType.Restocked, productId, slotCode, moved);
             }
@@ -536,7 +559,7 @@ namespace HikariForge.M313.Core
             if (outcome.Result == "retry")
             {
                 Effects.Apply(outcome.Effects, State, Db, this);
-                if (!string.IsNullOrEmpty(outcome.Scare)) { Emit(PresEventType.Scare, outcome.Scare); Director.NotifyScripted(outcome.Scare); }
+                if (!string.IsNullOrEmpty(outcome.Scare)) TriggerScare(outcome.Scare, false, "reply " + def.Id);
                 State.Decisions.Add(new DecisionRecord { Night = State.Night, Encounter = def.Id, Action = key, Result = "retry" });
                 Emit(PresEventType.Reply, def.Id, null, 0, outcome.Lines);
                 cur.Stage = EncounterStage.Awaiting;
@@ -579,11 +602,7 @@ namespace HikariForge.M313.Core
 
             Effects.Apply(outcome.Effects, State, Db, this);
             if (outcome.Result == "bad") State.AddInstability(5);
-            if (!string.IsNullOrEmpty(outcome.Scare))
-            {
-                Emit(PresEventType.Scare, outcome.Scare);
-                Director.NotifyScripted(outcome.Scare);
-            }
+            if (!string.IsNullOrEmpty(outcome.Scare)) TriggerScare(outcome.Scare, outcome.Result == "death", "outcome " + def.Id + " " + key);
             State.Decisions.Add(new DecisionRecord { Night = State.Night, Encounter = def.Id, Action = key, Result = outcome.Result });
             if (outcome.Result == "death") _pendingFail = true;
         }
@@ -670,6 +689,9 @@ namespace HikariForge.M313.Core
             RequestEnding("off_the_clock");
             EndShift();
         }
+
+        /// <summary>All scripted scares go through the director, which may soften them to protect pacing.</summary>
+        public void TriggerScare(string id, bool lethal, string reason) => Director.RequestScripted(id, lethal, reason, this);
 
         public void RequestEnding(string id)
         {

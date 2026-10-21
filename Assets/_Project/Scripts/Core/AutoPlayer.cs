@@ -15,6 +15,13 @@ namespace HikariForge.M313.Core
         public bool OpenPanelOnKnock;
         public readonly HashSet<string> SkipHotspots = new HashSet<string>();
         public readonly List<string> Log = new List<string>();
+        /// <summary>Chance to refuse an ordinary request the policy doesn't cover (simulates player mistakes).</summary>
+        public double MistakeRate;
+        /// <summary>none, spread (cheapest next level), or focus:&lt;upgradeId&gt;.</summary>
+        public string UpgradeStrategy = "none";
+        public int UpgradeReserve = 1500;
+        public readonly List<string> Purchases = new List<string>();
+        private readonly Random _rng = new Random(313);
 
         public static readonly string[] Staples =
             { "WATER", "COFFEE", "GUM", "SALT", "COLA", "ASPIRIN", "MINTS", "BATTERY", "ENERGY", "CHOCO", "PEANUTS", "CHIPS", "NOODLES", "MATCHES" };
@@ -36,6 +43,25 @@ namespace HikariForge.M313.Core
                 if (empty != null) s.LoadSlot(empty.Code, id);
             }
             s.AutoStock(db);
+            BuyUpgrades(s, db);
+        }
+
+        private void BuyUpgrades(GameState s, ContentDatabase db)
+        {
+            if (UpgradeStrategy == "none") return;
+            while (true)
+            {
+                var options = Campaign.AvailableUpgrades(s, db).Where(u => s.NextUpgradePrice(u) >= 0).ToList();
+                if (UpgradeStrategy.StartsWith("focus:"))
+                {
+                    var target = options.FirstOrDefault(u => u.Id == UpgradeStrategy.Substring(6));
+                    options = target != null ? new List<UpgradeDef> { target } : options;
+                }
+                var pick = options.OrderBy(u => s.NextUpgradePrice(u)).FirstOrDefault();
+                if (pick == null || s.Money - s.NextUpgradePrice(pick) < UpgradeReserve) return;
+                s.BuyUpgrade(pick);
+                Purchases.Add($"N{s.Night} {pick.Id} L{s.Level(pick.Id)}");
+            }
         }
 
         public ShiftContext PlayNight(GameState s, ContentDatabase db, int maxTicks = 40000)
@@ -112,6 +138,12 @@ namespace HikariForge.M313.Core
             if (step == "serve" || step.StartsWith("serve:"))
             {
                 string product = step == "serve" ? def.Request : step.Substring(6);
+                if (step == "serve" && !Policy.Keys.Any(k => def.Id == k || def.Id.StartsWith(k + "_r")) && _rng.NextDouble() < MistakeRate)
+                {
+                    q.Dequeue();
+                    ctx.Refuse();
+                    return;
+                }
                 if (string.IsNullOrEmpty(product) || product == "UNLISTED" || ctx.State.MachineCount(product) == 0)
                 {
                     q.Dequeue();

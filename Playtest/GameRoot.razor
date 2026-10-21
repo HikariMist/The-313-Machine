@@ -254,19 +254,26 @@ else
                         @foreach (var u in S.Db.UpgradeList)
                         {
                             var up = u;
-                            bool owned = st.Upgrades.Contains(u.Id);
+                            int lv = st.Level(u.Id);
+                            int next = st.NextUpgradePrice(u);
                             bool locked = u.UnlockNight > st.Night;
-                            <div class="upgrade @(owned ? "owned" : "")">
-                                <h4>@u.Name</h4>
+                            <div class="upgrade @(lv > 0 ? "owned" : "")">
+                                <h4>@u.Name <span class="lvl">Lv @lv/@u.MaxLevel</span></h4>
                                 <p>@u.Description</p>
-                                <div class="effect">@u.Effect</div>
+                                @for (int i = 0; i < u.MaxLevel; i++)
+                                {
+                                    <div class="effect @(i < lv ? "" : "dim")">@(i < lv ? "✓" : "·") Lv @(i + 1): @u.Levels[i].Effect</div>
+                                }
                                 <div class="row between">
-                                    <span class="price">@(owned ? "Installed" : locked ? $"Available night {u.UnlockNight}" : Money(u.Price))</span>
-                                    @if (!owned && !locked)
+                                    <span class="price">@(next < 0 ? "Maxed" : locked ? $"Available night {u.UnlockNight}" : $"Lv {lv + 1}: {Money(next)}")</span>
+                                    @if (next >= 0 && !locked)
                                     {
-                                        <button class="btn tiny" disabled="@(st.Money < u.Price)" @onclick='() => { if (st.BuyUpgrade(up)) { S.Sfx("purchase"); S.Toast(up.Name + " installed."); } }'>Buy</button>
+                                        <button class="btn tiny" disabled="@(st.Money < next)" @onclick='() => { if (st.BuyUpgrade(up)) { S.Sfx("purchase"); S.Toast($"{up.Name} upgraded to level {st.Level(up.Id)}."); } }'>Buy</button>
                                     }
                                 </div>
+                            </div>
+                        }
+                    </div>
                             </div>
                         }
                     </div>
@@ -529,7 +536,7 @@ else
             case GameOverlay.Restock:
                 <div class="modal-back" @onclick="() => S.Overlay = GameOverlay.None"><div class="modal" @onclick:stopPropagation="true">
                     <h3>Restock from the stockroom</h3>
-                    <p class="dim">@(S.Ctx.CanRestockNow ? (S.State.Upgrades.Contains(UpgradeIds.FastRestock) ? "Rear hatch: 2 minutes per slot, even with a customer waiting." : "Takes 12 minutes per slot. Only between customers.") : "You can't restock while a customer is waiting. (Faster Restocking upgrade allows it.)")</p>
+                    <p class="dim">@(S.Ctx.CanRestockNow ? $"Takes {ShiftContext.RestockMinutes[Math.Min(3, S.State.Level(UpgradeIds.FastRestock))]} minutes per slot." + (S.State.Level(UpgradeIds.FastRestock) >= 2 ? " Works even with a customer waiting." : " Only between customers.") : "You can't restock while a customer is waiting. (Faster Restocking level 2 allows it.)")</p>
                     <div class="restock">
                         @foreach (var sl in S.State.Slots.Where(x => x.Code != "E1"))
                         {
@@ -641,7 +648,7 @@ else
     RenderFragment Monitor() => __builder =>
     {
         var ctx = S.Ctx;
-        var cams = ShiftContext.Cameras.Where(c => c != "cam4" || S.State.Upgrades.Contains(UpgradeIds.Monitor)).Where(c => c != "cam0" || S.State.Flag("cam0") > 0).ToList();
+        var cams = ShiftContext.Cameras.Where(c => c != "cam4" || S.State.Level(UpgradeIds.Monitor) >= 1).Where(c => c != "cam0" || S.State.Flag("cam0") > 0).ToList();
         string[] names = { "CAM 1 · LOT", "CAM 2 · UNIT", "CAM 3 · STOCKROOM", "CAM 4 · ROUTE 9", "CAM 0 · OBSERVATION" };
         if (!cams.Contains(S.MonitorCam)) S.MonitorCam = "cam1";
         var view = ctx.CameraView(S.MonitorCam);
