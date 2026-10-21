@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0 beta polish
+- Nights pace to about 10 real minutes; 7 nights per week.
+- Three-level upgrades, rebalanced wages and prices, paced jumpscares.
+- Animated rain on the title screen, pause menu, in-game feedback screen.
+- First-week tips for Nights 1–3 (can be switched off in Settings).
+- Launch price set to $5.99.
+
 ## 0.9.0 — first playable (unreleased)
 - Seven-night campaign at the Unit 313 vending machine, 52 handcrafted encounters.
 - Handbook with sealed and forged pages, security cameras (CAM 0–4), maintenance panel, override keypad.
