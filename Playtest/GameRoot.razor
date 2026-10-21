@@ -1,0 +1,937 @@
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="root @RootClasses" tabindex="0" @onkeydown="OnKey" @ref="_root">
+@if (S == null)
+{
+    <div class="boot">Loading Unit 313…</div>
+}
+else
+{
+    @switch (S.Screen)
+    {
+        case Screen.Title: @TitleScreen() break;
+        case Screen.Prep: @PrepScreen() break;
+        case Screen.Shift: @ShiftScreen() break;
+        case Screen.Summary: @SummaryScreen() break;
+        case Screen.Ending: @EndingScreen() break;
+        case Screen.Failed: @FailedScreen() break;
+        case Screen.Achievements: @AchievementsScreen() break;
+        case Screen.Settings: @SettingsScreen() break;
+        case Screen.Credits: @CreditsScreen() break;
+        case Screen.EndlessOver: @EndlessOverScreen() break;
+    }
+    <div class="toasts" aria-live="polite">
+        @foreach (var t in S.Toasts)
+        {
+            <div class="toast @t.Kind">@t.Text</div>
+        }
+    </div>
+    @if (S.Error != null)
+    {
+        <div class="modal-back"><div class="modal small"><h3>Save problem</h3><p>@S.Error</p><button class="btn" @onclick="() => S.Error = null">OK</button></div></div>
+    }
+}
+</div>
+
+@code {
+    GameSession S;
+    ElementReference _root;
+    bool _running = true;
+    bool _hasSave;
+    bool _audioUnlocked;
+    string _prepTab = "stock";
+    string _creditsReturn = "title";
+
+    string RootClasses => S == null ? "" : string.Join(" ",
+        S.Screen == Screen.Shift && S.Ctx != null ? "weather-" + S.Ctx.NightDef.Weather : "",
+        S.Screen == Screen.Shift && S.Ctx != null && S.Ctx.InMargin ? "margin" : "",
+        S.LightsOut ? "lights-out" : "",
+        S.Now < S.FlickerUntil && !S.Settings.ReducedFlashing ? "flicker" : "",
+        S.Settings.ReducedShake ? "no-shake" : "",
+        S.Ctx != null && S.State != null && S.State.Instability >= 60 ? "unstable" : "");
+
+    protected override async Task OnInitializedAsync()
+    {
+        S = new GameSession(JS);
+        if (S.Db.LoadErrors.Count > 0) S.Error = "Content failed to load: " + string.Join("; ", S.Db.LoadErrors);
+        await S.LoadPersistentAsync();
+        _hasSave = await S.HasSaveAsync();
+        _ = Loop();
+    }
+
+    async Task Loop()
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        double last = 0;
+        while (_running)
+        {
+            await Task.Delay(100);
+            double now = sw.Elapsed.TotalSeconds;
+            double dt = Math.Min(0.5, now - last);
+            last = now;
+            try { S.Tick(dt); }
+            catch (Exception e) { S.Error = "Game error: " + e.Message; Console.WriteLine(e); }
+            if (S.Screen == Screen.Failed && S.Endless) await S.EndlessDeath();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose() => _running = false;
+
+    Screen _lastScreen;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (S != null && (firstRender || S.Screen != _lastScreen))
+        {
+            _lastScreen = S.Screen;
+            try { await _root.FocusAsync(); } catch { }
+        }
+    }
+
+    async Task UnlockAudio()
+    {
+        if (_audioUnlocked) return;
+        _audioUnlocked = true;
+        try { await JS.InvokeVoidAsync("m313.audio.unlock"); } catch { }
+        await S.ApplyAudioSettings();
+        S.Music("last_stop");
+    }
+
+    void OnKey(KeyboardEventArgs e)
+    {
+        if (S?.Screen != Screen.Shift) return;
+        switch (e.Key)
+        {
+            case " ": case "Enter": if (S.Overlay == Overlay.None) S.AdvanceLine(); break;
+            case "h": case "H": Toggle(Overlay.Handbook); break;
+            case "m": case "M": Toggle(Overlay.Monitor); break;
+            case "e": case "E": Toggle(Overlay.Evidence); break;
+            case "Escape": if (S.Overlay == Overlay.Panel) S.ClosePanel(); else if (S.Overlay != Overlay.Phone && S.Overlay != Overlay.Investigation) S.Overlay = Overlay.None; break;
+        }
+    }
+
+    void Toggle(Overlay o)
+    {
+        if (S.Overlay == Overlay.Phone || S.Overlay == Overlay.Investigation) return;
+        if (S.Overlay == Overlay.Panel) S.ClosePanel();
+        S.Overlay = S.Overlay == o ? Overlay.None : o;
+        S.Sfx(o == Overlay.Handbook ? "paper_rustle" : o == Overlay.Monitor ? "monitor_on" : "ui_click", 0.5f);
+    }
+
+    static string Money(int cents) => $"${cents / 100}.{Math.Abs(cents % 100):00}";
+
+    string Img(string folder, string name) => $"art/{folder}/{name}.png";
+
+    // ------------------------------------------------------------------ title
+
+    RenderFragment TitleScreen() => __builder =>
+    {
+        bool endless = S.Profile.EndlessUnlocked(S.Db);
+        <div class="title-screen" @onclick="UnlockAudio">
+            <div class="title-bg"><img src="art/bg/title.jpg" alt="" onerror="this.remove()" /></div>
+            <div class="title-block">
+                <div class="studio">HIKARI FORGE STUDIOS PRESENTS</div>
+                <h1 class="logo"><span class="the">THE</span><span class="lcd">3:13</span><span class="mach">MACHINE</span></h1>
+                <p class="tagline">Some customers shouldn't exist. Unfortunately, they still expect service.</p>
+                <nav class="menu">
+                    @if (_hasSave)
+                    {
+                        <button class="btn primary" @onclick="ContinueClicked">Continue</button>
+                    }
+                    <button class="btn @(_hasSave ? "" : "primary")" @onclick="NewGameClicked">New Game</button>
+                    <button class="btn" disabled="@(!endless)" title="@(endless ? "" : "Unlock all 15 endings")" @onclick="EndlessClicked">
+                        Endless Mode @(endless ? "" : "🔒")
+                    </button>
+                    <button class="btn" @onclick="() => S.Screen = Screen.Achievements">Endings &amp; Achievements <span class="count">@S.Profile.EndingCount(S.Db)/15</span></button>
+                    <button class="btn" @onclick="() => S.Screen = Screen.Settings">Settings</button>
+                    <button class="btn" @onclick="() => S.Screen = Screen.Credits">Credits</button>
+                </nav>
+                @if (S.Settings.PlaytestTools)
+                {
+                    <details class="tools">
+                        <summary>Playtest tools</summary>
+                        <p>Jump ahead: earlier nights are auto-played on the careful route (Walter served, Mr. Crane told, Lily protected).</p>
+                        <div class="row wrap">
+                            @for (int n = 2; n <= 7; n++)
+                            {
+                                int night = n;
+                                <button class="btn tiny" @onclick="() => SkipClicked(night)">Night @night</button>
+                            }
+                        </div>
+                        <div class="row wrap">
+                            <button class="btn tiny" @onclick="S.UnlockAllEndings">Unlock Endless Mode</button>
+                        </div>
+                    </details>
+                }
+                <p class="fine">Playtest build · Browser version · Progress saves in this browser · Headphones recommended</p>
+            </div>
+        </div>
+    };
+
+    async Task ContinueClicked() { await UnlockAudio(); await S.ContinueGame(); }
+    async Task NewGameClicked() { await UnlockAudio(); await S.NewGame(); }
+    async Task EndlessClicked() { await UnlockAudio(); S.StartEndless(); }
+    async Task SkipClicked(int n) { await UnlockAudio(); await S.SkipToNight(n); }
+
+    // ------------------------------------------------------------------ prep
+
+    RenderFragment PrepScreen() => __builder =>
+    {
+        var st = S.State;
+        var night = S.Endless ? null : S.Db.Night(st.Night);
+        <div class="prep">
+            <header class="prep-head">
+                <div>
+                    <div class="eyebrow">@(S.Endless ? $"ENDLESS MODE · ROUND {Endless.Round(st)}" : $"CYCLE {st.Cycle} · NIGHT {st.Night} OF 7")</div>
+                    <h2>@(S.Endless ? "The minute never closes." : night?.Title)</h2>
+                    <p class="sub">@(night?.Briefing)</p>
+                </div>
+                <div class="prep-money">
+                    <div class="label">Cash on hand</div>
+                    <div class="big">@Money(st.Money)</div>
+                </div>
+            </header>
+            <div class="tabs">
+                <button class="tab @(_prepTab == "stock" ? "on" : "")" @onclick='() => _prepTab = "stock"'>Supplier &amp; Stock</button>
+                <button class="tab @(_prepTab == "upgrades" ? "on" : "")" @onclick='() => _prepTab = "upgrades"'>Upgrades</button>
+                <button class="tab @(_prepTab == "handbook" ? "on" : "")" @onclick='() => _prepTab = "handbook"'>Handbook</button>
+                <button class="tab @(_prepTab == "evidence" ? "on" : "")" @onclick='() => _prepTab = "evidence"'>Evidence (@st.Clues.Count)</button>
+            </div>
+            <div class="prep-body">
+                @if (_prepTab == "stock")
+                {
+                    <div class="prep-grid">
+                        <section>
+                            <h3>Supplier catalog</h3>
+                            <table class="catalog">
+                                <thead><tr><th>Product</th><th>Cost</th><th>Sells</th><th>Back</th><th>Machine</th><th></th></tr></thead>
+                                <tbody>
+                                @foreach (var p in Campaign.Catalog(st, S.Db))
+                                {
+                                    var prod = p;
+                                    <tr>
+                                        <td class="pname"><img class="icon" src="@Img("Products", p.Icon)" alt="" onerror="this.style.visibility='hidden'" />@p.Name</td>
+                                        <td>@Money(p.Cost)</td>
+                                        <td>@Money(p.Price)</td>
+                                        <td>@st.StockroomCount(p.Id)</td>
+                                        <td>@st.MachineCount(p.Id)</td>
+                                        <td class="buy">
+                                            <button class="btn tiny" disabled="@(st.Money < p.Cost)" @onclick="() => Buy(prod, 1)">+1</button>
+                                            <button class="btn tiny" disabled="@(st.Money < p.Cost * 4)" @onclick="() => Buy(prod, 4)">+4</button>
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </section>
+                        <section>
+                            <h3>Load the machine <span class="hint">Pick a slot, then a product. Slots hold @st.SlotCapacity.</span></h3>
+                            @MachineGrid(true)
+                            @if (S.SelectedSlot != null && S.SelectedSlot != "E1")
+                            {
+                                <div class="loader">
+                                    <div class="label">Load slot @S.SelectedSlot with:</div>
+                                    <div class="row wrap">
+                                        @foreach (var p in S.Db.ProductList.Where(x => !x.Unusual && st.StockroomCount(x.Id) > 0))
+                                        {
+                                            var id = p.Id;
+                                            <button class="btn tiny" @onclick='() => { st.LoadSlot(S.SelectedSlot, id); S.Sfx("restock", 0.5f); }'>@p.Name (@st.StockroomCount(p.Id))</button>
+                                        }
+                                        <button class="btn tiny ghost" @onclick="() => st.UnloadSlot(S.SelectedSlot)">Empty slot</button>
+                                    </div>
+                                </div>
+                            }
+                            <div class="row">
+                                <button class="btn" @onclick='() => { st.AutoStock(S.Db); S.Sfx("restock", 0.5f); }'>Auto-stock from stockroom</button>
+                            </div>
+                        </section>
+                    </div>
+                }
+                else if (_prepTab == "upgrades")
+                {
+                    <div class="upgrades">
+                        @foreach (var u in S.Db.UpgradeList)
+                        {
+                            var up = u;
+                            bool owned = st.Upgrades.Contains(u.Id);
+                            bool locked = u.UnlockNight > st.Night;
+                            <div class="upgrade @(owned ? "owned" : "")">
+                                <h4>@u.Name</h4>
+                                <p>@u.Description</p>
+                                <div class="effect">@u.Effect</div>
+                                <div class="row between">
+                                    <span class="price">@(owned ? "Installed" : locked ? $"Available night {u.UnlockNight}" : Money(u.Price))</span>
+                                    @if (!owned && !locked)
+                                    {
+                                        <button class="btn tiny" disabled="@(st.Money < u.Price)" @onclick='() => { if (st.BuyUpgrade(up)) { S.Sfx("purchase"); S.Toast(up.Name + " installed."); } }'>Buy</button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (_prepTab == "handbook")
+                {
+                    @Handbook()
+                }
+                else
+                {
+                    @Evidence()
+                }
+            </div>
+            <footer class="prep-foot">
+                <button class="btn ghost" @onclick="() => S.Screen = Screen.Title">Main menu</button>
+                <button class="btn primary big" @onclick="S.StartShift">Start shift · 11:00 PM</button>
+            </footer>
+        </div>
+    };
+
+    void Buy(ProductDef p, int qty)
+    {
+        if (S.State.BuyStock(p, qty)) S.Sfx("purchase", 0.5f);
+    }
+
+    RenderFragment MachineGrid(bool prep) => __builder =>
+    {
+        var st = S.State;
+        <div class="slots">
+            @foreach (var slot in st.Slots)
+            {
+                var sl = slot;
+                if (sl.Code == "E1" && sl.ProductId == null && !prep) continue;
+                var p = S.Db.Product(sl.ProductId);
+                bool selected = prep ? S.SelectedSlot == sl.Code : S.Keypad == sl.Code;
+                <button class="slot @(sl.Code == "E1" ? "rowe" : "") @(selected ? "sel" : "") @(sl.Count == 0 ? "empty" : "")"
+                        @onclick="() => SlotClicked(sl.Code, prep)">
+                    <span class="code">@sl.Code</span>
+                    @if (p != null && sl.Count > 0)
+                    {
+                        <img class="icon" src="@Img("Products", p.Icon)" alt="" onerror="this.style.display='none'" />
+                        <span class="pn">@p.Name</span>
+                        <span class="ct">×@sl.Count @(p.Price > 0 ? Money(p.Price) : "")</span>
+                    }
+                    else
+                    {
+                        <span class="pn dim">@(sl.Code == "E1" ? "ROW E" : "empty")</span>
+                    }
+                </button>
+            }
+        </div>
+    };
+
+    void SlotClicked(string code, bool prep)
+    {
+        if (prep) { S.SelectedSlot = S.SelectedSlot == code ? null : code; return; }
+        S.Keypad = code;
+        S.Sfx("key_press", 0.4f);
+    }
+
+    // ------------------------------------------------------------------ shift
+
+    RenderFragment ShiftScreen() => __builder =>
+    {
+        var ctx = S.Ctx;
+        var st = S.State;
+        var cur = ctx.Current;
+        string display = S.Now < S.MachineDisplayUntil ? S.MachineDisplay
+            : ctx.WrongTimeActive ? "3:13 AM" : ContentDatabase.FormatTime(ctx.Clock);
+        <div class="shift">
+            <header class="hud">
+                <div class="hud-l">
+                    <span class="night">@(S.Endless ? $"ROUND {Endless.Round(st)}" : $"NIGHT {st.Night}")</span>
+                    <span class="clock">@ContentDatabase.FormatTime(ctx.Clock)</span>
+                    <span class="money">@Money(st.Money)</span>
+                </div>
+                <div class="hud-meter" title="Composure: high instability causes hallucinations. At 100% you lose the night.">
+                    <span class="label">NERVES</span>
+                    <div class="meter"><div class="fill" style="width:@(st.Instability)%"></div></div>
+                </div>
+                <div class="hud-r">
+                    <button class="btn tiny @(S.Overlay == Overlay.Handbook ? "on" : "")" @onclick="() => Toggle(Overlay.Handbook)">Handbook <kbd>H</kbd></button>
+                    <button class="btn tiny @(S.Overlay == Overlay.Monitor ? "on" : "")" @onclick="() => Toggle(Overlay.Monitor)">Cameras <kbd>M</kbd></button>
+                    <button class="btn tiny @(S.KnockActive ? "danger" : "")" @onclick="S.OpenPanel">Maint. panel</button>
+                    <button class="btn tiny @(S.Overlay == Overlay.Evidence ? "on" : "")" @onclick="() => Toggle(Overlay.Evidence)">Evidence <kbd>E</kbd></button>
+                    <button class="btn tiny" @onclick="() => Toggle(Overlay.Restock)">Restock</button>
+                    <button class="btn tiny" @onclick="() => Toggle(Overlay.Records)">Receipts</button>
+                    <button class="btn tiny ghost" @onclick="() => S.Overlay = Overlay.ConfirmLeave">Leave booth</button>
+                </div>
+            </header>
+
+            <div class="stage">
+                <section class="scene">
+                    <img class="bg" src="@($"art/bg/{ctx.NightDef.Weather}{(ctx.InMargin ? "_margin" : "")}.jpg")" alt="" onerror="this.style.display='none'" />
+                    <div class="weather"></div>
+                    @if (cur != null)
+                    {
+                        <div class="customer @(cur.Stage == EncounterStage.Resolving ? "leaving" : "")">
+                            <img src="@Img("Customers", ShownPortrait(cur))" alt="" onerror="this.classList.add('missing')" />
+                        </div>
+                        <div class="glass">
+                            <div class="reflection @(cur.Def.NoReflection ? "none" : "") @(cur.Def.ReflectionLags ? "lag" : "")">
+                                <img src="@Img("Customers", ShownPortrait(cur))" alt="" onerror="this.remove()" />
+                            </div>
+                        </div>
+                    }
+                    else if (ctx.Phase == ShiftPhase.Idle)
+                    {
+                        <div class="idle-note">@(ctx.KnockActive ? "Something is knocking inside the machine." : ctx.BlackoutActive ? "The lot is dark." : "The lot is empty. The machine hums.")</div>
+                    }
+                    @if (S.Now < S.ScareUntil && S.ScareId != null)
+                    {
+                        <div class="scare @(S.ScareFullscreen ? "full" : "ambient") scare-@S.ScareId lvl-@S.Settings.ScareLevel">
+                            <img src="@($"art/Scares/{S.ScareId}.jpg")" alt="" onerror="this.remove()" />
+                        </div>
+                    }
+                    @if (S.Now < S.HallucinationUntil)
+                    {
+                        <div class="hallucination hal-@S.HallucinationId"></div>
+                    }
+                    @if (cur != null)
+                    {
+                        @Dialogue(cur)
+                    }
+                </section>
+
+                <aside class="machine">
+                    <div class="display @(ctx.WrongTimeActive ? "wrong" : "") @(S.LightsOut ? "off" : "")">@display</div>
+                    @MachineGrid(false)
+                    <div class="keypad">
+                        <div class="kp-read">@(S.Keypad == "" ? "— —" : S.Keypad)</div>
+                        <div class="kp-grid">
+                            @foreach (var k in new[] { "A", "B", "C", "D", "E", "1", "2", "3", "4", "CLR" })
+                            {
+                                var key = k;
+                                <button class="key" @onclick="() => S.PressKey(key)">@k</button>
+                            }
+                        </div>
+                        <div class="row">
+                            <button class="btn primary grow" disabled="@(cur == null || cur.Stage == EncounterStage.Resolving)" @onclick="S.Dispense">Dispense</button>
+                            <button class="btn danger grow" disabled="@(cur == null || cur.Stage == EncounterStage.Resolving)" @onclick="S.Refuse">Refuse service</button>
+                        </div>
+                        @{
+                            var selSlot = st.Slot(S.Keypad);
+                        }
+                        @if (selSlot != null && ctx.CanConsume(selSlot.ProductId) && selSlot.Count > 0)
+                        {
+                            <button class="btn tiny ghost" @onclick="() => ctx.ConsumeForSelf(S.Keypad)">Take @S.Db.Product(selSlot.ProductId).Name for yourself (steadies nerves)</button>
+                        }
+                    </div>
+                    <div class="tray @(S.Now - S.DispenseAt < 2 ? "drop" : "")">
+                        @if (S.LastDispensed != null && S.Now - S.DispenseAt < 6)
+                        {
+                            <img src="@Img("Products", S.Db.Product(S.LastDispensed)?.Icon)" alt="" onerror="this.remove()" />
+                        }
+                    </div>
+                    @if (S.LastReceipt != null)
+                    {
+                        <pre class="receipt">@S.LastReceipt</pre>
+                    }
+                    @if (S.Feed.Count > 0)
+                    {
+                        <div class="feed">@S.Feed[0]</div>
+                    }
+                </aside>
+            </div>
+            @ShiftOverlay()
+        </div>
+    };
+
+    string ShownPortrait(ActiveEncounter cur) =>
+        cur.Stage == EncounterStage.Resolving && !string.IsNullOrEmpty(cur.Outcome?.Portrait) ? cur.Outcome.Portrait : cur.Def.Portrait;
+
+    RenderFragment Dialogue(ActiveEncounter cur) => __builder =>
+    {
+        var line = S.CurrentLine;
+        bool awaiting = cur.Stage == EncounterStage.Awaiting && !S.LinesPending;
+        <div class="dialogue">
+            <div class="who">
+                <span class="name">@(line?.Speaker ?? cur.Def.Name)</span>
+                @if (!string.IsNullOrEmpty(cur.Def.RequestText) || !string.IsNullOrEmpty(cur.Def.Request))
+                {
+                    <span class="wants">Wants: @(cur.Def.RequestText ?? "")@(string.IsNullOrEmpty(cur.Def.RequestText) ? S.Db.Product(cur.Def.Request)?.Name : "")</span>
+                }
+                @if (cur.Stage == EncounterStage.Awaiting && cur.Def.Patience < 5000)
+                {
+                    <div class="patience" title="Patience"><div style="width:@(Math.Clamp(cur.PatienceLeft / cur.Def.Patience * 100, 0, 100))%"></div></div>
+                }
+            </div>
+            @if (line != null)
+            {
+                <p class="line @(line.Narration ? "narr" : "")" @onclick="S.AdvanceLine">@line.Text</p>
+            }
+            @if (S.LinesPending || cur.Stage != EncounterStage.Awaiting)
+            {
+                <button class="btn tiny next" @onclick="S.AdvanceLine">@(S.LinesPending ? "Next ▸" : cur.Stage == EncounterStage.Resolving ? "Continue ▸" : "Next ▸") <kbd>Space</kbd></button>
+            }
+            @if (awaiting)
+            {
+                @if (S.InspectText != null)
+                {
+                    <div class="inspect-out"><b>@S.InspectLabel:</b> @S.InspectText</div>
+                }
+                <div class="actions">
+                    <div class="group">
+                        <span class="glabel">Inspect</span>
+                        @foreach (var spot in S.Ctx.InspectSpots())
+                        {
+                            var sp = spot;
+                            var def = cur.Def.Inspect.FirstOrDefault(i => i.Spot == sp);
+                            <button class="btn tiny ghost" @onclick="() => S.Inspect(sp)">@(def?.Label ?? Cap(sp))</button>
+                        }
+                    </div>
+                    @{ var talk = S.Ctx.AvailableTalk(); }
+                    @if (talk.Count > 0)
+                    {
+                        <div class="group talk">
+                            <span class="glabel">Say</span>
+                            @foreach (var t in talk)
+                            {
+                                var tk = t;
+                                <button class="btn tiny @(t.End ? "decision" : "")" @onclick="() => S.Talk(tk)">@t.Text</button>
+                            }
+                        </div>
+                    }
+                    <div class="hint">Serve with the keypad, refuse, or simply wait.</div>
+                </div>
+            }
+        </div>
+    };
+
+    static string Cap(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
+
+    RenderFragment ShiftOverlay() => __builder =>
+    {
+        switch (S.Overlay)
+        {
+            case Overlay.Handbook:
+                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Handbook()<button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button></div></div>
+                break;
+            case Overlay.Monitor:
+                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Monitor()<button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button></div></div>
+                break;
+            case Overlay.Evidence:
+                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal wide" @onclick:stopPropagation="true">@Evidence()<button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button></div></div>
+                break;
+            case Overlay.Records:
+                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal" @onclick:stopPropagation="true">
+                    <h3>Transaction history — tonight</h3>
+                    <div class="records">
+                    @foreach (var t in S.State.Transactions.Where(t => t.Night == S.State.Night).Reverse())
+                    {
+                        <pre class="receipt">@t.Receipt</pre>
+                    }
+                    @if (!S.State.Transactions.Any(t => t.Night == S.State.Night)) { <p class="dim">No sales yet tonight.</p> }
+                    </div>
+                    <button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button>
+                </div></div>
+                break;
+            case Overlay.Restock:
+                <div class="modal-back" @onclick="() => S.Overlay = Overlay.None"><div class="modal" @onclick:stopPropagation="true">
+                    <h3>Restock from the stockroom</h3>
+                    <p class="dim">@(S.Ctx.CanRestockNow ? (S.State.Upgrades.Contains(UpgradeIds.FastRestock) ? "Rear hatch: 2 minutes per slot, even with a customer waiting." : "Takes 12 minutes per slot. Only between customers.") : "You can't restock while a customer is waiting. (Faster Restocking upgrade allows it.)")</p>
+                    <div class="restock">
+                        @foreach (var sl in S.State.Slots.Where(x => x.Code != "E1"))
+                        {
+                            var slot = sl;
+                            var p = S.Db.Product(sl.ProductId);
+                            <div class="rs-row">
+                                <span class="code">@sl.Code</span><span>@(p?.Name ?? "empty") ×@sl.Count</span>
+                                @if (p != null && S.State.StockroomCount(p.Id) > 0 && sl.Count < S.State.SlotCapacity)
+                                {
+                                    <button class="btn tiny" disabled="@(!S.Ctx.CanRestockNow)" @onclick="() => S.Ctx.Restock(slot.Code, slot.ProductId)">Top up (@S.State.StockroomCount(p.Id) in back)</button>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <button class="btn close" @onclick="() => S.Overlay = Overlay.None">Close</button>
+                </div></div>
+                break;
+            case Overlay.Panel:
+                <div class="modal-back"><div class="modal panel-modal">
+                    <h3>Maintenance panel — Unit 313</h3>
+                    @if (S.KnockActive) { <p class="warn">The knocking is right behind the panel.</p> }
+                    <div class="diag">@S.PanelMessage</div>
+                    <div class="diag-lines">
+                        <div>COIN BOX ........ @(S.State.Flag("marked") > 0 ? "0 0 0 0 0 0" : "NON-CURRENCY")</div>
+                        <div>ROW E ........... @(S.State.Slot("E1").ProductId ?? "EMPTY")</div>
+                        <div>UNIT AGE ........ 38 YRS (SALVAGE 1988)</div>
+                        <div>ATTENDANT BOND .. @(new string('▮', Math.Min(8, S.State.Bond)))@(new string('▯', Math.Max(0, 8 - S.State.Bond)))</div>
+                    </div>
+                    <div class="row"><button class="btn tiny" @onclick="S.ResetMotor">Reset motor</button></div>
+                    <div class="override">
+                        <div class="label">OVERRIDE KEYPAD — DISTRICT USE ONLY</div>
+                        <div class="kp-read">@(S.PanelCode.PadRight(4, '_'))</div>
+                        <div class="kp-grid ten">
+                            @foreach (var k in new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "CLR", "0", "ENT" })
+                            {
+                                var key = k;
+                                <button class="key" @onclick="() => S.PanelKey(key)">@k</button>
+                            }
+                        </div>
+                    </div>
+                    <button class="btn close" @onclick="S.ClosePanel">Close panel</button>
+                </div></div>
+                break;
+            case Overlay.Phone:
+                var call = S.Ctx.PendingPhone;
+                <div class="modal-back"><div class="modal phone">
+                    <div class="eyebrow">INCOMING CALL</div>
+                    <h3>@(call?.Text ?? S.Ctx.NightDef.PhoneSpeaker)</h3>
+                    @foreach (var l in call?.Lines ?? new List<string>())
+                    {
+                        <p class="@(l.StartsWith("[") ? "narr" : "")">@l</p>
+                    }
+                    <button class="btn primary" @onclick='() => { S.Ctx.AcknowledgePhone(); S.Overlay = Overlay.None; S.Sfx("phone_hangup"); }'>Hang up</button>
+                </div></div>
+                break;
+            case Overlay.Investigation:
+                @Investigation()
+                break;
+            case Overlay.ConfirmLeave:
+                <div class="modal-back"><div class="modal small">
+                    <h3>Leave the booth?</h3>
+                    <p>Rule A2: Do not leave the attendant booth between 11:00 PM and 6:00 AM for any reason.</p>
+                    <div class="row">
+                        <button class="btn" @onclick="() => S.Overlay = Overlay.None">Stay inside</button>
+                        <button class="btn danger" @onclick="S.LeaveBooth">Open the door</button>
+                    </div>
+                </div></div>
+                break;
+        }
+    };
+
+    RenderFragment Handbook() => __builder =>
+    {
+        var pages = Campaign.VisiblePages(S.State, S.Db);
+        var pg = pages.FirstOrDefault(p => p.Id == S.HandbookPage) ?? pages.FirstOrDefault();
+        <div class="handbook">
+            <nav class="hb-index">
+                <div class="eyebrow">MERIDIAN ROADSIDE SERVICES</div>
+                <div class="hb-title">Night Attendant Handbook</div>
+                @foreach (var p in pages)
+                {
+                    var pid = p.Id;
+                    <button class="hb-link @(p == pg ? "on" : "") @(p.Forged ? "forged" : "")" @onclick="() => S.HandbookPage = pid">@p.Title</button>
+                }
+            </nav>
+            @if (pg != null)
+            {
+                <article class="hb-pg">
+                    <h3>@pg.Title</h3>
+                    @if (pg.Stamped) { <div class="seal">DISTRICT OFFICE<br />✦ APPROVED ✦</div> }
+                    @if (pg.Forged) { <div class="forged-stamp">REV. 3:13</div> }
+                    @if (!string.IsNullOrEmpty(pg.Body)) { <p class="hb-body">@pg.Body</p> }
+                    <ol class="rules">
+                        @foreach (var r in pg.Rules)
+                        {
+                            var parts = r.Split('|', 2);
+                            <li><b>@parts[0].</b> @(parts.Length > 1 ? parts[1] : "")</li>
+                        }
+                    </ol>
+                    @foreach (var a in Campaign.VisibleAnnotations(pg, S.State, S.Db))
+                    {
+                        <p class="note ink-@a.Ink">@a.Text</p>
+                    }
+                </article>
+            }
+        </div>
+    };
+
+    RenderFragment Monitor() => __builder =>
+    {
+        var ctx = S.Ctx;
+        var cams = ShiftContext.Cameras.Where(c => c != "cam4" || S.State.Upgrades.Contains(UpgradeIds.Monitor)).Where(c => c != "cam0" || S.State.Flag("cam0") > 0).ToList();
+        string[] names = { "CAM 1 · LOT", "CAM 2 · UNIT", "CAM 3 · STOCKROOM", "CAM 4 · ROUTE 9", "CAM 0 · OBSERVATION" };
+        if (!cams.Contains(S.MonitorCam)) S.MonitorCam = "cam1";
+        var view = ctx.CameraView(S.MonitorCam);
+        bool ok = ctx.CameraAvailable(S.MonitorCam);
+        <div class="monitor">
+            <div class="cam-tabs">
+                @foreach (var c in cams)
+                {
+                    var cam = c;
+                    <button class="btn tiny @(S.MonitorCam == c ? "on" : "")" @onclick='() => { S.MonitorCam = cam; S.Sfx("cam_switch", 0.4f); }'>@names[Array.IndexOf(ShiftContext.Cameras, c)]</button>
+                }
+            </div>
+            <div class="feed-view @(S.State.Upgrades.Contains(UpgradeIds.Monitor) ? "enhanced" : "")">
+                @if (!ok)
+                {
+                    <div class="nosignal">NO SIGNAL</div>
+                }
+                else
+                {
+                    <img class="cam-bg" src="@($"art/cams/{S.MonitorCam}.jpg")" alt="" onerror="this.style.display='none'" />
+                    {
+                        string fig = view.State == "present" && ctx.Current != null ? ctx.Current.Def.Portrait
+                            : view.State.StartsWith("other:") || view.State.StartsWith("extra:") ? view.State.Split(':')[1] : null;
+                        bool extra = view.State.StartsWith("extra:");
+                    if (extra && ctx.Current != null)
+                    {
+                        <img class="cam-fig main" src="@Img("Customers", ctx.Current.Def.Portrait)" alt="" onerror="this.remove()" />
+                    }
+                    if (fig != null)
+                    {
+                        <img class="cam-fig @(extra ? "far" : "main")" src="@Img("Customers", fig)" alt="" onerror="this.remove()" />
+                    }
+                    }
+                    <div class="scan"></div>
+                    <div class="stamp">@names[Array.IndexOf(ShiftContext.Cameras, S.MonitorCam)] · @view.Timestamp</div>
+                    @if (view.State == "absent") { <div class="absent">NO SUBJECT DETECTED</div> }
+                }
+            </div>
+            <p class="cam-note">@(ok ? (string.IsNullOrEmpty(view.Note) ? (ctx.Current == null ? "Nothing moves." : view.State == "absent" ? "The customer does not appear on this camera." : "The customer is visible on this camera.") : view.Note) : "The camera has no power.")</p>
+        </div>
+    };
+
+    RenderFragment Evidence() => __builder =>
+    {
+        var clues = S.State.Clues.Select(c => S.Db.Clues.TryGetValue(c, out var d) ? d : null).Where(c => c != null).ToList();
+        var sel = clues.FirstOrDefault(c => c.Id == S.SelectedClue) ?? clues.FirstOrDefault();
+        <div class="evidence">
+            <nav>
+                <div class="eyebrow">EVIDENCE · @S.State.KeyClueCount(S.Db) KEY ITEMS</div>
+                @foreach (var c in clues)
+                {
+                    var cid = c.Id;
+                    <button class="hb-link @(c == sel ? "on" : "")" @onclick="() => S.SelectedClue = cid">@(c.Key ? "★ " : "")@c.Title</button>
+                }
+                @if (clues.Count == 0) { <p class="dim">Nothing yet. Inspect customers closely.</p> }
+            </nav>
+            @if (sel != null)
+            {
+                <article class="clue kind-@sel.Kind"><div class="eyebrow">@sel.Kind.ToUpperInvariant()</div><h3>@sel.Title</h3><p>@sel.Text</p></article>
+            }
+        </div>
+    };
+
+    RenderFragment Investigation() => __builder =>
+    {
+        var ctx = S.Ctx;
+        <div class="modal-back"><div class="modal wide investigation">
+            <h3>The stockroom</h3>
+            <p class="dim">@ctx.NightDef.InvestigationIntro</p>
+            <div class="stockroom">
+                <img src="art/bg/stockroom.jpg" alt="" onerror="this.style.display='none'" />
+                @foreach (var h in ctx.AvailableHotspots())
+                {
+                    var hs = h;
+                    <button class="hotspot @(ctx.SearchedHotspots.Contains(h.Id) ? "done" : "")"
+                            style="left:@(h.X * 100)%;top:@(h.Y * 100)%;width:@(h.W * 100)%;height:@(h.H * 100)%"
+                            @onclick='() => { S.LastHotspot = ctx.Search(hs.Id); S.Sfx("inspect", 0.5f); }'>
+                        <span>@h.Label</span>
+                    </button>
+                }
+            </div>
+            @if (S.LastHotspot != null)
+            {
+                <div class="found"><b>@S.LastHotspot.Label.</b> @S.LastHotspot.Text
+                    @if (!string.IsNullOrEmpty(S.LastHotspot.Clue) && S.Db.Clues.TryGetValue(S.LastHotspot.Clue, out var c))
+                    {
+                        <pre class="doc">@c.Text</pre>
+                    }
+                </div>
+            }
+            <div class="row between">
+                <span class="dim">@(ctx.CanFinishInvestigation ? "You've found what you came for. You can keep looking or go back out." : "You need at least her file and a tape before you go back out.")</span>
+                <button class="btn primary" disabled="@(!ctx.CanFinishInvestigation)" @onclick="() => { ctx.FinishInvestigation(); S.Overlay = Overlay.None; }">Back to the counter</button>
+            </div>
+        </div></div>
+    };
+
+    // ------------------------------------------------------------------ results
+
+    RenderFragment SummaryScreen() => __builder =>
+    {
+        var sm = S.Summary;
+        var night = S.Db.Night(sm.Night);
+        <div class="result sunrise-bg">
+            <div class="card">
+                <div class="eyebrow">6:00 AM · @(S.Endless ? $"ROUND {sm.Night} SURVIVED" : $"NIGHT {sm.Night} COMPLETE")</div>
+                <h2>Sunrise</h2>
+                @if (!S.Endless && night != null && !string.IsNullOrEmpty(night.EndCard)) { <p class="endcard">@night.EndCard</p> }
+                <table class="ledger">
+                    <tr><td>Sales</td><td>@Money(sm.Sales)</td></tr>
+                    <tr><td>Wage</td><td>@Money(sm.Wage)</td></tr>
+                    @if (sm.Bonus > 0) { <tr><td>Bonus</td><td>@Money(sm.Bonus)</td></tr> }
+                    <tr class="total"><td>Tonight</td><td>@Money(sm.Total)</td></tr>
+                    <tr><td>Customers served / refused</td><td>@sm.Served / @sm.Refused</td></tr>
+                    <tr><td>Cash on hand</td><td>@Money(S.State.Money)</td></tr>
+                </table>
+                @foreach (var n in sm.Notes) { <p class="dim">@n</p> }
+                <button class="btn primary big" @onclick="S.AfterSummary">@(S.Endless ? "Next round" : "Go home and sleep")</button>
+            </div>
+        </div>
+    };
+
+    RenderFragment FailedScreen() => __builder =>
+    {
+        <div class="result failed-bg">
+            <div class="card">
+                <div class="eyebrow">SHIFT TERMINATED</div>
+                <h2>@(S.FailReason == "collapse" ? "You lost yourself" : "You made a mistake")</h2>
+                @foreach (var l in S.FailLines) { <p class="@(l.StartsWith("*") ? "narr" : "")">@l.TrimStart('*')</p> }
+                <p class="dim">Check the handbook and the cameras. Every death in this game is avoidable with information you have.</p>
+                <div class="row">
+                    <button class="btn primary" @onclick="S.RetryNight">Retry the night</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Title">Main menu</button>
+                </div>
+            </div>
+        </div>
+    };
+
+    RenderFragment EndingScreen() => __builder =>
+    {
+        var e = S.Ending;
+        int idx = S.Db.Endings.IndexOf(e) + 1;
+        <div class="result ending-bg">
+            <div class="card ending">
+                <div class="eyebrow">ENDING @(S.Profile.EndingCount(S.Db)) OF 15 DISCOVERED</div>
+                <h2>@e.Title</h2>
+                @foreach (var l in e.Lines) { <p class="@(l.StartsWith("*") ? "narr" : "")">@l.TrimStart('*')</p> }
+                @foreach (var a in S.NewAchievements)
+                {
+                    <div class="achievement">🏆 Achievement unlocked: <b>@AchName(a)</b></div>
+                }
+                <div class="row">
+                    <button class="btn primary big" @onclick="S.NextCycle">Begin cycle @(S.State.Cycle + 1)</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Achievements">Endings</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Credits">Credits</button>
+                </div>
+                <p class="dim">The machine never really stops. A new cycle starts at Night 1 — and Unit 313 will remember you.</p>
+            </div>
+        </div>
+    };
+
+    string AchName(string id)
+    {
+        if (id == Profile.EndlessAchievement) return "The Minute Never Closes — Endless Mode unlocked";
+        var e = S.Db.Endings.FirstOrDefault(x => Profile.AchievementFor(x.Id) == id);
+        return e == null ? id : EndingAchievement(e).name;
+    }
+
+    (string name, string desc) EndingAchievement(EndingDef e) => e.Id switch
+    {
+        _ => (AchTitles.TryGetValue(e.Id, out var t) ? t.n : e.Title, AchTitles.TryGetValue(e.Id, out var d) ? d.d : "")
+    };
+
+    static readonly Dictionary<string, (string n, string d)> AchTitles = new()
+    {
+        ["truth"] = ("Clause Thirteen", "Break the contract and send Coach 313 home."),
+        ["escape"] = ("Clocked Out", "Refuse the Collector and walk away alone."),
+        ["replacement"] = ("Employee No. 0", "Sign the ledger and become the machine."),
+        ["debt"] = ("Paid in Installments", "Refuse the Collector after taking too many of his deals."),
+        ["empty_seat"] = ("One Seat Short", "Break the contract without keeping Lily safe."),
+        ["last_passenger"] = ("Waiting for the 2:58", "Break the contract while Mr. Crane still doesn't know where he's going."),
+        ["driver"] = ("Behind the Wheel", "Break the contract before Walter was ready to go."),
+        ["nameless"] = ("No Names, No Faces", "Enter the date without the passenger manifest."),
+        ["wrong_minute"] = ("Trust the Seal", "Enter the forged override code."),
+        ["paid_in_full"] = ("Exact Change", "Pay the Collector with exact change."),
+        ["maras_shift"] = ("Taking Over", "Sign the ledger to free Mara."),
+        ["company_man"] = ("District Supervisor", "Hand Mara's evidence to Hale, then sign."),
+        ["together"] = ("Yellow Raincoat", "Refuse the Collector with Lily safe beside you."),
+        ["ones_who_left"] = ("Their Own Way Home", "Help Walter, Mr. Crane and Lily, then refuse the Collector."),
+        ["off_the_clock"] = ("Rule A2", "Leave the attendant booth during a shift.")
+    };
+
+    RenderFragment AchievementsScreen() => __builder =>
+    {
+        bool endless = S.Profile.EndlessUnlocked(S.Db);
+        <div class="result">
+            <div class="card wide">
+                <div class="eyebrow">@S.Profile.EndingCount(S.Db) OF 15 ENDINGS · @S.Profile.CyclesCompleted CYCLES PLAYED</div>
+                <h2>Endings &amp; Achievements</h2>
+                <div class="ach-grid">
+                    @foreach (var e in S.Db.Endings)
+                    {
+                        bool got = S.Profile.Endings.Contains(e.Id);
+                        var a = EndingAchievement(e);
+                        <div class="ach @(got ? "got" : "")">
+                            <div class="ach-name">@(got ? a.name : "???")</div>
+                            <div class="ach-title">@(got ? e.Title : "Undiscovered ending")</div>
+                            <div class="ach-desc">@(got ? a.desc : HintFor(e.Id))</div>
+                        </div>
+                    }
+                    <div class="ach endless @(endless ? "got" : "")">
+                        <div class="ach-name">The Minute Never Closes</div>
+                        <div class="ach-title">Endless Mode</div>
+                        <div class="ach-desc">@(endless ? $"Unlocked. Best: round {S.Profile.EndlessBestRound}, {Money(S.Profile.EndlessBestEarnings)}." : "Discover all 15 endings.")</div>
+                    </div>
+                </div>
+                <button class="btn" @onclick="() => S.Screen = Screen.Title">Back</button>
+            </div>
+        </div>
+    };
+
+    static string HintFor(string id) => id switch
+    {
+        "off_the_clock" => "Some rules exist for a reason.",
+        "wrong_minute" => "Not every page in the handbook is real.",
+        "paid_in_full" => "Thirteen coins, from thirteen people.",
+        "company_man" => "Hale is always looking for loyal staff.",
+        "debt" => "Every deal is written down.",
+        "truth" => "The date. Every name. Nobody left behind.",
+        _ => "Your choices across the seven nights decide this one."
+    };
+
+    RenderFragment SettingsScreen() => __builder =>
+    {
+        var st = S.Settings;
+        <div class="result">
+            <div class="card">
+                <h2>Settings</h2>
+                <label class="set">Master volume <input type="range" min="0" max="1" step="0.05" value="@st.Master" @onchange="async e => { st.Master = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }" /></label>
+                <label class="set">Music volume <input type="range" min="0" max="1" step="0.05" value="@st.Music" @onchange="async e => { st.Music = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }" /></label>
+                <label class="set">Sound effects <input type="range" min="0" max="1" step="0.05" value="@st.Sfx" @onchange="async e => { st.Sfx = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }" /></label>
+                <label class="set">Scare intensity
+                    <select value="@st.ScareLevel" @onchange="async e => { st.ScareLevel = int.Parse(e.Value.ToString()); await S.SaveSettings(); }">
+                        <option value="2">Full</option><option value="1">Reduced</option><option value="0">Minimal (no full-screen scares)</option>
+                    </select>
+                </label>
+                <label class="set check"><input type="checkbox" checked="@st.ReducedFlashing" @onchange="async e => { st.ReducedFlashing = (bool)e.Value; await S.SaveSettings(); }" /> Reduce flashing</label>
+                <label class="set check"><input type="checkbox" checked="@st.ReducedShake" @onchange="async e => { st.ReducedShake = (bool)e.Value; await S.SaveSettings(); }" /> Reduce screen shake</label>
+                <label class="set">Game speed (playtest)
+                    <select value="@st.Speed.ToString(System.Globalization.CultureInfo.InvariantCulture)" @onchange="async e => { st.Speed = float.Parse(e.Value.ToString(), System.Globalization.CultureInfo.InvariantCulture); await S.SaveSettings(); }">
+                        <option value="1">Normal</option><option value="1.5">1.5×</option><option value="2">2×</option>
+                    </select>
+                </label>
+                <label class="set check"><input type="checkbox" checked="@st.PlaytestTools" @onchange="async e => { st.PlaytestTools = (bool)e.Value; await S.SaveSettings(); }" /> Show playtest tools on the title screen</label>
+                <button class="btn" @onclick="() => S.Screen = S.Ctx != null && S.Screen == Screen.Settings && false ? Screen.Shift : Screen.Title">Back</button>
+            </div>
+        </div>
+    };
+
+    RenderFragment CreditsScreen() => __builder =>
+    {
+        <div class="result">
+            <div class="card credits">
+                <div class="eyebrow">A HIKARI FORGE STUDIOS PRODUCTION</div>
+                <h2>The 3:13 Machine</h2>
+                <p>Developed and published by Hikari Forge Studios.</p>
+                <p>Game design, writing, code, art and music produced with AI assistance (Claude by Anthropic) under the direction of Hikari Forge Studios.</p>
+                <p>All music and sound effects are original procedural compositions made for this game.</p>
+                <p>Fonts: Special Elite, VT323, Reenie Beanie, Barlow and Barlow Condensed (SIL Open Font License / Apache 2.0), via Google Fonts.</p>
+                <p class="dim">Thank you for working the night shift.</p>
+                <button class="btn" @onclick="() => S.Screen = Screen.Title">Back</button>
+            </div>
+        </div>
+    };
+
+    RenderFragment EndlessOverScreen() => __builder =>
+    {
+        <div class="result failed-bg">
+            <div class="card">
+                <div class="eyebrow">ENDLESS MODE · RUN OVER</div>
+                <h2>Round @Endless.Round(S.State)</h2>
+                @foreach (var l in S.FailLines) { <p class="narr">@l.TrimStart('*')</p> }
+                <p>You survived @(Endless.Round(S.State) - 1) full rounds and earned @Money(S.EndlessEarnings).</p>
+                @if (S.NewEndlessBest) { <div class="achievement">New personal best!</div> }
+                <p class="dim">Best: round @S.Profile.EndlessBestRound · @Money(S.Profile.EndlessBestEarnings)</p>
+                <div class="row">
+                    <button class="btn primary" @onclick="S.StartEndless">New run</button>
+                    <button class="btn ghost" @onclick="() => S.Screen = Screen.Title">Main menu</button>
+                </div>
+            </div>
+        </div>
+    };
+}

@@ -258,7 +258,7 @@ namespace HikariForge.M313.Tests
 
     public class ShiftTests
     {
-        private static GameState StateAtNight(int night, BotPlayer bot, out List<ShiftContext> contexts)
+        private static GameState StateAtNight(int night, AutoPlayer bot, out List<ShiftContext> contexts)
         {
             var db = TestContent.Db;
             var s = GameState.NewGame();
@@ -278,7 +278,7 @@ namespace HikariForge.M313.Tests
         {
             var db = TestContent.Db;
             var s = GameState.NewGame();
-            var bot = BotPlayer.TruthSeeker();
+            var bot = AutoPlayer.TruthSeeker();
             var ctx = bot.PlayNight(s, db);
             Assert.AreEqual(ShiftPhase.Ended, ctx.Phase, ctx.FailReason);
             Assert.GreaterOrEqual(ctx.CustomersServed, 5);
@@ -293,7 +293,7 @@ namespace HikariForge.M313.Tests
         [Test]
         public void ServingWaterToTheMimicKills()
         {
-            var bot = BotPlayer.TruthSeeker();
+            var bot = AutoPlayer.TruthSeeker();
             var s = StateAtNight(3, bot, out _);
             bot.Policy["n3_mimic"] = new[] { "serve:WATER" };
             var ctx = bot.PlayNight(s, TestContent.Db);
@@ -304,7 +304,7 @@ namespace HikariForge.M313.Tests
         [Test]
         public void OpeningPanelDuringKnockIncreasesBond()
         {
-            var bot = BotPlayer.TruthSeeker();
+            var bot = AutoPlayer.TruthSeeker();
             var s = StateAtNight(3, bot, out _);
             int bond = s.Bond;
             bot.OpenPanelOnKnock = true;
@@ -341,7 +341,7 @@ namespace HikariForge.M313.Tests
             Assert.IsTrue(margin);
         }
 
-        private static (EndingDef ending, GameState state, BotPlayer bot) PlayCampaign(BotPlayer bot)
+        private static (EndingDef ending, GameState state, AutoPlayer bot) PlayCampaign(AutoPlayer bot)
         {
             var db = TestContent.Db;
             var s = GameState.NewGame();
@@ -363,40 +363,40 @@ namespace HikariForge.M313.Tests
 
         public static IEnumerable<TestCaseData> EndingRoutes()
         {
-            BotPlayer B(System.Func<BotPlayer> make, System.Action<BotPlayer> edit) { var b = make(); edit(b); return b; }
-            yield return new TestCaseData("truth", B(BotPlayer.TruthSeeker, b => { })).SetName("Ending_truth");
-            yield return new TestCaseData("escape", B(BotPlayer.Survivor, b => { })).SetName("Ending_escape");
-            yield return new TestCaseData("replacement", B(BotPlayer.Survivor, b =>
+            AutoPlayer B(System.Func<AutoPlayer> make, System.Action<AutoPlayer> edit) { var b = make(); edit(b); return b; }
+            yield return new TestCaseData("truth", B(AutoPlayer.TruthSeeker, b => { })).SetName("Ending_truth");
+            yield return new TestCaseData("escape", B(AutoPlayer.Survivor, b => { })).SetName("Ending_escape");
+            yield return new TestCaseData("replacement", B(AutoPlayer.Survivor, b =>
             {
                 b.Policy["n5_mara"] = new[] { "refuse" }; b.Policy["n6_mara"] = new[] { "refuse" };
                 b.Policy["n7_collector"] = new[] { "choice:sign" };
             })).SetName("Ending_replacement");
-            yield return new TestCaseData("debt", B(BotPlayer.Dealmaker, b => b.Policy["n3_collector"] = new[] { "choice:roll" })).SetName("Ending_debt");
-            yield return new TestCaseData("empty_seat", B(BotPlayer.TruthSeeker, b => b.Policy["n6_lily"] = new[] { "choice:run" })).SetName("Ending_empty_seat");
-            yield return new TestCaseData("last_passenger", B(BotPlayer.TruthSeeker, b => b.Policy["n2_crane_return"] = new[] { "choice:lie" })).SetName("Ending_last_passenger");
-            yield return new TestCaseData("driver", B(BotPlayer.TruthSeeker, b =>
+            yield return new TestCaseData("debt", B(AutoPlayer.Dealmaker, b => b.Policy["n3_collector"] = new[] { "choice:roll" })).SetName("Ending_debt");
+            yield return new TestCaseData("empty_seat", B(AutoPlayer.TruthSeeker, b => b.Policy["n6_lily"] = new[] { "choice:run" })).SetName("Ending_empty_seat");
+            yield return new TestCaseData("last_passenger", B(AutoPlayer.TruthSeeker, b => b.Policy["n2_crane_return"] = new[] { "choice:lie" })).SetName("Ending_last_passenger");
+            yield return new TestCaseData("driver", B(AutoPlayer.TruthSeeker, b =>
             {
                 b.Policy["n1_walter"] = new[] { "refuse" }; b.Policy["n3_walter"] = new[] { "talk:machine", "refuse" };
                 b.Policy["n6_mara"] = new[] { "talk:how", "talk:token", "serve" };
             })).SetName("Ending_driver");
-            yield return new TestCaseData("nameless", B(BotPlayer.TruthSeeker, b => { b.SkipHotspots.Add("locker"); b.SkipHotspots.Add("panel"); })).SetName("Ending_nameless");
-            yield return new TestCaseData("wrong_minute", B(BotPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "code:0313" })).SetName("Ending_wrong_minute");
-            yield return new TestCaseData("paid_in_full", B(BotPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "serve:EXACT" })).SetName("Ending_paid_in_full");
-            yield return new TestCaseData("maras_shift", B(BotPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "choice:sign" })).SetName("Ending_maras_shift");
-            yield return new TestCaseData("company_man", B(BotPlayer.Survivor, b =>
+            yield return new TestCaseData("nameless", B(AutoPlayer.TruthSeeker, b => { b.SkipHotspots.Add("locker"); b.SkipHotspots.Add("panel"); })).SetName("Ending_nameless");
+            yield return new TestCaseData("wrong_minute", B(AutoPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "code:0313" })).SetName("Ending_wrong_minute");
+            yield return new TestCaseData("paid_in_full", B(AutoPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "serve:EXACT" })).SetName("Ending_paid_in_full");
+            yield return new TestCaseData("maras_shift", B(AutoPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "choice:sign" })).SetName("Ending_maras_shift");
+            yield return new TestCaseData("company_man", B(AutoPlayer.Survivor, b =>
             {
                 b.Policy["n5_hale"] = new[] { "choice:hand_over" }; b.Policy["n7_collector"] = new[] { "choice:sign" };
             })).SetName("Ending_company_man");
-            yield return new TestCaseData("together", B(BotPlayer.TruthSeeker, b =>
+            yield return new TestCaseData("together", B(AutoPlayer.TruthSeeker, b =>
             {
                 b.Policy["n2_crane_return"] = new[] { "choice:lie" }; b.Policy["n7_collector"] = new[] { "choice:refuse" };
             })).SetName("Ending_together");
-            yield return new TestCaseData("ones_who_left", B(BotPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "choice:refuse" })).SetName("Ending_ones_who_left");
-            yield return new TestCaseData("off_the_clock", B(BotPlayer.TruthSeeker, b => b.Policy["n1_del"] = new[] { "leave" })).SetName("Ending_off_the_clock");
+            yield return new TestCaseData("ones_who_left", B(AutoPlayer.TruthSeeker, b => b.Policy["n7_collector"] = new[] { "choice:refuse" })).SetName("Ending_ones_who_left");
+            yield return new TestCaseData("off_the_clock", B(AutoPlayer.TruthSeeker, b => b.Policy["n1_del"] = new[] { "leave" })).SetName("Ending_off_the_clock");
         }
 
         [TestCaseSource(nameof(EndingRoutes))]
-        public void EndingIsReachable(string expected, BotPlayer bot)
+        public void EndingIsReachable(string expected, AutoPlayer bot)
         {
             var db = TestContent.Db;
             var s = GameState.NewGame();
@@ -442,7 +442,7 @@ namespace HikariForge.M313.Tests
         {
             var db = TestContent.Db;
             var s = Endless.NewRun(new Profile());
-            var bot = BotPlayer.EndlessExpert();
+            var bot = AutoPlayer.EndlessExpert();
             int lastCount = 0;
             for (int r = 1; r <= 5; r++)
             {
@@ -462,7 +462,7 @@ namespace HikariForge.M313.Tests
         {
             var db = TestContent.Db;
             var s = Endless.NewRun(new Profile());
-            var bot = BotPlayer.EndlessExpert();
+            var bot = AutoPlayer.EndlessExpert();
             bot.Policy["e_mimic"] = new[] { "serve:WATER" };
             bot.Policy["e_twoplaces"] = new[] { "refuse" };
             bool died = false;
@@ -481,7 +481,7 @@ namespace HikariForge.M313.Tests
         {
             var db0 = TestContent.Db;
             var s = GameState.NewGame();
-            var bot0 = BotPlayer.Survivor();
+            var bot0 = AutoPlayer.Survivor();
             ShiftContext last = null;
             for (int n = 1; n <= 7; n++)
             {
@@ -497,7 +497,7 @@ namespace HikariForge.M313.Tests
             var db = TestContent.Db;
             var page = db.Pages.First(p => p.Id == "welcome");
             Assert.IsTrue(Campaign.VisibleAnnotations(page, next, db).Any(a => a.Condition == "cycle>=2"), "the machine remembers the previous cycle");
-            var ctx = BotPlayer.Survivor().PlayNight(next, db);
+            var ctx = AutoPlayer.Survivor().PlayNight(next, db);
             Assert.AreEqual(ShiftPhase.Ended, ctx.Phase);
         }
     }

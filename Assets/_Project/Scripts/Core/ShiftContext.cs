@@ -93,6 +93,9 @@ namespace HikariForge.M313.Core
             Director = new HorrorDirector(seed + state.Night * 97);
             _pendingEncounters = encounters.OrderBy(e => e.Time).ToList();
             _pendingEvents = NightDef.Events.OrderBy(e => e.Time).ToList();
+            // Every shift opens with the night's phone call from the District Office.
+            if (NightDef.PhoneCall.Count > 0 && !_pendingEvents.Any(e => e.Type == "phone" && e.Time <= 1))
+                _pendingEvents.Insert(0, new EventDef { Time = 1, Type = "phone", Id = "call_open", Speaker = NightDef.PhoneSpeaker, Lines = NightDef.PhoneCall });
             State.Transactions.RemoveAll(t => t.Night == state.Night);
             InMargin = false;
         }

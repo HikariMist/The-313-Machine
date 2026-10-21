@@ -49,7 +49,6 @@ namespace HikariForge.M313.Core
                 PhoneSpeaker = "Unit 313",
                 PhoneCall = new List<string> { $"ROUND {round}.", "THE RULES ARE THE SAME. THE CUSTOMERS ARE NOT." }
             };
-            night.Events.Add(new EventDef { Time = 2, Type = "phone", Id = "endless_call", Speaker = "Unit 313", Lines = night.PhoneCall });
             if (round >= 2) night.Events.Add(Knock(rng.Next(260, 380), 12 + round));
             if (round >= 3) night.Events.Add(new EventDef { Time = rng.Next(60, 240), Type = "blackout", Id = "endless_blackout", Duration = 14 + round * 2 });
             if (round >= 4) night.Events.Add(new EventDef { Time = rng.Next(270, 330), Type = "wrongtime", Id = "endless_wrongtime", Duration = 25, OnServe = new List<string> { "instability+20", "scare:reality_warp" } });

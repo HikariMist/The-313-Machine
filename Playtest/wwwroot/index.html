@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>The 3:13 Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Condensed:wght@500;700&family=Special+Elite&family=VT323&family=Reenie+Beanie&display=swap" />
+<link rel="stylesheet" href="game.css" />
+</head>
+<body>
+<div id="app"><div class="boot">Unit 313 is warming up…</div></div>
+<script src="game.js"></script>
+<script src="framework/blazor.webassembly.js" autostart="false"></script>
+<script>Blazor.start({ loadBootResource: (type, name) => 'framework/' + name });</script>
+</body>
+</html>
