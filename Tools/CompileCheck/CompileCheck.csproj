@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compile-only check of the Unity runtime + editor scripts against Unity reference assemblies,
+       for environments without a Unity install. Set UnityRefs to a folder containing UnityEngine*.dll
+       and UnityEditor.dll (e.g. from a Unity install's Editor/Data/Managed). Not used by Unity. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS1701;CS1702;MSB3277</NoWarn>
+    <DefineConstants>$(DefineConstants);UNITY_EDITOR;UNITY_STANDALONE_WIN</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/_Project/Scripts/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(UnityRefs)/*.dll" Private="false" />
+  </ItemGroup>
+</Project>

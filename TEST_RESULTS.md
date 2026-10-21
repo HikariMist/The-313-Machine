@@ -9,3 +9,11 @@ Session 1 (cloud, .NET 8, no Unity):
   and a full Night 1 to sunrise with **no page errors**.
 
 Not yet tested: Unity Play mode, Windows build, launcher, installer, human playthrough length, audio by ear.
+
+Session 1, later:
+- Launcher: Linux build of the same Avalonia code rendered under Xvfb; screenshot shows key art, buttons, version, and
+  the correct "Game files not found" status when no game is present.
+- Installer: compiled with Inno Setup 7.1 under Wine; silent install under Wine succeeded (per-user, no admin);
+  silent uninstall removed install dir and shortcuts, **kept a planted save file**, removed launcher settings.
+  This testing found and fixed a real bug: ":" in "The 3:13 Machine" is illegal in Windows paths, so all on-disk
+  names (install folder, shortcuts, Unity productName/save folder, launcher settings) now use "The 313 Machine".

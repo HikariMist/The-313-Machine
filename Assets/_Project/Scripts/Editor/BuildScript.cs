@@ -18,7 +18,8 @@ namespace HikariForge.M313.EditorTools
         public static void Configure()
         {
             PlayerSettings.companyName = "Hikari Forge Studios";
-            PlayerSettings.productName = "The 3:13 Machine";
+            // ":" is illegal in Windows paths and productName names the save folder, so the on-disk name is "The 313 Machine".
+            PlayerSettings.productName = "The 313 Machine";
             if (string.IsNullOrEmpty(PlayerSettings.bundleVersion) || PlayerSettings.bundleVersion == "0.1") PlayerSettings.bundleVersion = "0.9.0";
             PlayerSettings.defaultScreenWidth = 1920;
             PlayerSettings.defaultScreenHeight = 1080;
@@ -49,6 +50,8 @@ namespace HikariForge.M313.EditorTools
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.None
             });
+            if (report.summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded)
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(Output), "version.txt"), PlayerSettings.bundleVersion);   // read by the launcher
             Debug.Log($"[M313] Build {report.summary.result}: {report.summary.outputPath} ({report.summary.totalSize / (1024 * 1024)} MB)");
             if (Application.isBatchMode && report.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded) EditorApplication.Exit(1);
         }

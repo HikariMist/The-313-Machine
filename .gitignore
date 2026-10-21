@@ -129,3 +129,5 @@ steam_appid.txt
 !/Playtest/Playtest.csproj
 !/Tools/CoreTests/CoreTests.csproj
 __pycache__/
+!/Launcher/The313MachineLauncher.csproj
+!/Tools/CompileCheck/CompileCheck.csproj

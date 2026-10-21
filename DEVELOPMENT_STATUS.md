@@ -12,4 +12,6 @@ _Last updated: session 1._
 | Unity runtime (IMGUI renderer, audio, bootstrap, Steam hooks, build script) | Written and compile-checked; **never run in Unity** |
 | Art | Studio art for title, Drenched Man, Smiling Woman, Hat Stranger (Collector), Child (Lily), Corrupted Worker (Mara/mimic), Faceless Passenger (the Attendant). Everything else is procedural placeholder |
 | Music (15 tracks) / SFX (74) | Procedural originals, generated; not listened to by a human yet |
-| Launcher, installer, store pages, marketing | Not started |
+| Launcher | Built (exe), screenshot-verified; not run on real Windows |
+| Installer | Script compiles; install/uninstall verified under Wine with a stand-in game |
+| Store kits, marketing, licenses | Written (`STEAM_RELEASE.md`, `ITCH_RELEASE.md`, `Docs/Marketing`, `LICENSES.md`) |

@@ -9,3 +9,6 @@
 - Hard stinger peaks at about -2 dBFS after Vorbis encoding (target -6); playback is scaled down in-game.
 - Campaign length (2–3 h target) unverified by a human playthrough.
 - Hosted playtest link not yet confirmed working by the owner.
+- On-disk name is "The 313 Machine" (Windows forbids ":"); the window title bar therefore reads "The 313 Machine".
+- Launcher and installer were tested under Wine/Xvfb, not on real Windows. The launcher is unsigned (SmartScreen may warn).
+- Launcher update check needs a real HTTPS manifest URL in launcher.json; until then it opens the store page.
