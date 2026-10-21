@@ -41,9 +41,10 @@ namespace HikariForge.M313.Launcher
             _studioIntroShown = studioIntroShown;
             _config = LauncherConfig.Load(_baseDir);
             Title = "The 3:13 Machine";
+            // Opens full-screen like the game; the 960x560 layout scales up (Viewbox below). Windowed size if restored.
             Width = W; Height = H;
-            CanResize = false;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            WindowState = WindowState.FullScreen;
             Background = new SolidColorBrush(Void);
             try { Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://The313MachineLauncher/Assets/launcher.ico"))); } catch { }
 
@@ -115,7 +116,7 @@ namespace HikariForge.M313.Launcher
             // Covers everything while coming out of the studio intro; see FadeInFromBlack.
             _blackCover = new Rectangle { Width = W, Height = H, Fill = Brushes.Black, IsVisible = studioIntroShown, IsHitTestVisible = false };
             canvas.Children.Add(_blackCover);
-            Content = canvas;
+            Content = new Viewbox { Stretch = Stretch.Uniform, Child = canvas };
 
             var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             timer.Tick += (s, e) => Animate();
